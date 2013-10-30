@@ -150,8 +150,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 	UINT32 random_ops = 10000000;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
-	
-	printf("Timer Detail\n");
+
 	OS_HR_TIME_PRINT_TIMER_RES();
 
 	memcpy(&aCap, pCap, sizeof(aCap));
@@ -250,7 +249,6 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 	elap2 = OS_HR_TIMER_GET_ELAP();
 	printf("APMEM READ %d ops ELAP = %f\n", random_ops, elap2);
 	printf("DELTA = %f PERCENT (Running Val=%d)\n",  100 * ((elap1 - elap2) / elap1), running_val);	
-
 
 
 }
