@@ -4,9 +4,9 @@
 
 
 ifeq ($(DEBUG),y)
-  DEBFLAGS = -O -g -DSCULLC_DEBUG # "-O" is needed to expand inlines
+  DEBFLAGS = -O -g -D_APPMEMD # "-O" is needed to expand inlines
 else
-  DEBFLAGS = -O2
+  DEBFLAGS = -O2 -D_APPMEMD
 endif
 
 EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR)
@@ -16,7 +16,7 @@ TARGET = appmemd
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m	:= appmemd.o
+obj-m	:= appmemd.o ../appmemlib/am_flat.o	../appmemlib/am_stata.o
 
 else
 

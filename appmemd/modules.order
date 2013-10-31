@@ -1,1 +1,3 @@
 kernel//home/appmem/appmemd/appmemd.ko
+kernel//home/appmem/appmemd/../appmemlib/am_flat.ko
+kernel//home/appmem/appmemd/../appmemlib/am_stata.ko

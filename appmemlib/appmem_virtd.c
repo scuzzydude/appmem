@@ -104,7 +104,7 @@ AM_RETURN am_virtd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUN
 	{
 		if(NULL == g_ptrFuncHandles[i])
 		{
-			pVdF = (AM_FUNC_DATA_U *)malloc(sizeof(AM_FUNC_DATA_U));
+			pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
 			if(pVdF)
 			{
 				g_ptrFuncHandles[i] = pVdF;
@@ -127,7 +127,7 @@ AM_RETURN am_virtd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUN
 			{
 				pVdF->flat.size = pCap->maxSize;
 				pVdF->flat.add_size = pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE];
-				pVdF->flat.data = malloc((size_t)pCap->maxSize);
+				pVdF->flat.data = AM_MALLOC((size_t)pCap->maxSize);
 				
 				if(NULL != pVdF->flat.data)
 				{
@@ -173,7 +173,7 @@ AM_RETURN am_virtd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUN
 				pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
 				pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
 				
-				pVdF->stata.data = malloc((size_t)pVdF->stata.size);
+				pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
 
 				if(NULL != pVdF->stata.data)
 				{

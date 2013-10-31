@@ -1,5 +1,6 @@
 #include "appmemlib.h"
 #include "appmem_virtd.h"
+#include "appmemd_ioctl.h"
 
 char * AmCapTypeStr[2] = {
 	"Flat Memory",
@@ -10,7 +11,14 @@ char * AmCapTypeStr[2] = {
 
 UINT32 am_get_capabilities_count(char *am_name)
 {
-	UINT32 count = 0;
+	int c;
+	int fd;
+	UINT32 count = 44;
+	APPMEM_CMD_COMMON_T cmd;
+
+	cmd.cmd = 1;
+	cmd.len = sizeof(APPMEM_CMD_COMMON_T);
+	cmd.data = (UINT64)&count;
 
 	if(NULL == am_name)
 	{
@@ -18,7 +26,35 @@ UINT32 am_get_capabilities_count(char *am_name)
 	}
 	else
 	{
+			printf("DEBUG: Open %s\n", am_name);
+
 		/* TODO: Open driver and query */	
+#ifndef _WIN32
+		fd = open(am_name, 0);
+		if(fd < 0)
+		{
+			printf("DEBUG: FD=%d Error opening %s\n", fd, am_name);
+			return 0;
+		}
+		else
+		{
+			printf("DEBUG: FD=%d opening compilete %s\n", fd, am_name);
+			c = ioctl(fd, APPMEMD_OP_COMMON, &cmd);	
+
+			if(c < 0)
+			{
+				printf("DEBUG: C=%d Error IOCTL %s\n", c, am_name);
+			}
+			else
+			{
+				printf("COUNT = %d\n", count);
+			}
+
+		}
+#endif
+
+
+
 	}
 
 

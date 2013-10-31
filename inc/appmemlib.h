@@ -1,8 +1,11 @@
 
 #ifndef _APPMEMLIB_H
 #define _APPMEMLIB_H
+#ifndef _APPMEMD
 #include <stdio.h>
 #include <memory.h>
+#endif
+#include "am_test_os.h"
 
 typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
@@ -11,6 +14,13 @@ typedef unsigned char UINT8;
 #ifndef NULL
 #define NULL (void *)0
 #endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
 
 //#define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
 #define AM_ASSERT(x)
@@ -113,6 +123,14 @@ typedef union am_func_data
 } AM_FUNC_DATA_U;
 
 
+typedef struct _am_command
+{
+    UINT32 cmd;
+    UINT32 len;
+
+} AM_COMMAND_T;
+
+
 
 #define TS_FLAT_ADDRESS_BYTE_SIZE   0
 #define TS_FLAT_SIZE                1
@@ -144,6 +162,9 @@ AM_RETURN am_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32 count
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
 AM_RETURN am_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
 AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
+
+
+
 
 
 #endif

@@ -6,7 +6,6 @@
 #include <linux/moduleparam.h>
 #include <linux/init.h>
 
-#include <linux/kernel.h>	/* printk() */
 #include <linux/slab.h>		/* kmalloc() */
 #include <linux/fs.h>		/* everything... */
 #include <linux/errno.h>	/* error codes */
@@ -23,6 +22,13 @@
 
 #include <asm/system.h>		/* cli(), *_flags */
 #include <asm/uaccess.h>	/* copy_*_user */
+
+
+/* Driver Includes */
+#include "appmemlib.h"
+#include "appmemd_ioctl.h"
+
+
 
 /* Globals */
 int appmemd_base_dev_count = 1;
@@ -63,7 +69,37 @@ loff_t  appmemd_llseek(struct file *filp, loff_t off, int whence)
 int     appmemd_ioctl(struct inode *inode, struct file *filp,
                     unsigned int cmd, unsigned long arg)
 {
-    printk("Appmemd : appmemd_ioctl\n");
+
+    APPMEM_CMD_U amCmd;
+    UINT32 *pData;
+    
+    
+    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd, arg);
+
+    if(arg)
+    {
+
+        if(copy_from_user (&amCmd, (void *)arg, 16))
+        {
+            printk("Appmemd : copy from user error\n");
+        }
+        else
+        {
+            printk("Appmemd : amCmd(common) cmd=0x%08x len=%d data=%p\n", amCmd.common.cmd, amCmd.common.len, (void *)amCmd.common.data);
+
+            pData = (UINT32 *)amCmd.common.data;
+            
+            if(put_user(33, pData))
+            {
+                printk("Appmemd : put_user ERROR %p\n", pData);
+            }
+
+        }
+        
+
+
+    }
+
 
     return 0;
 }

@@ -1,6 +1,6 @@
 #ifndef _AM_ASSCA_H
 #define _AM_ASSCA_H
-#include "ut-hash\uthash.h"
+#include "uthash.h"
 
 typedef struct _amlib_assca_item
 {
@@ -21,6 +21,7 @@ typedef struct _amlib_assca
 } AMLIB_ASSCA;
 
 AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFixedKey, UINT8 bFixedData);
+AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData);
 
 
 

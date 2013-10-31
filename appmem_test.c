@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "appmemlib.h"
 #include "am_test_os.h"
+#include "am_assca.h"
 
 void am_test_flat_mem(AM_MEM_CAP_T *pCap, char *driver_name)
 {
@@ -35,7 +36,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, char *driver_name)
 		return;
 	}
 
-	func_buf = malloc( sizeof(am_fn) * aCap.functionCount);
+	func_buf = AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
 	amFmf.fn = func_buf;
 	if(AM_RET_GOOD != am_create_function(driver_name, &aCap, &amFmf))
 	{
@@ -52,7 +53,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, char *driver_name)
 	}
 
 
-	local_buf = (UINT32 *)malloc(mem_size);
+	local_buf = (UINT32 *)AM_MALLOC(mem_size);
 
 	if(local_buf)
 	{
@@ -169,7 +170,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 		return;
 	}
 
-	aCalls = (AM_FUNC_CALLS_T *)malloc( sizeof(am_fn) * aCap.functionCount);
+	aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
 	amFa.fn = aCalls;
 	if(AM_RET_GOOD != am_create_function(driver_name, &aCap, &amFa))
 	{
@@ -178,7 +179,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 	}
 	
 	handle = amFa.handle;
-	localArray = malloc(array_size * data_size);
+	localArray = (UINT32 *) AM_MALLOC(array_size * data_size);
 
 	if(localArray)
 	{
@@ -252,8 +253,71 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 	free(aCalls);
 }
 
+
+
+char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size)
+{
+	UINT32 i, j;
+	char *pK;
+	UINT8 offset;
+
+	pKeys = AM_MALLOC(sizeof(char *) * key_count);
+
+	for(i = 0; i < key_count; i++)
+	{
+		pK = AM_MALLOC(key_size);
+
+		for(j = 0; j < (key_size - 1); j++)
+		{
+			offset = rand() % 26;
+			pK[j] = 'A' + offset;
+		}
+		pK[key_size - 1] = '\0';
+
+//		printf("KEY[%d] = %s\n", i, pK);
+		pKeys[i] = pK;
+	}
+	return pKeys;
+
+
+}
+
 void am_test_assc_array(AM_MEM_CAP_T *pCap, char *driver_name)
 {
+	char **pKeys = NULL;
+	UINT32 key_count = 1000;
+	UINT32 key_size = 32;
+	char *pK;
+	UINT32 i;
+	AMLIB_ASSCA *pAA;
+
+
+	pKeys = am_get_test_keys(pKeys, key_count, key_size);
+
+	if(pKeys)
+	{
+		/* Since C doesn't have an associtive array type */
+		/* We'll use our library functions directly */
+		/* The only diference between VIRTD will be the API overhead */
+		/* It will be a good measure of teh driver overhead of APPMEMD */
+		
+		pAA = amlib_assca_init(key_size, 4, TRUE, TRUE);
+		
+		for(i = 0; i < key_count; i++)
+		{
+			pK = pKeys[i];
+	//		printf("KEY[%d] = %s\n", i, pK);
+		
+			amlib_assca_add_key_fixfix(pAA, pK, &i);
+
+		}
+
+		
+
+	}
+
+
+	
 
 }
 
@@ -313,7 +377,7 @@ int main(int argc, char **argv)
 {
 //	UINT32 test = AM_TYPE_ARRAY;
 	
-	UINT32 test AM_TYPE_ASSOC_ARRAY
+	UINT32 test = AM_TYPE_ASSOC_ARRAY;
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
@@ -349,15 +413,15 @@ int main(int argc, char **argv)
 	}
 	
 	/* TEMP */
-	driver_name = NULL;
+//	driver_name = NULL;
 
 	cap_count = am_get_capabilities_count(driver_name);
 
-	printf("CAP COUNT = %d cap_count\n");
+	printf("CAP COUNT = %d \n", cap_count);
 
 	if(cap_count)
 	{
-		pAmCaps = (AM_MEM_CAP_T *)malloc(sizeof(AM_MEM_CAP_T) * cap_count);
+		pAmCaps = (AM_MEM_CAP_T *)AM_MALLOC(sizeof(AM_MEM_CAP_T) * cap_count);
 
 		if(NULL != pAmCaps)
 		{
