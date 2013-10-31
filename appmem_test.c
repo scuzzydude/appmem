@@ -203,8 +203,6 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 
 	OS_HR_PRINT_START_TIME();
 	OS_HR_PRINT_STOP_TIME();
-
-
 	OS_HR_TIMER_START();
 
 	for(i = 0; i < array_size; i++)
@@ -250,6 +248,12 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, char *driver_name)
 	printf("APMEM READ %d ops ELAP = %f\n", random_ops, elap2);
 	printf("DELTA = %f PERCENT (Running Val=%d)\n",  100 * ((elap1 - elap2) / elap1), running_val);	
 
+	free(localArray);
+	free(aCalls);
+}
+
+void am_test_assc_array(AM_MEM_CAP_T *pCap, char *driver_name)
+{
 
 }
 
@@ -283,6 +287,9 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, char *driver_
 			case AM_TYPE_ARRAY:
 				am_test_static_array(pTestCap, driver_name);
 				break;
+			case AM_TYPE_ASSOC_ARRAY:
+				am_test_assc_array(pTestCap, driver_name);
+				break;
 
 	
 			default:
@@ -304,21 +311,33 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, char *driver_
 
 int main(int argc, char **argv)
 {
-	UINT32 test = AM_TYPE_ARRAY;
+//	UINT32 test = AM_TYPE_ARRAY;
+	
+	UINT32 test AM_TYPE_ASSOC_ARRAY
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
 	UINT32 i;
 	char pbuff[256];
 
-	printf("Appmem Test - Type = %d\n", test);
 	printf("SIZEOF UINT64 = %d\n", sizeof(UINT64));
 	printf("SIZEOF UINT32 = %d\n", sizeof(UINT32));
 	printf("SIZEOF UINT16 = %d\n", sizeof(UINT16));
 	printf("SIZEOF UINT8 = %d\n", sizeof(UINT8));
+	printf("ARGC = %d\n", argc);
 
-	cap_count = am_get_capabilities_count(driver_name);
+	if(argc > 1)
+	{
+		driver_name = argv[1];	
+	}
 
+	if(argc > 2)
+	{
+		test = strtol(argv[2], NULL, 10);
+	}
+	printf("App Mem Test Type %d\n", test);
+
+	
 	if(driver_name)
 	{
 		printf("APP_MEM DRIVER = %s\n", driver_name);
@@ -328,6 +347,12 @@ int main(int argc, char **argv)
 		printf("APP_MEM DRIVER = VIRTD\n");
 
 	}
+	
+	/* TEMP */
+	driver_name = NULL;
+
+	cap_count = am_get_capabilities_count(driver_name);
+
 	printf("CAP COUNT = %d cap_count\n");
 
 	if(cap_count)

@@ -9,15 +9,14 @@ else
   DEBFLAGS = -O2
 endif
 
-EXTRA_CFLAGS += $(DEBFLAGS) -I$(LDDINC)
+EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR)
 
-TARGET = ofd
+TARGET = appmemd
 
 ifneq ($(KERNELRELEASE),)
 
-#scullc-objs := main.o
 
-obj-m	:= ofd.o
+obj-m	:= appmemd.o
 
 else
 
@@ -25,7 +24,7 @@ KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD       := $(shell pwd)
 
 modules:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) LDDINC=$(PWD) modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) APPMINCDIR=$(PWD)/../inc modules
 
 endif
 

@@ -36,8 +36,21 @@ AM_MEM_CAP_T virtd_caps[] =
 			TS_STAT_DT_FIXED_WIDTH
 		}
 
+	},
+	{
+		AM_TYPE_ASSOC_ARRAY,
+		(1024 * 1024),
+		7,
+		{
+			512,              /* Max - Key Size Bytes */ 
+			1024 * 1024,      /* Max - Data Size Bytes */
+			TS_ASSCA_KEY_FIXED_WIDTH | TS_ASSCA_KEY_VAR_WIDTH,
+			TS_ASSCA_DATA_FIXED_WIDTH | TS_ASSCA_DATA_VAR_WIDTH
+		}
+
+
+
 	}
-	
 
 };
 

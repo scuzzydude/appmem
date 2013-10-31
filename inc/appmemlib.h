@@ -27,7 +27,8 @@ typedef unsigned int AM_RETURN;
 typedef enum amTypeEnum 
 {
 	AM_TYPE_FLAT_MEM,
-	AM_TYPE_ARRAY
+	AM_TYPE_ARRAY, 
+	AM_TYPE_ASSOC_ARRAY
 	
 } AM_TYPE_ENUM;
 
@@ -125,6 +126,16 @@ typedef union am_func_data
 #define TS_STAT_ARRAY_VAL_DATA_TYPES 3
 #define TS_STAT_DT_FIXED_WIDTH   0x1
 #define TS_STAT_DT_VAR_WIDTH     0x2
+
+#define TS_ASSCA_KEY_MAX_SIZE    0 
+#define TS_ASSCA_DATA_MAX_SIZE   1 
+#define TS_ASSCA_KEY_TYPE        2
+#define TS_ASSCA_KEY_FIXED_WIDTH   0x1
+#define TS_ASSCA_KEY_VAR_WIDTH     0x2
+
+#define TS_ASSCA_DATA_TYPE        2
+#define	TS_ASSCA_DATA_FIXED_WIDTH  0x1
+#define TS_ASSCA_DATA_VAR_WIDTH    0x2
 
 
 
