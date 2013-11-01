@@ -2,6 +2,9 @@
 #define _AM_TEST_OS_H
 
 #ifdef _WIN32
+#pragma warning(disable : 4996) /* Warns about sprintf not safe */
+
+
 #include "..\win\hr_time.h"
 
 #define INIT_OS_HR_TIMER(x) stopWatch stopwatch

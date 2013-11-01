@@ -15,6 +15,14 @@ AM_MEM_CAP_T virtd_caps[] =
 {
 
 	{ 
+		AM_TYPE_BASE_APPMEM,
+		(1024 * 1024 * 128), /* Total Device Memory */
+		2,
+		{
+			0, 0
+		}
+	},
+	{ 
 		AM_TYPE_FLAT_MEM, /* Type */ 
 		(1024 * 1024),    /* maxSizeBytes */
 		7,    			  /* maxFunction  */	
@@ -54,7 +62,7 @@ AM_MEM_CAP_T virtd_caps[] =
 
 };
 
-AM_RETURN am_virtd_get_capabilites_count()
+UINT32 am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 {
 	UINT32 count = 0;
 
@@ -63,7 +71,7 @@ AM_RETURN am_virtd_get_capabilites_count()
 	return count;
 }
 
-AM_RETURN am_virtd_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32 count)
+AM_RETURN am_virtd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count)
 {
 	AM_RETURN error = AM_RET_GOOD;
 	
@@ -86,7 +94,7 @@ AM_RETURN am_virtd_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32
 }
 
 
-AM_RETURN am_virtd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc)
+AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc)
 {
 	AM_RETURN error = AM_RET_GOOD;
 	UINT32 i;

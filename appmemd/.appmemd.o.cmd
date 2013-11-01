@@ -485,6 +485,7 @@ deps_/home/appmem/appmemd/appmemd.o := \
   /home/appmem/appmemd/../inc/appmemlib.h \
   /home/appmem/appmemd/../inc/am_test_os.h \
   /home/appmem/appmemd/../inc/appmemd_ioctl.h \
+  /home/appmem/appmemd/../inc/appmemd_ioctl.h \
 
 /home/appmem/appmemd/appmemd.o: $(deps_/home/appmem/appmemd/appmemd.o)
 

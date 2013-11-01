@@ -7,6 +7,7 @@
 #endif
 #include "am_test_os.h"
 
+
 typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
 typedef unsigned short UINT16;
@@ -20,6 +21,7 @@ typedef unsigned char UINT8;
 #ifndef FALSE
 #define FALSE 0
 #endif
+#include "appmemd_ioctl.h"
 
 
 //#define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
@@ -32,10 +34,11 @@ typedef unsigned int AM_RETURN;
 #define AM_RET_PARAM_ERR    (1)
 #define AM_RET_ALLOC_ERR    (2)
 #define AM_RET_IO_ERR       (3)
-
+#define AM_RET_OPEN_ERR     (4)
 
 typedef enum amTypeEnum 
 {
+	AM_TYPE_BASE_APPMEM,
 	AM_TYPE_FLAT_MEM,
 	AM_TYPE_ARRAY, 
 	AM_TYPE_ASSOC_ARRAY
@@ -89,7 +92,7 @@ typedef struct am_mem_function_t
 {
 	UINT32 handle;
 	AM_MEM_CAP_T amCap;
-	char name[64];
+	APPMEM_RESP_CR_FUNC_T crResp;
 	AM_FUNC_CALLS_T *fn;
 
 } AM_MEM_FUNCTION_T;
@@ -156,12 +159,28 @@ typedef struct _am_command
 #define TS_ASSCA_DATA_VAR_WIDTH    0x2
 
 
+#if 0
+UINT32 am_kd_get_capabilities_count(char *am_name){ return 0; }
+AM_RETURN am_kd_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32 count) { return 0; }
+AM_RETURN am_kd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) { return 0; }
+#endif
 
-UINT32 am_get_capabilities_count(char *am_name);
-AM_RETURN am_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32 count);
+typedef struct amlib_entry_
+{
+	char			   *am_name;
+	int                fh;
+	UINT32             (*get_cap_count)(struct amlib_entry_ *pEntry);
+	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
+	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+} AMLIB_ENTRY_T;
+
+
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
-AM_RETURN am_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+
 AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
+
+AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
+
 
 
 
