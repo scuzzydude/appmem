@@ -290,7 +290,11 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	char *pK;
 	UINT32 i;
 	AMLIB_ASSCA *pAA;
-
+	INIT_OS_HR_TIMER(0);
+	double elap1;
+	UINT32 random_ops = 10000000;
+	UINT32 idx;
+	UINT32 val;
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
 
@@ -298,21 +302,63 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	{
 		/* Since C doesn't have an associtive array type */
 		/* We'll use our library functions directly */
-		/* The only diference between VIRTD will be the API overhead */
+		/* The only diference between VIRTD and base would be the API overhead */
 		/* It will be a good measure of teh driver overhead of APPMEMD */
 		
+		OS_HR_TIMER_START();
 		pAA = amlib_assca_init(key_size, 4, TRUE, TRUE);
 		
 		for(i = 0; i < key_count; i++)
 		{
 			pK = pKeys[i];
-	//		printf("KEY[%d] = %s\n", i, pK);
-		
 			amlib_assca_add_key_fixfix(pAA, pK, &i);
 
 		}
+		OS_HR_TIMER_STOP();
+		elap1 = OS_HR_TIMER_GET_ELAP();
+		printf("Assc Array Write %d entries ELAP = %f\n", key_count, elap1);
+	
+		OS_HR_TIMER_START();
+		for(i = 0; i < random_ops; i++)
+		{
+			idx = rand() % key_count;		
+			pK = pKeys[idx];
 
-		
+			if(AM_RET_GOOD == amlib_assca_get_key_val(pAA, pK, &val))
+			{
+				if(val != idx)
+				{
+					printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+					break;
+			
+				}
+			}
+			else
+			{
+				printf("ERROR Key not found =%s\n", pK);
+				break;
+			}
+
+		}
+		OS_HR_TIMER_STOP();
+		elap1 = OS_HR_TIMER_GET_ELAP();
+		printf("Assc Array Read %d ops ELAP = %f\n", random_ops, elap1);
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	}
 
@@ -375,9 +421,9 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-	UINT32 test = AM_TYPE_ARRAY;
+//	UINT32 test = AM_TYPE_ARRAY;
 	
-//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+	UINT32 test = AM_TYPE_ASSOC_ARRAY;
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;

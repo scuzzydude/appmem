@@ -22,6 +22,23 @@ AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFix
 	return pAA;
 }
 
+AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
+{
+	AMLIB_ASSCA_ITEM *pAI = NULL;
+
+	AM_ASSERT(pAA);
+
+	HASH_FIND(hh, pAA->head, pKey, pAA->key_len, pAI);
+	if(pAI)
+	{
+		memcpy(pData, pAI->data, pAA->data_len);		
+		
+		return AM_RET_GOOD;
+	}
+
+	return AM_RET_KEY_NOT_FOUND;
+}
+
 AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 {
 	AMLIB_ASSCA_ITEM *pAI;
