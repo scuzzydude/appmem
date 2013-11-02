@@ -406,6 +406,38 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		elap1 = OS_HR_TIMER_GET_ELAP();
 		printf("Assc Array Read %d ops ELAP = %f\n", random_ops, elap1);
 
+
+
+		OS_HR_TIMER_START();
+		for(i = 0; i < random_ops; i++)
+		{
+			idx = rand() % key_count;		
+			pK = pKeys[idx];
+
+			if(AM_RET_GOOD == amSa.fn->read_al(handle, pK, &val))
+			{
+				if(val != idx)
+				{
+					printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+					break;
+			
+				}
+			}
+			else
+			{
+				printf("ERROR Key not found =%s\n", pK);
+				break;
+			}
+
+		}
+		OS_HR_TIMER_STOP();
+		elap2 = OS_HR_TIMER_GET_ELAP();
+		printf("%s Assc Array Read %d ops ELAP = %f\n", pEntry->am_name, random_ops, elap2);
+
+
+
+
+
 	}
 }
 

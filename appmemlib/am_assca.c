@@ -97,7 +97,20 @@ AM_RETURN am_assca_write32(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64
 
 AM_RETURN am_assca_read32_align(UINT32 handle, void * p1, void *p2)
 {
-	return AM_RET_GOOD;
+	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
+	AMLIB_ASSCA *pAA = NULL;
+	if(fd)
+	{
+		pAA = (AMLIB_ASSCA *) fd->assca.data;
+		AM_ASSERT(pAA);
+		AM_ASSERT(p1);
+		AM_ASSERT(p2);
+
+		return amlib_assca_get_key_val(pAA, p1, p2);
+
+	}
+
+	return AM_RET_INVALID_HDL;
 }
 
 AM_RETURN am_assca_write32_align(UINT32 handle, void * p1, void *p2)
@@ -108,6 +121,10 @@ AM_RETURN am_assca_write32_align(UINT32 handle, void * p1, void *p2)
 	{
 		pAA = (AMLIB_ASSCA *) fd->assca.data;
 		AM_ASSERT(pAA);
+		AM_ASSERT(p1);
+		AM_ASSERT(p2);
+
+		
 		return amlib_assca_add_key_fixfix(pAA, p1, p2);
 
 	}
