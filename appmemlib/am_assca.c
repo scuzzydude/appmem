@@ -2,7 +2,7 @@
 #include "am_assca.h"
 
 
-AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFixedKey, UINT8 bFixedData)
+AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFixedKey, UINT8 bFixedData, UINT16 flags)
 {
 	AMLIB_ASSCA *pAA = NULL;
 
@@ -71,5 +71,49 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 
 
+
+
+AM_RETURN am_assca_open(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+{
+	return AM_RET_GOOD;
+}
+AM_RETURN am_assca_close(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+{
+	return AM_RET_GOOD;
+}
+
+
+/* 32 bit */
+AM_RETURN am_assca_read32(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+{
+	return AM_RET_GOOD;
+}
+
+AM_RETURN am_assca_write32(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+{
+	return AM_RET_GOOD;
+}
+
+
+AM_RETURN am_assca_read32_align(UINT32 handle, void * p1, void *p2)
+{
+	return AM_RET_GOOD;
+}
+
+AM_RETURN am_assca_write32_align(UINT32 handle, void * p1, void *p2)
+{
+	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
+	AMLIB_ASSCA *pAA = NULL;
+	if(fd)
+	{
+		pAA = (AMLIB_ASSCA *) fd->assca.data;
+		AM_ASSERT(pAA);
+		return amlib_assca_add_key_fixfix(pAA, p1, p2);
+
+	}
+
+	return AM_RET_INVALID_HDL;
+
+}
 
 

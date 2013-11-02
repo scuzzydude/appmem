@@ -175,6 +175,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amFa))
 	{
 		printf("Create Function Error\n");
+		AM_FREE(aCalls);
 		return;
 	}
 	
@@ -284,6 +285,7 @@ char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size)
 
 void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
+	AM_MEM_CAP_T aCap;
 	char **pKeys = NULL;
 	UINT32 key_count = 1000;
 	UINT32 key_size = 32;
@@ -291,22 +293,56 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 i;
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
-	double elap1;
+	double elap1, elap2;
 	UINT32 random_ops = 10000000;
 	UINT32 idx;
 	UINT32 val;
+	AM_MEM_FUNCTION_T amSa;
+	AM_FUNC_CALLS_T *aCalls;
+	UINT32 handle = 0;
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
 
 	if(pKeys)
 	{
+
+		memcpy(&aCap, pCap, sizeof(aCap));
+
+		if((aCap.typeSpecific[TS_ASSCA_KEY_MAX_SIZE] >= key_size) &&
+			(aCap.typeSpecific[TS_ASSCA_DATA_MAX_SIZE] >=  sizeof(UINT32)))
+
+		{
+			aCap.typeSpecific[TS_ASSCA_KEY_MAX_SIZE] = key_size;
+			aCap.typeSpecific[TS_ASSCA_DATA_MAX_SIZE] =  sizeof(UINT32);
+			aCap.typeSpecific[TS_ASSCA_KEY_TYPE] =  TS_ASSCA_KEY_FIXED_WIDTH;
+			aCap.typeSpecific[TS_ASSCA_DATA_TYPE] =  TS_ASSCA_DATA_FIXED_WIDTH;
+		
+		}
+		else
+		{
+			printf("No Key/Data Sizes %d:%d\n", key_size, sizeof(UINT32));
+			return;
+		}
+		
+		aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
+		amSa.fn = aCalls;
+		
+		if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amSa))
+		{
+			printf("Create Function Error\n");
+			AM_FREE(aCalls);
+			handle = amSa.handle;
+			return;
+		}
+	
+
 		/* Since C doesn't have an associtive array type */
 		/* We'll use our library functions directly */
 		/* The only diference between VIRTD and base would be the API overhead */
 		/* It will be a good measure of teh driver overhead of APPMEMD */
 		
 		OS_HR_TIMER_START();
-		pAA = amlib_assca_init(key_size, 4, TRUE, TRUE);
+		pAA = amlib_assca_init(key_size, 4, TRUE, TRUE, 0);
 		
 		for(i = 0; i < key_count; i++)
 		{
@@ -318,6 +354,32 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		elap1 = OS_HR_TIMER_GET_ELAP();
 		printf("Assc Array Write %d entries ELAP = %f\n", key_count, elap1);
 	
+
+
+		OS_HR_TIMER_START();
+		for(i = 0; i < key_count; i++)
+		{
+			pK = pKeys[i];
+		
+			amSa.fn->write_al(handle, pK, &i);
+			
+		}
+		OS_HR_TIMER_STOP();
+		elap2 = OS_HR_TIMER_GET_ELAP();
+		printf("%s Assc Array Write %d entries ELAP = %f\n", pEntry->am_name, key_count, elap2);
+
+
+
+
+
+
+
+
+
+
+
+
+
 		OS_HR_TIMER_START();
 		for(i = 0; i < random_ops; i++)
 		{
@@ -343,28 +405,8 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		OS_HR_TIMER_STOP();
 		elap1 = OS_HR_TIMER_GET_ELAP();
 		printf("Assc Array Read %d ops ELAP = %f\n", random_ops, elap1);
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	}
-
-
-	
-
 }
 
 void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T *pEntry)

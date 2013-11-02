@@ -4,6 +4,8 @@
 #include "appmem_virtd.h"
 #include "am_flat.h"
 #include "am_stata.h"
+#include "am_assca.h"
+
 
 #define MAX_VIRTD_FUNC_HANDLES 8
 #define VIRTD_HANDLE_SIG          (0xBADBA00)
@@ -93,6 +95,68 @@ AM_RETURN am_virtd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps
 
 }
 
+AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc, AM_FUNC_DATA_U *pVdF)
+{
+	UINT8 bFixedKey = FALSE;
+	UINT8 bFixedData = FALSE;
+	UINT16 flags = 0;
+	UINT32 key_size;
+	UINT32 data_size;
+	AM_RETURN error = AM_RET_GOOD;
+	AMLIB_ASSCA *pAA = (AMLIB_ASSCA *)NULL;
+	AM_FUNC_CALLS_T *fn_array =  NULL;
+	if(pFunc->fn)
+	{
+		fn_array = pFunc->fn;
+	}
+
+	if(fn_array && pVdF && pFunc && pCap && (AM_TYPE_ASSOC_ARRAY == pCap->amType))
+	{
+		key_size = pCap->typeSpecific[TS_ASSCA_KEY_MAX_SIZE];
+		data_size =	pCap->typeSpecific[TS_ASSCA_DATA_MAX_SIZE];
+		
+		if(pCap->typeSpecific[TS_ASSCA_KEY_TYPE] & TS_ASSCA_KEY_FIXED_WIDTH)
+		{
+			bFixedKey = TRUE;
+		}
+		if(pCap->typeSpecific[TS_ASSCA_DATA_TYPE] & TS_ASSCA_DATA_FIXED_WIDTH)
+		{
+			bFixedKey = FALSE;
+		}
+		
+
+		pAA = amlib_assca_init(key_size, data_size, bFixedKey, bFixedData, flags);
+
+		if(pAA)
+		{
+			pVdF->assca.size = pCap->maxSize;
+			pVdF->assca.cur_count = 0;
+			pVdF->flat.data = (void *)pAA;
+	
+			fn_array->open = am_assca_open;
+			fn_array->close = am_assca_close;
+			fn_array->read = am_assca_read32;
+			fn_array->write = am_assca_write32;
+			fn_array->read_al = am_assca_read32_align;
+			fn_array->write_al = am_assca_write32_align;
+			fn_array->copy = NULL;
+	
+
+		}
+		
+
+	}
+	else
+	{
+		error = AM_RET_PARAM_ERR;
+	}
+
+
+	return error;
+
+
+
+}
 
 AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc)
 {
@@ -208,9 +272,18 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 			}
 			break;
 
+			case AM_TYPE_ASSOC_ARRAY:
+			{
+				error = am_virtd_init_assca(pEntry, pCap, pFunc, pVdF);
+			}
+			break;
+
 
 			default:
-				break;
+			{
+				error = AM_RET_INVALID_FUNC;
+			}
+			break;
 
 		
 		

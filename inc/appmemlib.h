@@ -36,6 +36,9 @@ typedef unsigned int AM_RETURN;
 #define AM_RET_IO_ERR          (3)
 #define AM_RET_OPEN_ERR        (4)
 #define AM_RET_KEY_NOT_FOUND   (5)
+#define AM_RET_INVALID_FUNC    (6)
+#define AM_RET_INVALID_HDL     (7)
+
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
@@ -120,7 +123,12 @@ typedef union am_func_data
 		UINT32 data_size;
 
 	} stata; /* Static Array */
-
+	struct
+	{
+		void *data;
+		UINT64 size;
+		UINT64 cur_count;
+	} assca;
 
 
 } AM_FUNC_DATA_U;
