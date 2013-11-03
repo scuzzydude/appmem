@@ -24,8 +24,8 @@ typedef unsigned char UINT8;
 #include "appmemd_ioctl.h"
 
 
-//#define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
-#define AM_ASSERT(x)
+#define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
+//#define AM_ASSERT(x)
 
 
 typedef unsigned int AM_RETURN;

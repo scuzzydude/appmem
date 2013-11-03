@@ -5,6 +5,7 @@
 
 #include "am_test_os.h"
 
+#define USE_OPERATORS 1
 
 
 int am_cpp_flat_mem_test(char *am_name)
@@ -80,15 +81,27 @@ int am_cpp_flat_mem_test(char *am_name)
 		val = 0;
 		rval = 0;
 		srand(100);
-		
+		UINT32 elem_cnt = amFlat.count();
+
 		OS_HR_TIMER_START();
 		for( i = 0; i < random_ops; i++)
 		{
+#if USE_OPERATORS
+			offset = (((val + rval) % elem_cnt));   
+			rval = rand();
+			val = amFlat[offset];
+#else
 			offset = (((val + rval) % mem_size) & ~3);   
 			rval = rand();
 			amFlat.read32(offset, &val);
-			
+#endif			
+
+#if USE_OPERATORS
+			if(val != (offset * sizeof(UINT32)))
+#else
 			if(val != offset)
+#endif
+
 			{
 				printf("Miscompare address %p val=0x%08x base=%p offset=0x%08x\n", ptr32, val, pBase, offset);
 				break;

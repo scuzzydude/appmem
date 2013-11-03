@@ -36,11 +36,16 @@ class CAppMemFlat: public CAppMem
 		CAppMemFlat(char *am_name, UINT32 memSize, UINT8 address_size);
 		AM_RETURN write32(UINT32 offset, UINT32 val);
 		AM_RETURN read32(UINT32 offset, UINT32 *pVal);
+		UINT32& operator[] (const unsigned int idx);
+		UINT32 count(void);
+
 
 	private:
 		virtual AM_RETURN configCaps(AM_MEM_CAP_T *pCap);
 		UINT32 mem_size;
 		UINT32 address_size;
+		UINT32 elements;
+		UINT32 scratch_pad;
 
 };
 

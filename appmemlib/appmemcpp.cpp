@@ -105,7 +105,7 @@ AM_RETURN CAppMemFlat::configCaps(AM_MEM_CAP_T *pCap)
 
 	/* TODO: Validate Address sizes are power of two */
 	
-	pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE] = address_size;
+	pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE] = this->address_size;
 	pCap->maxSize = this->mem_size;
 
 	return AM_RET_GOOD;
@@ -117,9 +117,18 @@ CAppMemFlat::CAppMemFlat(char *am_name, UINT32 memSize, UINT8 addressSize)
 {
 	address_size = addressSize;
 	mem_size = memSize;
+	elements = 0;
 
+	if(address_size)
+	{
+		elements = mem_size / address_size;
+	}
 	initBase(am_name, AM_TYPE_FLAT_MEM);
 
+}
+UINT32 CAppMemFlat::count(void)
+{
+	return elements;
 }
 
 AM_RETURN CAppMemFlat::write32(UINT32 offset, UINT32 val)
@@ -148,4 +157,28 @@ AM_RETURN CAppMemFlat::read32(UINT32 offset, UINT32 *pVal)
 		AM_ASSERT(0);
 		return AM_RET_PARAM_ERR;
 	}
+}
+UINT32& CAppMemFlat::operator[] (const unsigned int idx)
+{
+	if(idx < elements)
+	{
+		if(AM_RET_GOOD == read32(idx * address_size, &scratch_pad))
+		{
+			return scratch_pad;
+		}
+		else
+		{
+			/* TODO: Throw exception */
+			AM_ASSERT(0);
+			return scratch_pad;
+
+		}
+	}
+	else
+	{
+		/* TODO: Throw exception */
+		AM_ASSERT(0);
+		return scratch_pad;
+	}
+	
 }
