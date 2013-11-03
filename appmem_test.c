@@ -96,9 +96,19 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	OS_HR_TIMER_START();
 	for( i = 0; i < random_ops; i++)
 	{
-		ptr32 = (UINT32 *)((UINT32)local_buf + (((val + rval) % mem_size) & ~3)); 
+		addr =  (((val + rval) % mem_size) & ~3);
+		ptr32 = (UINT32 *)((UINT32)local_buf + addr); 
 		rval = rand();
 		val = *ptr32;
+		
+		if(val != addr)
+		{
+			printf("Miscompare address %p val=0x%08x base=%p offset=0x%08x\n", ptr32, val, local_buf, addr);
+			break;
+
+		}
+
+	
 	}
 	OS_HR_TIMER_STOP();
 	elap1 = OS_HR_TIMER_GET_ELAP();
@@ -111,8 +121,17 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	for( i = 0; i < random_ops; i++)
 	{
 		addr = (((val + rval) % mem_size) & ~3); 
-		amFmf.fn->read_al(handle, &addr, &val);
 		rval = rand();
+		amFmf.fn->read_al(handle, &addr, &val);
+		
+		if(val != addr)
+		{
+			printf("Miscompare address %p val=0x%08x base=%p offset=0x%08x\n", ptr32, val, local_buf, addr);
+			break;
+
+		}
+
+
 	}
 	OS_HR_TIMER_STOP();
 	elap2 = OS_HR_TIMER_GET_ELAP();

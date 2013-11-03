@@ -86,7 +86,7 @@ int am_cpp_flat_mem_test(char *am_name)
 		{
 			offset = (((val + rval) % mem_size) & ~3);   
 			rval = rand();
-			val = amFlat.read32(offset, &val);
+			amFlat.read32(offset, &val);
 			
 			if(val != offset)
 			{
