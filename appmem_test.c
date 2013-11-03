@@ -4,6 +4,8 @@
 #include "am_test_os.h"
 #include "am_assca.h"
 
+int am_cpp_test(char *am_name, UINT32 test);
+
 void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 
@@ -60,10 +62,6 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		ptr32 = local_buf;
 		
 		OS_HR_TIMER_START();
-		
-
-
-		
 		for( i = 0; i < mem_size ; i += 4)
 		{
 			*ptr32 = i;
@@ -496,8 +494,9 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 int main(int argc, char **argv)
 {
 //	UINT32 test = AM_TYPE_ARRAY;
-	
-	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+	UINT32 test = AM_TYPE_FLAT_MEM;
+
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
@@ -568,9 +567,6 @@ int main(int argc, char **argv)
 				}
 			
 				am_test(pAmCaps, cap_count, test, &amEntry);
-
-
-
 			
 			}
 			else
@@ -586,6 +582,7 @@ int main(int argc, char **argv)
 
 
 
+	am_cpp_test(driver_name, test);
 
 
 	return 0;
