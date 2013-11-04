@@ -19,7 +19,7 @@ int am_cpp_flat_mem_test(char *am_name)
 	double elap1, elap2;
 
 	CAppMemFlat amFlat(am_name, 1024 * 1024, 4);
-	printf("Appmem C++ Test %s\n", am_name);
+	printf("Appmem C++ - Flat Mem Test %s\n", am_name);
 
 	if(amFlat.ready())
 	{
@@ -128,11 +128,132 @@ int am_cpp_flat_mem_test(char *am_name)
 
 }
 
+int am_cpp_stata_test(char *am_name)
+{
+	UINT32 random_ops = 10000000;
+	UINT32 i;
+	UINT32 elem_count = 1024 * 1024;
+	INIT_OS_HR_TIMER(0);
+//	UINT32 *ptr32;
+//	UINT32 *pBase;
+	double elap1, elap2;
+	UINT32 *localArray;
+	UINT32 temp;
+	
+
+	CAppMemStaticArray amStata(am_name, elem_count, sizeof(UINT32), sizeof(UINT32));
+
+	printf("Appmem C++ - Flat Mem Test %s\n", am_name);
+
+
+	localArray = new UINT32[elem_count];
+
+	if(localArray)
+	{
+		OS_HR_TIMER_START();
+
+		for(i = 0; i < elem_count; i++)
+		{
+			temp = elem_count - i;
+			localArray[i] = temp;
+		}
+		OS_HR_TIMER_STOP();
+		elap1 = OS_HR_TIMER_GET_ELAP();
+		printf("(APPMEMCPP)LOCAL ARRAY WRITE %d entries ELAP = %f\n", elem_count, elap1);
+
+	}
+	else
+	{
+		printf("Local Array Error\n");
+		return 0;
+	}
+
+
+	OS_HR_TIMER_START();
+
+	for(i = 0; i < elem_count; i++)
+	{
+		temp = elem_count - i;
+		amStata.insert(i, &temp);	
+	}
+	OS_HR_TIMER_STOP();
+	elap2 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP)%s ARRAY WRITE %d entries ELAP = %f\n", amStata.driverName(), elem_count, elap2);
+	printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
+
+
+	srand(100);
+	UINT32 idx = 0;
+	UINT32 val = 0;
+	UINT32 rval;
+	UINT32 running_val = 0;
+
+	srand(100);
+	OS_HR_TIMER_START();
+	for( i = 0; i < random_ops; i++)
+	{
+		rval = rand();
+		idx = (val + rval) % elem_count;
+		val = localArray[idx]; 
+		temp = elem_count - idx;
+		
+		if(temp != val)
+		{
+			printf("Miscompare idx %d val=0x%08x temp=0x%08x\n", idx, val, temp);
+			break;
+		}
+
+
+		running_val += val;
+	}
+	OS_HR_TIMER_STOP();
+	elap1 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP)LOCAL READ %d ops ELAP = %f\n", random_ops, elap1);
+
+	idx = 0;
+	val = 0;
+	rval;
+
+	srand(100);
+	OS_HR_TIMER_START();
+	for( i = 0; i < random_ops; i++)
+	{
+		rval = rand();
+		idx = (val + rval) % elem_count;
+		amStata.get(idx, &val);
+		temp = elem_count - idx;
+		
+		if(temp != val)
+		{
+			printf("Miscompare idx %d val=0x%08x temp=0x%08x\n", idx, val, temp);
+			break;
+		}
+
+
+		running_val += val;
+	}
+	OS_HR_TIMER_STOP();
+	elap2 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP)%s READ %d ops ELAP = %f\n", amStata.driverName(), random_ops, elap2);
+	printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
+
+
+
+	printf("running_val=%d\n", running_val);
+	delete localArray;
+	return 0;
+}
+
+
 extern "C" int am_cpp_test(char *am_name, UINT32 test)
 {
 	if(AM_TYPE_FLAT_MEM == test)
 	{
 		return	am_cpp_flat_mem_test(am_name);
+	}
+	else if(AM_TYPE_ARRAY == test)
+	{
+		return am_cpp_stata_test(am_name);
 	}
 	return 0;
 

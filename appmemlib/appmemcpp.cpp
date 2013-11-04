@@ -1,10 +1,30 @@
 #include "appmemcpp.h"
 
+/***************************************************************************/
+/**  CAppMem (Base Class)                                                  */
+/***************************************************************************/
+
 CAppMem::CAppMem()
 {
 	cap_count = 0;
 	pBaseCaps = NULL;
 	bReady = false;
+	pCalls = NULL;
+}
+
+CAppMem::~CAppMem()
+{
+	printf("Destructor : ~CAppMem()\n");
+
+	if(pBaseCaps)
+	{
+		delete pBaseCaps;
+	}
+	if(pCalls)
+	{
+		delete pCalls;
+	}
+
 }
 
 CAppMem::CAppMem(char *am_name)
@@ -98,20 +118,10 @@ void CAppMem::initBase(char *am_name, UINT32 amType)
 	}
 }
 
+/***************************************************************************/
+/**  CAppMemFlat                                                           */
+/***************************************************************************/
 
-
-AM_RETURN CAppMemFlat::configCaps(AM_MEM_CAP_T *pCap)
-{
-
-	/* TODO: Validate Address sizes are power of two */
-	
-	pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE] = this->address_size;
-	pCap->maxSize = this->mem_size;
-
-	return AM_RET_GOOD;
-
-}
-	
 	
 CAppMemFlat::CAppMemFlat(char *am_name, UINT32 memSize, UINT8 addressSize)
 {
@@ -126,9 +136,28 @@ CAppMemFlat::CAppMemFlat(char *am_name, UINT32 memSize, UINT8 addressSize)
 	initBase(am_name, AM_TYPE_FLAT_MEM);
 
 }
+
+CAppMemFlat::~CAppMemFlat()
+{
+	printf("Destructor : ~CAppMemFlat()\n");
+}
+		
+
 UINT32 CAppMemFlat::count(void)
 {
 	return elements;
+}
+
+AM_RETURN CAppMemFlat::configCaps(AM_MEM_CAP_T *pCap)
+{
+
+	/* TODO: Validate Address sizes are power of two */
+	
+	pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE] = this->address_size;
+	pCap->maxSize = this->mem_size;
+
+	return AM_RET_GOOD;
+
 }
 
 AM_RETURN CAppMemFlat::write32(UINT32 offset, UINT32 val)
@@ -158,6 +187,23 @@ AM_RETURN CAppMemFlat::read32(UINT32 offset, UINT32 *pVal)
 		return AM_RET_PARAM_ERR;
 	}
 }
+
+/*
+A big challenging to directly use the [] = X mutator 
+We'd have to provide caller scratch are to write the value to as well as cache 
+The index/key.   Then on any read/write operation, we'd have to flush out the scratch to appmem */
+/* This would be additional checks on the every read/write to see if scratch has valid data */
+/* And would require locks on client */
+/* TODO: Review later, for now [] operator are lookup only */
+/*
+UINT32& CAppMemFlat::operator[] (unsigned int idx) const
+{
+
+	return scratch_pad;
+}
+*/
+
+
 UINT32& CAppMemFlat::operator[] (const unsigned int idx)
 {
 	if(idx < elements)
@@ -181,4 +227,70 @@ UINT32& CAppMemFlat::operator[] (const unsigned int idx)
 		return scratch_pad;
 	}
 	
+}
+
+
+
+/***************************************************************************/
+/**  CAppMemStaticArray                                                    */
+/***************************************************************************/
+
+CAppMemStaticArray::CAppMemStaticArray(char *am_name, UINT32 elemCount, UINT32 dataSize, UINT32 indexSize)
+{
+	index_size = indexSize;
+	data_size = dataSize;
+	elements = elemCount;
+	mem_size = dataSize * elemCount;
+
+	
+	initBase(am_name, AM_TYPE_ARRAY);
+
+
+}
+
+CAppMemStaticArray::~CAppMemStaticArray()
+{
+
+}
+
+AM_RETURN CAppMemStaticArray::configCaps(AM_MEM_CAP_T *pCap)
+{
+
+	/* TODO : Power of two checking user passed in index size */
+	if(pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE] & this->index_size)
+	{
+		pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE] = index_size;
+		pCap->maxSize = elements;
+		pCap->typeSpecific[TS_STAT_ARRAY_VAL_DATA_TYPES] = TS_STAT_DT_FIXED_WIDTH;
+		pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE] = 4;
+		return AM_RET_GOOD;
+
+	}
+
+	return AM_RET_PARAM_ERR;
+
+}
+
+UINT32 CAppMemStaticArray::count(void)
+{
+	return elements;
+}
+
+AM_RETURN CAppMemStaticArray::insert(UINT32 index, void *pVal)
+{
+	
+	if(index < elements)
+	{
+		return pCalls->write_al(amFunc.handle, &index, pVal);
+	}
+	return AM_RET_KEY_OUT_OF_RANGE;
+
+}
+AM_RETURN CAppMemStaticArray::get(UINT32 index, void *pVal)
+{
+	if(index < elements)
+	{
+		return pCalls->read_al(amFunc.handle, &index, pVal);
+	}
+	return AM_RET_KEY_OUT_OF_RANGE;
 }

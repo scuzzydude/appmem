@@ -30,15 +30,15 @@ typedef unsigned char UINT8;
 
 typedef unsigned int AM_RETURN;
 
-#define AM_RET_GOOD            (0) 
-#define AM_RET_PARAM_ERR       (1)
-#define AM_RET_ALLOC_ERR       (2)
-#define AM_RET_IO_ERR          (3)
-#define AM_RET_OPEN_ERR        (4)
-#define AM_RET_KEY_NOT_FOUND   (5)
-#define AM_RET_INVALID_FUNC    (6)
-#define AM_RET_INVALID_HDL     (7)
-
+#define AM_RET_GOOD             (0) 
+#define AM_RET_PARAM_ERR        (1)
+#define AM_RET_ALLOC_ERR        (2)
+#define AM_RET_IO_ERR           (3)
+#define AM_RET_OPEN_ERR         (4)
+#define AM_RET_KEY_NOT_FOUND    (5)
+#define AM_RET_INVALID_FUNC     (6)
+#define AM_RET_INVALID_HDL      (7)
+#define AM_RET_KEY_OUT_OF_RANGE (8)
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
