@@ -348,18 +348,18 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		{
 			printf("Create Function Error\n");
 			AM_FREE(aCalls);
-			handle = amSa.handle;
 			return;
 		}
-	
+		handle = amSa.handle;
+		
 
 		/* Since C doesn't have an associtive array type */
 		/* We'll use our library functions directly */
 		/* The only diference between VIRTD and base would be the API overhead */
 		/* It will be a good measure of teh driver overhead of APPMEMD */
 		
-		OS_HR_TIMER_START();
 		pAA = amlib_assca_init(key_size, 4, TRUE, TRUE, 0);
+		OS_HR_TIMER_START();
 		
 		for(i = 0; i < key_count; i++)
 		{
@@ -512,8 +512,8 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-	UINT32 test = AM_TYPE_ARRAY;
-//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+//	UINT32 test = AM_TYPE_ARRAY;
+	UINT32 test = AM_TYPE_ASSOC_ARRAY;
 //	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;

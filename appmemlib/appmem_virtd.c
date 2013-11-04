@@ -97,8 +97,8 @@ AM_RETURN am_virtd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps
 
 AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc, AM_FUNC_DATA_U *pVdF)
 {
-	UINT8 bFixedKey = FALSE;
-	UINT8 bFixedData = FALSE;
+	UINT8 bFixedKey = TRUE;
+	UINT8 bFixedData = TRUE;
 	UINT16 flags = 0;
 	UINT32 key_size;
 	UINT32 data_size;
@@ -121,7 +121,7 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 		}
 		if(pCap->typeSpecific[TS_ASSCA_DATA_TYPE] & TS_ASSCA_DATA_FIXED_WIDTH)
 		{
-			bFixedKey = FALSE;
+			bFixedData = TRUE;
 		}
 		
 

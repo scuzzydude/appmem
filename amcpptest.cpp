@@ -5,6 +5,12 @@
 
 #include "am_test_os.h"
 
+extern "C" 
+{
+#include "am_assca.h"
+char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size);
+
+}
 #define USE_OPERATORS 1
 
 
@@ -245,6 +251,81 @@ int am_cpp_stata_test(char *am_name)
 }
 
 
+int am_cpp_assca_test(char *am_name)
+{
+	char **pKeys = NULL;
+	UINT32 key_count = 1000;
+	UINT32 key_size = 32;
+	char *pK;
+	UINT32 i;
+	AMLIB_ASSCA *pAA;
+	INIT_OS_HR_TIMER(0);
+	double elap1, elap2;
+	UINT32 random_ops = 10000000;
+	UINT32 idx;
+	UINT32 val;
+
+	pKeys = am_get_test_keys(pKeys, key_count, key_size);
+
+	if(NULL == pKeys)
+	{
+		return 0;
+	}
+
+	/* TODO: Use C++ Container templates for comparison */
+	/* Just do the same as C example for now */
+
+	pAA = amlib_assca_init(key_size, 4, TRUE, TRUE, 0);
+	OS_HR_TIMER_START();
+		
+	for(i = 0; i < key_count; i++)
+	{
+			pK = pKeys[i];
+			amlib_assca_add_key_fixfix(pAA, pK, &i);
+
+	}
+	OS_HR_TIMER_STOP();
+	elap1 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP) Local Assc Array Write %d entries ELAP = %f\n", key_count, elap1);
+
+
+
+
+	OS_HR_TIMER_START();
+	for(i = 0; i < random_ops; i++)
+	{
+			idx = rand() % key_count;		
+			pK = pKeys[idx];
+
+			if(AM_RET_GOOD == amlib_assca_get_key_val(pAA, pK, &val))
+			{
+				if(val != idx)
+				{
+					printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+					break;
+			
+				}
+			}
+			else
+			{
+				printf("ERROR Key not found =%s\n", pK);
+				break;
+			}
+
+	}
+	OS_HR_TIMER_STOP();
+	elap1 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP) Local Assc Array Read %d ops ELAP = %f\n", random_ops, elap1);
+
+
+
+
+
+
+	return 0;
+
+}
+
 extern "C" int am_cpp_test(char *am_name, UINT32 test)
 {
 	if(AM_TYPE_FLAT_MEM == test)
@@ -255,6 +336,13 @@ extern "C" int am_cpp_test(char *am_name, UINT32 test)
 	{
 		return am_cpp_stata_test(am_name);
 	}
+	else if(AM_TYPE_ASSOC_ARRAY == test)
+	{
+		return am_cpp_assca_test(am_name);
+	}
 	return 0;
 
 }
+
+
+
