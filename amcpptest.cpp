@@ -264,6 +264,8 @@ int am_cpp_assca_test(char *am_name)
 	UINT32 random_ops = 10000000;
 	UINT32 idx;
 	UINT32 val;
+	
+	CAppMemAsscArray amAssca(am_name, key_size, sizeof(UINT32), true, true);
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
 
@@ -277,16 +279,28 @@ int am_cpp_assca_test(char *am_name)
 
 	pAA = amlib_assca_init(key_size, 4, TRUE, TRUE, 0);
 	OS_HR_TIMER_START();
-		
 	for(i = 0; i < key_count; i++)
 	{
-			pK = pKeys[i];
-			amlib_assca_add_key_fixfix(pAA, pK, &i);
+		pK = pKeys[i];
+		amlib_assca_add_key_fixfix(pAA, pK, &i);
 
 	}
 	OS_HR_TIMER_STOP();
 	elap1 = OS_HR_TIMER_GET_ELAP();
 	printf("(APPMEMCPP) Local Assc Array Write %d entries ELAP = %f\n", key_count, elap1);
+
+
+
+	OS_HR_TIMER_START();
+	for(i = 0; i < key_count; i++)
+	{
+		pK = pKeys[i];
+		amAssca.insert(pK, &i);		
+	}
+	OS_HR_TIMER_STOP();
+	elap2 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP) %s Assc Array Write %d entries ELAP = %f\n", amAssca.driverName(), key_count, elap2);
+
 
 
 

@@ -296,3 +296,74 @@ AM_RETURN CAppMemStaticArray::get(UINT32 index, void *pVal)
 	}
 	return AM_RET_KEY_OUT_OF_RANGE;
 }
+
+
+/***************************************************************************/
+/**  CAppMemAsscArray                                                      */
+/***************************************************************************/
+CAppMemAsscArray::CAppMemAsscArray(char *am_name, UINT32 keySize, UINT32 dataSize, bool bFKey, bool bFData, bool bODupe )
+{
+	key_size = keySize;
+	data_size = dataSize;
+	bFixedKey = bFKey;
+	bFixedData = bFData;
+	bErrorOnDupe = bODupe;
+
+	initBase(am_name, AM_TYPE_ASSOC_ARRAY);
+
+
+}
+CAppMemAsscArray::~CAppMemAsscArray()
+{
+
+}
+
+AM_RETURN CAppMemAsscArray::configCaps(AM_MEM_CAP_T *pCap)
+{
+
+	/* TODO : Power of two checking user passed in index size */
+//	if(pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE] )
+		if((pCap->typeSpecific[TS_ASSCA_KEY_MAX_SIZE] >= key_size) &&
+			(pCap->typeSpecific[TS_ASSCA_DATA_MAX_SIZE] >=  data_size))
+
+		{
+			pCap->typeSpecific[TS_ASSCA_KEY_MAX_SIZE] = key_size;
+			pCap->typeSpecific[TS_ASSCA_DATA_MAX_SIZE] = data_size;
+
+			if(bFixedKey)
+			{	
+				pCap->typeSpecific[TS_ASSCA_KEY_TYPE] =  TS_ASSCA_KEY_FIXED_WIDTH;
+			}
+			
+			if(bFixedData)
+			{
+				pCap->typeSpecific[TS_ASSCA_DATA_TYPE] =  TS_ASSCA_DATA_FIXED_WIDTH;
+			}
+		
+		}
+		return AM_RET_GOOD;
+
+	return AM_RET_PARAM_ERR;
+
+}
+
+AM_RETURN CAppMemAsscArray::insert(void *pKey, void *pVal)
+{
+	if(bFixedKey && bFixedData)
+	{
+		return pCalls->write_al(amFunc.handle, pKey, pVal);
+	}
+	else
+	{
+		/* TODO -- handlers for non fixed */
+		/* Actually, better ways to handle than to check config everytime */
+		/* Inherit different insert()/get() based on constructor */
+		
+		return AM_RET_PARAM_ERR;
+	}
+
+}
+AM_RETURN CAppMemAsscArray::get(void *pKey, void *pVal)
+{
+	return AM_RET_GOOD;
+}

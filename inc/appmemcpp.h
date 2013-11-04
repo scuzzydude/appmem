@@ -76,6 +76,28 @@ class CAppMemStaticArray: public CAppMem
 
 
 
+class CAppMemAsscArray: public CAppMem
+{
+	public:
+		CAppMemAsscArray(char *am_name, UINT32 keySize, UINT32 dataSize, bool bFKey, bool bFData, bool bODupe = false);
+	    ~CAppMemAsscArray();
+		AM_RETURN insert(void *pKey, void *pVal);
+		AM_RETURN get(void *pKey, void *pVal);
+		UINT32 count(void);
+
+		UINT32& operator[] (const unsigned int idx); // x = flat[idx]
+
+	private:
+		virtual AM_RETURN configCaps(AM_MEM_CAP_T *pCap);
+		bool bFixedKey;
+		bool bFixedData;
+		bool bErrorOnDupe; /* TODO: Returns error (checks key first) on duplicate key insertion, otherwise, we replace key blindly and leak */
+		UINT32 key_size;
+		UINT32 data_size;
+
+
+};
+
 
 
 
