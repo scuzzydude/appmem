@@ -2,6 +2,9 @@ cmd_/home/appmem/appmemd/appmemd.o := gcc -Wp,-MD,/home/appmem/appmemd/.appmemd.
 
 deps_/home/appmem/appmemd/appmemd.o := \
   /home/appmem/appmemd/appmemd.c \
+  /home/appmem/appmemd/../inc/appmemlib.h \
+  /home/appmem/appmemd/../inc/am_test_os.h \
+  /home/appmem/appmemd/../inc/appmemd_ioctl.h \
   include/linux/version.h \
   include/linux/kernel.h \
     $(wildcard include/config/lbdaf.h) \
@@ -484,9 +487,6 @@ deps_/home/appmem/appmemd/appmemd.o := \
     $(wildcard include/config/x86/wp/works/ok.h) \
     $(wildcard include/config/x86/intel/usercopy.h) \
   /usr/src/kernels/2.6.32-358.el6.x86_64/arch/x86/include/asm/uaccess_64.h \
-  /home/appmem/appmemd/../inc/appmemlib.h \
-  /home/appmem/appmemd/../inc/am_test_os.h \
-  /home/appmem/appmemd/../inc/appmemd_ioctl.h \
   /home/appmem/appmemd/../inc/appmemd_ioctl.h \
 
 /home/appmem/appmemd/appmemd.o: $(deps_/home/appmem/appmemd/appmemd.o)

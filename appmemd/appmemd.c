@@ -1,27 +1,3 @@
-#include <linux/version.h>
-#include <linux/kernel.h>
- 
-
-#include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/init.h>
-
-#include <linux/slab.h>		/* kmalloc() */
-#include <linux/fs.h>		/* everything... */
-#include <linux/errno.h>	/* error codes */
-#include <linux/types.h>	/* size_t */
-#include <linux/proc_fs.h>
-#include <linux/fcntl.h>	/* O_ACCMODE */
-#include <linux/seq_file.h>
-#include <linux/cdev.h>
-
-
-#include <linux/types.h>
-#include <linux/kdev_t.h>
-#include <linux/device.h>
-#include <linux/vmalloc.h>
-#include <asm/system.h>		/* cli(), *_flags */
-#include <asm/uaccess.h>	/* copy_*_user */
 
 
 /* Driver Includes */
@@ -30,6 +6,13 @@
 
 
 
+
+int appmemd_open(struct inode *inode, struct file *filp);
+loff_t  appmemd_llseek(struct file *filp, loff_t off, int whence);
+ssize_t appmemd_read(struct file *filp, char __user *buf, size_t count,loff_t *f_pos);
+ssize_t appmemd_write(struct file *filp, const char __user *buf, size_t count,loff_t *f_pos);
+int appmemd_ioctl(struct inode *inode, struct file *filp,unsigned int cmd, unsigned long arg);
+int appmemd_release(struct inode *inode, struct file *filp);
 
 
 
@@ -41,18 +24,7 @@ static struct class *cl; // Global variable for the device class
 dev_t base_AMdev = 0;
 
 
-typedef struct _appmem_kam_cmd
-{
-    
-    APPMEM_CMD_U cmd;
-
-} APPMEM_KAM_CMD_T;
-
 APPMEM_KAM_CMD_T g_temp_KCMD; /* TODO: This will be a pool */
-
-struct _appmem_kdevice;
-
-typedef int (*am_cmd_fn)(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd);
 
 
 AM_MEM_CAP_T appmemd_caps[] = 
@@ -105,15 +77,40 @@ AM_MEM_CAP_T appmemd_caps[] =
 
     
 
-typedef struct _appmem_kdevice
+
+struct file_operations appmemd_fops = 
 {
-    int                minor;
-    UINT32             amType;
-    struct cdev        cdev;
-    am_cmd_fn          *pfnOps;     
+	.owner =    THIS_MODULE,
+	.llseek =   appmemd_llseek,
+	.read =     appmemd_read,
+	.write =    appmemd_write,
+	.ioctl =    appmemd_ioctl,
+	.open =     appmemd_open,
+	.release =  appmemd_release,
+};
+
+APPMEM_KDEVICE *pAMKDevices;
+
+static void appmemd_setup_cdev(APPMEM_KDEVICE  *dev, int index)
+{
+	int err; 
+	int devno = MKDEV(appmemd_major, appmemd_minor + index);
     
 
-} APPMEM_KDEVICE;
+    printk("Appmemd : create devno=%d\n", devno);
+    
+	cdev_init(&dev->cdev, &appmemd_fops);
+	dev->cdev.owner = THIS_MODULE;
+	dev->cdev.ops = &appmemd_fops;
+	err = cdev_add (&dev->cdev, devno, 1);
+	/* Fail gracefully if need be */
+	if (err)
+	{
+		printk(KERN_NOTICE "Error %d adding appmemd%d", err, index);
+    }
+}
+
+
 
 
 int appmemd_open(struct inode *inode, struct file *filp)
@@ -155,6 +152,43 @@ APPMEM_KAM_CMD_T * appmemd_cmd_free_pool_get(void)
 
 }
 
+APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
+{
+    UINT32 i;
+    APPMEM_KDEVICE *pDevice = NULL;
+
+    if (device_create(cl, NULL, base_AMdev, NULL, name) == NULL)
+    {
+        printk(KERN_WARNING "appmemd: appmem_device_func_create error appmem\n");
+        return pDevice;
+        
+    }
+   
+    pDevice = (APPMEM_KDEVICE *)kmalloc(sizeof(APPMEM_KDEVICE), GFP_KERNEL);
+	
+    if(pDevice)
+    {
+        memset(pDevice, 0, sizeof(APPMEM_KDEVICE));
+
+        pDevice->amType = amType;
+
+        appmemd_setup_cdev(pDevice, 0);
+
+        pDevice->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
+
+        for(i = 0; i < AM_OP_MAX_OPS; i++)
+        {
+
+            pDevice->pfnOps[i] = NULL;     
+        }
+        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)] = appmem_get_cap_count;
+        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)]       = appmem_get_capabilites;
+        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)]    = appmem_create_function;
+            
+     }           
+
+    return pDevice;
+}
 
 int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
 {
@@ -463,39 +497,6 @@ int appmemd_release(struct inode *inode, struct file *filp)
 }
 
 
-
-struct file_operations appmemd_fops = 
-{
-	.owner =    THIS_MODULE,
-	.llseek =   appmemd_llseek,
-	.read =     appmemd_read,
-	.write =    appmemd_write,
-	.ioctl =    appmemd_ioctl,
-	.open =     appmemd_open,
-	.release =  appmemd_release,
-};
-
-
-APPMEM_KDEVICE *pAMKDevices;
-
-static void appmemd_setup_cdev(APPMEM_KDEVICE  *dev, int index)
-{
-	int err; 
-	int devno = MKDEV(appmemd_major, appmemd_minor + index);
-    
-
-    printk("Appmemd : create devno=%d\n", devno);
-    
-	cdev_init(&dev->cdev, &appmemd_fops);
-	dev->cdev.owner = THIS_MODULE;
-	dev->cdev.ops = &appmemd_fops;
-	err = cdev_add (&dev->cdev, devno, 1);
-	/* Fail gracefully if need be */
-	if (err)
-	{
-		printk(KERN_NOTICE "Error %d adding appmemd%d", err, index);
-    }
-}
 
 
 static int __init appmemd_init(void) 
