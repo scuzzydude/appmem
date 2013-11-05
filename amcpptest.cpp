@@ -67,7 +67,7 @@ int am_cpp_flat_mem_test(char *am_name)
 		for( i = 0; i < random_ops; i++)
 		{
 			offset = (((val + rval) % mem_size) & ~3);   
-			ptr32 = (UINT32 *)((UINT32)pBase + offset); 
+			ptr32 = (UINT32 *)((UINT64)pBase + offset); 
 			rval = rand();
 			val = *ptr32;
 			

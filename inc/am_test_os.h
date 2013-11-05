@@ -19,6 +19,30 @@
 #else
 #ifdef _APPMEMD
 
+/* Kernel driver */
+
+#undef AM_DEBUGPRINT /* undef it, just in case */
+#ifdef AM_DEBUG
+#ifdef __KERNEL__
+/* This one if debugging is on, and kernel space */
+#define AM_DEBUGPRINT(fmt, args...) printk( KERN_DEBUG "appmem: " fmt, ## args)
+#else
+/* This one for user space */
+# define AM_DEBUGPRINT(fmt, args...) printf(fmt, ## args)
+# endif
+#else
+# define AM_DEBUGPRINT(fmt, args...) /* not debugging: nothing */
+#endif
+
+
+
+
+
+
+
+
+
+
 #else
 #include <time.h>
 #define INIT_OS_HR_TIMER(x) struct timespec _tmSpec1; struct timespec _tmSpec2 
@@ -35,6 +59,11 @@
 
 #define AM_MALLOC(x) malloc(x)
 #define AM_FREE(x) free(x)
+
+
+
+
+
 #endif
 
 

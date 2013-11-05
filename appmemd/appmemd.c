@@ -30,6 +30,9 @@
 
 
 
+
+
+
 /* Globals */
 int appmemd_base_dev_count = 1;
 int appmemd_minor = 0;
@@ -151,6 +154,46 @@ APPMEM_KAM_CMD_T * appmemd_cmd_free_pool_get(void)
     return &g_temp_KCMD;
 
 }
+
+
+int appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+{
+   APPMEM_CMD_BIDIR_T *pBDCmd = (APPMEM_CMD_BIDIR_T *)&pKCmd->cmd;
+   AM_MEM_CAP_T aCap;
+   
+   AM_DEBUGPRINT("appmem_create_function = data_in=%p  len_in=%d\n", (void *)pBDCmd->data_in, pBDCmd->len_in);
+
+   if(pBDCmd->len_in >= sizeof(AM_MEM_CAP_T))
+   {
+
+        if(copy_from_user (&aCap, (void *)pBDCmd->data_in, sizeof(AM_MEM_CAP_T)))
+        {
+            AM_DEBUGPRINT( "copy from user error\n");
+            return -ENOTTY;
+
+        }
+        else
+        {
+
+            AM_DEBUGPRINT("Switch aCap.amType=0x%08x maxSize=%ld\n", aCap.amType, aCap.maxSize);
+
+
+
+
+        }
+
+
+   }
+   else
+   {
+      return -ENOTTY;
+   }
+
+
+
+   return 0;
+}
+
 
 
 int appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
@@ -427,6 +470,7 @@ static int __init appmemd_init(void)
 
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)] = appmem_get_cap_count;
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)]       = appmem_get_capabilites;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)]    = appmem_create_function;
             
             
 	    }

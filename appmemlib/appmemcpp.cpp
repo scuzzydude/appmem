@@ -96,7 +96,9 @@ void CAppMem::initBase(char *am_name, UINT32 amType)
 						if(NULL != pBaseCaps)
 						{
 
-							pCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * pBaseCaps->functionCount);
+							//pCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * pBaseCaps->functionCount);
+							pCalls = new AM_FUNC_CALLS_T;
+
 							if(pCalls)
 							{
 								amFunc.fn = pCalls;

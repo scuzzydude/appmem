@@ -1,10 +1,10 @@
 
 # Comment/uncomment the following line to enable/disable debugging
-#DEBUG = y
+DEBUG = y
 
 
 ifeq ($(DEBUG),y)
-  DEBFLAGS = -O -g -D_APPMEMD # "-O" is needed to expand inlines
+  DEBFLAGS = -O -g -D_APPMEMD -DAM_DEBUG # "-O" is needed to expand inlines
 else
   DEBFLAGS = -O2 -D_APPMEMD
 endif
