@@ -35,6 +35,8 @@
 #endif
 
 
+#define AM_MALLOC(x) kmalloc(x, GFP_KERNEL)
+#define AM_FREE(x) kfree(x)
 
 
 

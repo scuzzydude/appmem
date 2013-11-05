@@ -32,16 +32,16 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData);
 
 
 
-AM_RETURN am_assca_open(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
-AM_RETURN am_assca_close(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
+AM_RETURN am_assca_open(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
+AM_RETURN am_assca_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
 
 
 /* 32 bit */
-AM_RETURN am_assca_read32(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
-AM_RETURN am_assca_write32(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
+AM_RETURN am_assca_read32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
+AM_RETURN am_assca_write32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
 
-AM_RETURN am_assca_read32_align(UINT32 handle, void * p1, void *p2);
-AM_RETURN am_assca_write32_align(UINT32 handle, void * p1, void *p2);
+AM_RETURN am_assca_read32_align(AM_HANDLE handle, void * p1, void *p2);
+AM_RETURN am_assca_write32_align(AM_HANDLE handle, void * p1, void *p2);
 
 
 

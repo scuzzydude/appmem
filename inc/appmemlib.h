@@ -59,8 +59,8 @@ typedef struct am_mem_cap_t
 }	AM_MEM_CAP_T;
 
 
-typedef AM_RETURN (*am_fn)(UINT32 handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
-typedef AM_RETURN (*am_fn_align)(UINT32 handle, void * p1, void *p2);
+typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
+typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
 
 /*
 #define AM_FUNC_IDX_OPEN          0

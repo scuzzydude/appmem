@@ -478,6 +478,8 @@ deps_/home/appmem/appmemd/appmemd.o := \
     $(wildcard include/config/dmar.h) \
   include/linux/pm_wakeup.h \
     $(wildcard include/config/pm.h) \
+  include/linux/vmalloc.h \
+    $(wildcard include/config/mmu.h) \
   /usr/src/kernels/2.6.32-358.el6.x86_64/arch/x86/include/asm/uaccess.h \
     $(wildcard include/config/x86/wp/works/ok.h) \
     $(wildcard include/config/x86/intel/usercopy.h) \

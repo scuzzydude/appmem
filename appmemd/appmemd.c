@@ -19,7 +19,7 @@
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 #include <linux/device.h>
-
+#include <linux/vmalloc.h>
 #include <asm/system.h>		/* cli(), *_flags */
 #include <asm/uaccess.h>	/* copy_*_user */
 
@@ -156,16 +156,84 @@ APPMEM_KAM_CMD_T * appmemd_cmd_free_pool_get(void)
 }
 
 
+int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
+{
+    int error = 0;
+    AM_FUNC_DATA_U *pVdF = NULL;
+
+    AM_DEBUGPRINT( "appmem_create_flat_device: maxSize=%lld\n", pCap->maxSize );
+
+    pVdF = AM_MALLOC(sizeof(AM_FUNC_DATA_U));
+    
+    if(pVdF)
+    {
+	    pVdF->flat.size = pCap->maxSize;
+		pVdF->flat.add_size = pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE];
+		pVdF->flat.data = vmalloc((size_t)pCap->maxSize); /* VMalloc for large virtual buffer */
+				
+        
+
+		if(NULL != pVdF->flat.data)
+		{
+
+            AM_DEBUGPRINT( "appmem_create_flat_device: data=%p\n", pVdF->flat.data);
+
+		    if(pCap->typeSpecific[TS_INIT_MEM_VAL])
+			{
+
+			}
+			else
+			{
+			    memset(pVdF->flat.data, 0, (size_t) pVdF->flat.size);
+			}
+	    }
+	    else
+	    {
+            AM_DEBUGPRINT( "appmem_create_flat_device: vmalloc failed size=%lld\n", pCap->maxSize);
+            error =  -ENOMEM;
+   
+	    }
+    }
+    else
+    {
+        return -ENOMEM;
+    }
+
+    if(error)
+    {
+        if(pVdF->flat.data)
+        {
+           vfree(pVdF->flat.data);
+        }
+        
+        if(pVdF)
+        {
+            AM_FREE(pVdF);
+        }    
+    }
+
+    return error;
+
+}
+
 int appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
 {
+   int error = 0;
    APPMEM_CMD_BIDIR_T *pBDCmd = (APPMEM_CMD_BIDIR_T *)&pKCmd->cmd;
    AM_MEM_CAP_T aCap;
    
    AM_DEBUGPRINT("appmem_create_function = data_in=%p  len_in=%d\n", (void *)pBDCmd->data_in, pBDCmd->len_in);
 
+   if(AM_TYPE_BASE_APPMEM != pDevice->amType)
+   {
+        return -ENOTTY;
+   }
+   
+
+
    if(pBDCmd->len_in >= sizeof(AM_MEM_CAP_T))
    {
-
+        
         if(copy_from_user (&aCap, (void *)pBDCmd->data_in, sizeof(AM_MEM_CAP_T)))
         {
             AM_DEBUGPRINT( "copy from user error\n");
@@ -174,11 +242,24 @@ int appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
         }
         else
         {
+            AM_DEBUGPRINT("Switch aCap.amType=0x%08x maxSize=%lld\n", aCap.amType, aCap.maxSize);
 
-            AM_DEBUGPRINT("Switch aCap.amType=0x%08x maxSize=%ld\n", aCap.amType, aCap.maxSize);
+            switch(aCap.amType)
+            {
 
+                case AM_TYPE_FLAT_MEM:
+                {
+                    error = appmem_create_flat_device(&aCap, pBDCmd);     
+                }
+                break;
 
-
+                default:
+                {
+                    error = -ENOTTY;
+                }
+                break;
+               
+            }
 
         }
 
@@ -191,7 +272,7 @@ int appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
 
 
 
-   return 0;
+   return error;
 }
 
 
