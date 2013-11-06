@@ -7,6 +7,7 @@
 #endif
 #include "am_test_os.h"
 
+typedef unsigned int AM_RETURN;
 
 typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
@@ -23,12 +24,16 @@ typedef unsigned char UINT8;
 #endif
 #include "appmemd_ioctl.h"
 
-
+#ifdef _APPMEMD
+#define AM_ASSERT(x)
+#else
 #define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
+#define AM_HANDLE UINT32
+#endif
+
 //#define AM_ASSERT(x)
 
 
-typedef unsigned int AM_RETURN;
 
 #define AM_RET_GOOD             (0) 
 #define AM_RET_PARAM_ERR        (1)
@@ -61,22 +66,13 @@ typedef struct am_mem_cap_t
 
 typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
 typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
+typedef AM_RETURN (*am_fn_raw)(void * p1);
 
-/*
-#define AM_FUNC_IDX_OPEN          0
-#define AM_FUNC_IDX_CLOSE         1
-#define AM_FUNC_IDX_READ          2
-#define AM_FUNC_IDX_WRITE         3
-#define AM_FUNC_IDX_ALIGNED_READ  4
-#define AM_FUNC_IDX_ALIGNED_WRITE 6
-#define AM_FUNC_IDX_COPY          7
-#define AM_FUNC_IDX_SORT          8
-*/
 
 typedef struct _am_func_calls
 {
-	am_fn open;
-	am_fn close;
+	am_fn_raw open;
+	am_fn_raw close;
 	am_fn read;
 	am_fn write;
 	am_fn_align read_al;
@@ -87,8 +83,6 @@ typedef struct _am_func_calls
 
 
 } AM_FUNC_CALLS_T;
-
-
 
 
 typedef struct am_mem_function_t
@@ -166,12 +160,6 @@ typedef struct _am_command
 #define	TS_ASSCA_DATA_FIXED_WIDTH  0x1
 #define TS_ASSCA_DATA_VAR_WIDTH    0x2
 
-
-#if 0
-UINT32 am_kd_get_capabilities_count(char *am_name){ return 0; }
-AM_RETURN am_kd_get_capabilities(char *am_name, AM_MEM_CAP_T *pAmCaps, UINT32 count) { return 0; }
-AM_RETURN am_kd_create_function(char *am_name, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) { return 0; }
-#endif
 
 typedef struct amlib_entry_
 {

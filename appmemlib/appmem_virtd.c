@@ -133,8 +133,8 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 			pVdF->assca.cur_count = 0;
 			pVdF->flat.data = (void *)pAA;
 	
-			fn_array->open = am_assca_open;
-			fn_array->close = am_assca_close;
+			fn_array->open = am_virtd_open;
+			fn_array->close = am_virtd_close;
 			fn_array->read = am_assca_read32;
 			fn_array->write = am_assca_write32;
 			fn_array->read_al = am_assca_read32_align;
@@ -217,8 +217,8 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 					if(fn_array)
 					{
 
-						fn_array->open = am_flat_open;
-						fn_array->close = am_flat_close;
+						fn_array->open = am_virtd_open;
+						fn_array->close = am_virtd_close;
 						fn_array->read = am_flat_read32;
 						fn_array->write = am_flat_write32;
 						fn_array->read_al = am_flat_read32_align;
@@ -254,8 +254,8 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 
 					if(fn_array)
 					{
-						fn_array->open = am_stata_open;
-						fn_array->close = am_stata_close;
+						fn_array->open = am_virtd_open;
+						fn_array->close = am_virtd_close;
 						fn_array->read = NULL;
 						fn_array->write = NULL;
 						fn_array->read_al = am_stata_read_idx32;
@@ -313,3 +313,28 @@ AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle)
 	return g_ptrFuncHandles[(VIRTD_HANDLE_IDX_MASK & handle)];
 }
 
+AM_RETURN am_virtd_open(AM_MEM_FUNCTION_T *pFunc)
+{
+	if(pFunc->handle)
+	{
+		return AM_RET_GOOD;
+	}
+	else
+	{
+		return AM_RET_INVALID_HDL;
+	}
+}
+AM_RETURN am_virtd_close(AM_MEM_FUNCTION_T *pFunc)
+{
+
+	if(pFunc->handle)
+	{
+		return AM_RET_GOOD;
+	}
+	else
+	{
+		return AM_RET_INVALID_HDL;
+	}
+
+
+}

@@ -17,7 +17,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 val;
 	UINT32 *ptr32;
 	UINT32 *local_buf;
-	UINT32 handle;
+	int handle;
 	double elap1, elap2;
 	INIT_OS_HR_TIMER(0);
 	UINT32 random_ops = 10000000;
@@ -46,13 +46,15 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		return;
 	}
 		
-	handle = amFmf.handle;
-
-	if(AM_RET_GOOD != amFmf.fn->open(handle, NULL, 0, NULL, 0))
+	
+	if(AM_RET_GOOD != amFmf.fn->open(&amFmf))
 	{
 		printf("Open Function Error\n");
 		return;
 	}
+
+	handle = amFmf.handle;
+
 
 
 	local_buf = (UINT32 *)AM_MALLOC(mem_size);
@@ -143,7 +145,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 
 
 
-	if(AM_RET_GOOD != amFmf.fn->close(handle, NULL, 0, NULL, 0))
+	if(AM_RET_GOOD != amFmf.fn->close(&amFmf))
 	{
 		printf("Close Function Error\n");
 		return;
@@ -279,7 +281,7 @@ char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size)
 	char *pK;
 	UINT8 offset;
 
-	pKeys = AM_MALLOC(sizeof(char *) * key_count);
+	pKeys = (char **)AM_MALLOC(sizeof(char *) * key_count);
 
 	for(i = 0; i < key_count; i++)
 	{
@@ -512,9 +514,9 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-	UINT32 test = AM_TYPE_ARRAY;
+//	UINT32 test = AM_TYPE_ARRAY;
 //	UINT32 test = AM_TYPE_ASSOC_ARRAY;
-//	UINT32 test = AM_TYPE_FLAT_MEM;
+	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;

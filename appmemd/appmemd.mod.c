@@ -26,14 +26,17 @@ __attribute__((section("__versions"))) = {
 	{ 0x7edc1537, "device_destroy" },
 	{ 0x7485e15e, "unregister_chrdev_region" },
 	{ 0x999e8297, "vfree" },
+	{ 0x3c2c5af5, "sprintf" },
 	{ 0xde0bdcff, "memset" },
 	{ 0xea147363, "printk" },
 	{ 0xa1c76e0a, "_cond_resched" },
 	{ 0x85f8a266, "copy_to_user" },
+	{ 0x7ec9bfbc, "strncpy" },
 	{ 0xb4390f9a, "mcount" },
 	{ 0x2d2cf7d, "device_create" },
 	{ 0xa6d1bdca, "cdev_add" },
 	{ 0xb2fd5ceb, "__put_user_4" },
+	{ 0xf0fdf6cb, "__stack_chk_fail" },
 	{ 0x2044fa9e, "kmem_cache_alloc_trace" },
 	{ 0x37a0cba, "kfree" },
 	{ 0xe06bb002, "class_destroy" },
@@ -48,7 +51,7 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "94FF0E8C52A6A42BEF55329");
+MODULE_INFO(srcversion, "F33BCDD84CAC66A73E621DA");
 
 static const struct rheldata _rheldata __used
 __attribute__((section(".rheldata"))) = {

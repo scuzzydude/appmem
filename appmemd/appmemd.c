@@ -92,8 +92,6 @@ struct file_operations appmemd_fops =
 };
 
 APPMEM_KDEVICE *pAMKDevices;
-
-
 APPMEM_KDEVICE *pFunctionDevicesHead = NULL;;
 
 
@@ -163,12 +161,17 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
     UINT32 i;
     APPMEM_KDEVICE *pDevice = NULL;
     dev_t dev_func_t = 0;
+    char full_name[32];
 
+    sprintf(full_name, "%s%d", name, appmemd_minor);
+    
     AM_DEBUGPRINT("appmem_device_func_create = %s : %d\n", name, amType);
 
     dev_func_t = MKDEV(appmemd_major, appmemd_minor);
 
-    if (device_create(cl, NULL, dev_func_t, NULL, name) == NULL)
+    appmemd_minor++;
+    
+    if (device_create(cl, NULL, dev_func_t, NULL, full_name) == NULL)
     {
         printk(KERN_WARNING "appmemd: appmem_device_func_create error appmem\n");
         return pDevice;
@@ -192,7 +195,8 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
         appmemd_setup_cdev(pDevice, dev_func_t);
 
         pDevice->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
-
+        strncpy(pDevice->am_name, full_name, 32);
+        
         for(i = 0; i < AM_OP_MAX_OPS; i++)
         {
 
@@ -217,10 +221,31 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
     return pDevice;
 }
 
+
+int appmem_flat_release(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+{
+    /* We don't need the pKCmd, it can be NULL and driver can call this directly on exit */
+
+    AM_ASSERT(pDevice);
+
+    if(pDevice->pVdF)
+    {
+        if(pDevice->pVdF->flat.data)
+        {
+            vfree((void *)pDevice->pVdF->flat.data);
+	    }	
+    }
+    return 0;
+}
+
+
 int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
 {
     int error = 0;
     AM_FUNC_DATA_U *pVdF = NULL;
+    APPMEM_KDEVICE *pDevice = NULL;
+    APPMEM_RESP_CR_FUNC_T respCr;
+    
 
     AM_DEBUGPRINT( "appmem_create_flat_device: maxSize=%lld\n", pCap->maxSize );
 
@@ -248,7 +273,39 @@ int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
 			    memset(pVdF->flat.data, 0, (size_t) pVdF->flat.size);
 			}
 
-            appmem_device_func_create("am_flat", AM_TYPE_FLAT_MEM);
+            pDevice = appmem_device_func_create("am_flat", AM_TYPE_FLAT_MEM);
+
+            if(pDevice)
+            {
+                pDevice->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
+                
+                memset(pDevice->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+                
+                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)]  = appmem_flat_release;
+                pDevice->pVdF = pVdF;
+                
+                if(pBDCmd->len_out >= sizeof(APPMEM_RESP_CR_FUNC_T))
+                {
+                    memset(&respCr, 0, sizeof(APPMEM_RESP_CR_FUNC_T));
+                    strncpy(&respCr.am_name, pDevice->am_name, 32);
+                    respCr.devt = pDevice->devt;
+
+                    AM_DEBUGPRINT( "appmem_create_flat_device: am_name=%s devt=%d\n", pDevice->am_name, pDevice->devt);
+
+                    copy_to_user ((void *)pBDCmd->data_out, &respCr, sizeof(APPMEM_RESP_CR_FUNC_T));
+
+                }
+                else
+                {
+                     error =  -ENOMEM;
+                }
+
+
+            }
+            else
+            {
+                 error =  -ENOMEM;
+            }
 
 
 	    }
@@ -489,20 +546,9 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                     return -ENOTTY;
         
                 }
-                
-
-                /*
-
-                pData = (UINT32 *)pKCmd->cmd.common.data;
             
-                if(put_user(33, pData))
-                {   
-                    printk("Appmemd : put_user ERROR %p\n", pData);
-                }
-
-                */
             }
-            
+
         }
         else
         {
@@ -602,6 +648,36 @@ static int __init appmemd_init(void)
  
 static void __exit appmemd_exit(void) 
 {
+
+
+    APPMEM_KDEVICE *pDevice;
+
+    while(pFunctionDevicesHead)
+    {
+        pDevice = pFunctionDevicesHead;
+        pFunctionDevicesHead = pDevice->next;
+
+        AM_DEBUGPRINT("exit pDevice = %p : amType=%d, dev=%d\n", pDevice, pDevice->amType, pDevice->devt );
+   
+
+        cdev_del(&pDevice->cdev);
+
+        AM_DEBUGPRINT("exit pDevice = %p : cdev_del\n", pDevice);
+   
+        device_destroy(cl, pDevice->devt);
+ 
+        AM_DEBUGPRINT("exit pDevice = %p : device_destroy\n", pDevice);
+   
+        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)](pDevice, NULL);
+
+        kfree(pDevice);
+        
+
+    }
+   
+
+
+
 
   if(pAMKDevices)
   {
