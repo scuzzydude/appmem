@@ -13,11 +13,13 @@ ssize_t appmemd_read(struct file *filp, char __user *buf, size_t count,loff_t *f
 ssize_t appmemd_write(struct file *filp, const char __user *buf, size_t count,loff_t *f_pos);
 int appmemd_ioctl(struct inode *inode, struct file *filp,unsigned int cmd, unsigned long arg);
 int appmemd_release(struct inode *inode, struct file *filp);
+int appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd);
+int appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd);
 
 
 
 /* Globals */
-int appmemd_base_dev_count = 1;
+int appmemd_base_dev_count = 32;
 int appmemd_minor = 0;
 int appmemd_major = 0;
 static struct class *cl; // Global variable for the device class
@@ -91,22 +93,26 @@ struct file_operations appmemd_fops =
 
 APPMEM_KDEVICE *pAMKDevices;
 
-static void appmemd_setup_cdev(APPMEM_KDEVICE  *dev, int index)
+
+APPMEM_KDEVICE *pFunctionDevicesHead = NULL;;
+
+
+
+static void appmemd_setup_cdev(APPMEM_KDEVICE  *dev, int devno)
 {
 	int err; 
-	int devno = MKDEV(appmemd_major, appmemd_minor + index);
-    
-
+	
     printk("Appmemd : create devno=%d\n", devno);
     
 	cdev_init(&dev->cdev, &appmemd_fops);
 	dev->cdev.owner = THIS_MODULE;
 	dev->cdev.ops = &appmemd_fops;
 	err = cdev_add (&dev->cdev, devno, 1);
+    dev->devt = devno;
 	/* Fail gracefully if need be */
 	if (err)
 	{
-		printk(KERN_NOTICE "Error %d adding appmemd%d", err, index);
+		printk(KERN_NOTICE "Error %d adding appmemd%d", err, devno);
     }
 }
 
@@ -156,23 +162,34 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
 {
     UINT32 i;
     APPMEM_KDEVICE *pDevice = NULL;
+    dev_t dev_func_t = 0;
 
-    if (device_create(cl, NULL, base_AMdev, NULL, name) == NULL)
+    AM_DEBUGPRINT("appmem_device_func_create = %s : %d\n", name, amType);
+
+    dev_func_t = MKDEV(appmemd_major, appmemd_minor);
+
+    if (device_create(cl, NULL, dev_func_t, NULL, name) == NULL)
     {
         printk(KERN_WARNING "appmemd: appmem_device_func_create error appmem\n");
         return pDevice;
         
     }
    
+    AM_DEBUGPRINT("appmem_device_func_create = device_create\n");
+    
+
     pDevice = (APPMEM_KDEVICE *)kmalloc(sizeof(APPMEM_KDEVICE), GFP_KERNEL);
 	
     if(pDevice)
     {
+
+        AM_DEBUGPRINT("appmem_device_func_create = alloc pDevice=%p\n", pDevice);
+   
         memset(pDevice, 0, sizeof(APPMEM_KDEVICE));
 
         pDevice->amType = amType;
 
-        appmemd_setup_cdev(pDevice, 0);
+        appmemd_setup_cdev(pDevice, dev_func_t);
 
         pDevice->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
 
@@ -181,11 +198,21 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
 
             pDevice->pfnOps[i] = NULL;     
         }
-        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)] = appmem_get_cap_count;
-        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)]       = appmem_get_capabilites;
-        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)]    = appmem_create_function;
             
      }           
+
+    if(NULL == pFunctionDevicesHead)
+    {
+        /* We're at the head */
+        pDevice->next = NULL; /* For clarity */
+        pFunctionDevicesHead = pDevice;
+    }
+    else
+    {
+        pDevice->next = pFunctionDevicesHead;
+        pFunctionDevicesHead = pDevice;
+    }
+    
 
     return pDevice;
 }
@@ -214,12 +241,16 @@ int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
 
 		    if(pCap->typeSpecific[TS_INIT_MEM_VAL])
 			{
-
+            
 			}
 			else
 			{
 			    memset(pVdF->flat.data, 0, (size_t) pVdF->flat.size);
 			}
+
+            appmem_device_func_create("am_flat", AM_TYPE_FLAT_MEM);
+
+
 	    }
 	    else
 	    {
@@ -519,7 +550,7 @@ static int __init appmemd_init(void)
 	else
 	{
 
-        if((cl = class_create(THIS_MODULE, "chardrv")) == NULL)
+        if((cl = class_create(THIS_MODULE, "appmem")) == NULL)
         {
             printk(KERN_WARNING "appmemd: class create error\n");
             return -1;
@@ -540,7 +571,7 @@ static int __init appmemd_init(void)
             memset(pAMKDevices, 0, appmemd_base_dev_count * sizeof(APPMEM_KDEVICE));
 
             pAMKDevices->amType = AM_TYPE_BASE_APPMEM;
-            appmemd_setup_cdev(pAMKDevices, 0);
+            appmemd_setup_cdev(pAMKDevices, MKDEV(appmemd_major, appmemd_minor));
 
             pAMKDevices->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
 
@@ -564,6 +595,8 @@ static int __init appmemd_init(void)
         
 	}
 
+    appmemd_minor++;
+    
     return result;
 }
  
