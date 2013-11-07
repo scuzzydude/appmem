@@ -602,7 +602,6 @@ int main(int argc, char **argv)
 
 
 
-//	am_cpp_test(driver_name, test);
 	
 	return 0;
 }

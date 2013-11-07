@@ -16,7 +16,9 @@ TARGET = appmemd
 ifneq ($(KERNELRELEASE),)
 
 
-obj-m	:= appmemd.o ../appmemlib/am_flat.o	../appmemlib/am_stata.o
+#obj-m	:=  ../appmemlib/am_flat.o appmemd.o
+obj-m += appmemk.o
+appmemk-objs := appmemd.o ../appmemlib/am_flat.o 
 
 else
 

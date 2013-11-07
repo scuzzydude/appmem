@@ -5,6 +5,8 @@
 #include "appmemd_ioctl.h"
 
 
+#include "am_flat.h"
+
 
 
 int appmemd_open(struct inode *inode, struct file *filp);
@@ -282,6 +284,11 @@ int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                 memset(pDevice->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
                 
                 pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_flat_release;
+
+                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_flat_read32_align;
+                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_flat_write32_align;
+
+
                 pDevice->pVdF = pVdF;
                 
                 if(pBDCmd->len_out >= sizeof(APPMEM_RESP_CR_FUNC_T))

@@ -1,1 +1,0 @@
-cmd_/home/appmem/appmemd/appmemd.ko.unsigned := ld -r -m elf_x86_64 -T /usr/src/kernels/2.6.32-358.el6.x86_64/scripts/module-common.lds --build-id -o /home/appmem/appmemd/appmemd.ko.unsigned /home/appmem/appmemd/appmemd.o /home/appmem/appmemd/appmemd.mod.o 
