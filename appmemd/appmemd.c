@@ -544,10 +544,14 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                 {
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
+                        printk("Appmemd : aligned\n");
+
                         return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, &pKCmd->cmd.aligned.data);
                     }
                     else
                     {
+                        printk("Appmemd : config\n");
+
                         return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config(pDevice, pKCmd);
                     }
                 }
