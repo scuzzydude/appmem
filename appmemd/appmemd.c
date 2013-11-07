@@ -493,16 +493,20 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     UINT32 cmd_bytes;
     APPMEM_KDEVICE *pDevice;
 
+    printk("Appmemd : ioctl cmd=%08x\n", cmd);
+
 	if (_IOC_TYPE(cmd) != APPMEMD_IOC_MAGIC)
     {
-	    return -ENOTTY;
+	    printk("Appmemd : not magic =%08x\n", _IOC_TYPE(cmd));
+        return -ENOTTY;
     }
 
     cmd_bytes = _IOC_NR(cmd);
     
 	if (cmd_bytes > APPMEMD_IOC_MAXNR) 
     {
-	    return -ENOTTY;
+	    printk("Appmemd : %d larger than % =%08x\n", cmd_bytes, APPMEMD_IOC_MAXNR);
+       return -ENOTTY;
     }
 
     cmd_bytes = (cmd_bytes * 8) + 8;
@@ -643,8 +647,8 @@ static int __init appmemd_init(void)
             }
 
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = appmem_get_cap_count;
-            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = appmem_get_capabilites;
-            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = appmem_create_function;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)].config = appmem_get_capabilites;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)].config = appmem_create_function;
             
             
 	    }
