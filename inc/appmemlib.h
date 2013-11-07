@@ -7,7 +7,7 @@
 #endif
 #include "am_test_os.h"
 
-typedef unsigned int AM_RETURN;
+typedef int AM_RETURN;
 
 typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
@@ -28,7 +28,6 @@ typedef unsigned char UINT8;
 #define AM_ASSERT(x)
 #else
 #define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
-#define AM_HANDLE UINT32
 #endif
 
 //#define AM_ASSERT(x)
@@ -64,10 +63,11 @@ typedef struct am_mem_cap_t
 }	AM_MEM_CAP_T;
 
 
+#if 0
 typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
 typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
 typedef AM_RETURN (*am_fn_raw)(void * p1);
-
+#endif
 
 typedef struct _am_func_calls
 {

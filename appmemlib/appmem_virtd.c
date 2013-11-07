@@ -64,7 +64,7 @@ AM_MEM_CAP_T virtd_caps[] =
 
 };
 
-UINT32 am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
+AM_RETURN am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 {
 	UINT32 count = 0;
 
@@ -313,8 +313,9 @@ AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle)
 	return g_ptrFuncHandles[(VIRTD_HANDLE_IDX_MASK & handle)];
 }
 
-AM_RETURN am_virtd_open(AM_MEM_FUNCTION_T *pFunc)
+AM_RETURN am_virtd_open(void * p1)
 {
+	AM_MEM_FUNCTION_T *pFunc = p1;
 	if(pFunc->handle)
 	{
 		return AM_RET_GOOD;
@@ -324,8 +325,9 @@ AM_RETURN am_virtd_open(AM_MEM_FUNCTION_T *pFunc)
 		return AM_RET_INVALID_HDL;
 	}
 }
-AM_RETURN am_virtd_close(AM_MEM_FUNCTION_T *pFunc)
+AM_RETURN am_virtd_close(void * p1)
 {
+	AM_MEM_FUNCTION_T *pFunc = p1;
 
 	if(pFunc->handle)
 	{
