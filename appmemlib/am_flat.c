@@ -29,10 +29,12 @@ AM_RETURN am_flat_write32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT
 
 AM_RETURN am_flat_read32_align(AM_HANDLE handle, void * p1, void *p2)
 {
-//	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
 	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	UINT32 offset = *(UINT32 *) p1;
-	*(UINT32 *)p2 = *(UINT32 *)((UINT32)fd->flat.data + offset);
+
+	PUT32_TO_USER(((UINT64)fd->flat.data + (UINT64)offset), p2);
+
+	//AM_DEBUGPRINT( "am_flat_read32_align: offset=%d base=%p valaddr=%016llx val=%08x p2=%p\n", offset, fd->flat.data, ((UINT64)fd->flat.data + (UINT64)offset),*(UINT32 *)((UINT64)fd->flat.data + (UINT64)offset), p2 );
 
 	return AM_RET_GOOD;
 
@@ -42,12 +44,13 @@ AM_RETURN am_flat_read32_align(AM_HANDLE handle, void * p1, void *p2)
 AM_RETURN am_flat_write32_align(AM_HANDLE handle, void * p1, void *p2)
 {
 	
-//	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
 	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	UINT32 offset = *(UINT32 *) p1;
-	UINT32 *ptr = (UINT32 *)((UINT32)fd->flat.data + offset);
+	UINT32 *ptr = (UINT32 *)((UINT64)fd->flat.data + (UINT64)offset);
 
-	GET32_FROM_TO_USER(ptr, p2);
+	GET32_FROM_USER(ptr, p2);
+
+//	AM_DEBUGPRINT( "am_flat_write32_align: offset=%d val=%08x\n", offset, *ptr );
 
 	return AM_RET_GOOD;
 }

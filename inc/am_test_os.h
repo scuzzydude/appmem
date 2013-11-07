@@ -16,6 +16,7 @@
 #define OS_HR_PRINT_STOP_TIME()
 #define AM_MALLOC(x) malloc(x)
 #define AM_FREE(x) free(x)
+
 #else
 #ifdef _APPMEMD
 
@@ -56,7 +57,10 @@
 
 #define OS_HR_TIMER_START() clock_gettime(CLOCK_THREAD_CPUTIME_ID, &_tmSpec1)
 #define OS_HR_TIMER_STOP() clock_gettime(CLOCK_THREAD_CPUTIME_ID, &_tmSpec2)
-#define OS_HR_TIMER_GET_ELAP() (double)((double) (_tmSpec2.tv_nsec - _tmSpec1.tv_nsec) / (double)(1000 * 1000 * 1000))
+
+//#define OS_HR_TIMER_GET_ELAP() (double)((double) (_tmSpec2.tv_nsec - _tmSpec1.tv_nsec) / (double)(1000 * 1000 * 1000))
+
+#define OS_HR_TIMER_GET_ELAP() get_linux_ts_elap(&_tmSpec1, &_tmSpec2)
 
 
 #define AM_MALLOC(x) malloc(x)

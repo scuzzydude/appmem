@@ -4,6 +4,21 @@
 #include "am_test_os.h"
 #include "am_assca.h"
 
+#ifndef _WIN32
+double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2)
+{
+	double elap = 1;
+	printf("TS1 = %d.%d\n", pTs1->tv_sec, pTs1->tv_nsec);
+	printf("TS2 = %d.%d\n", pTs2->tv_sec, pTs2->tv_nsec);
+
+	elap = ((double) (pTs2->tv_nsec - pTs1->tv_nsec) / (double)(1000 * 1000 * 1000));
+	
+	return elap;
+}
+#endif
+
+
+
 int am_cpp_test(char *am_name, UINT32 test);
 
 void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
@@ -94,12 +109,19 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 
 	val = 0;
 	rval = 0;
+	printf("Start read test ....\n");
 
 	OS_HR_TIMER_START();
 	for( i = 0; i < random_ops; i++)
 	{
 		addr =  (((val + rval) % mem_size) & ~3);
-		ptr32 = (UINT32 *)((UINT32)local_buf + addr); 
+		
+	//	printf("i=%x addr=%x mem_size=%x val=%x rval=%x\n", i, addr, mem_size, val, rval); 
+		
+		ptr32 = (UINT32 *)((UINT64)local_buf + (UINT64)addr); 
+	
+	//	printf("i=%x ptr32=%p local_buf=%p\n", i, ptr32, local_buf); 
+	
 		rval = rand();
 		val = *ptr32;
 		
@@ -115,7 +137,8 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	OS_HR_TIMER_STOP();
 	elap1 = OS_HR_TIMER_GET_ELAP();
 	printf("READ %d ops ELAP = %f\n", random_ops, elap1);
-
+	
+	
 
 	rval = 0;
 	val = 0;

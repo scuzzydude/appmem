@@ -500,7 +500,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     UINT32 cmd_bytes;
     APPMEM_KDEVICE *pDevice;
 
-    printk("Appmemd : ioctl cmd=%08x\n", cmd);
+//    printk("Appmemd : ioctl cmd=%08x\n", cmd);
 
 	if (_IOC_TYPE(cmd) != APPMEMD_IOC_MAGIC)
     {
@@ -512,13 +512,13 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     
 	if (cmd_bytes > APPMEMD_IOC_MAXNR) 
     {
-	    printk("Appmemd : %d larger than % =%08x\n", cmd_bytes, APPMEMD_IOC_MAXNR);
+	    printk("Appmemd : %d larger than %d \n", cmd_bytes, APPMEMD_IOC_MAXNR);
        return -ENOTTY;
     }
 
     cmd_bytes = (cmd_bytes * 8) + 8;
     
-    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
+  //  printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
 
     if(arg)
     {
@@ -528,7 +528,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
         if(pDevice)
         {
-            printk("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
+    //        printk("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
         }    
         else
         {
@@ -549,15 +549,25 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
             {
 
 
-                printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
+     //           printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
 
                 if(NULL != pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config)
                 {
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
-                        printk("Appmemd : aligned\n");
+       //                 printk("Appmemd : aligned\n");
 
-                        return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, &pKCmd->cmd.aligned.data);
+                        if(0x1 & pKCmd->cmd.common.op)
+                        {
+                        
+                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, (void *)pKCmd->cmd.aligned.data);
+                        }
+                        else
+                        {
+
+                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, &pKCmd->cmd.aligned.data);
+                        }
+
                     }
                     else
                     {
