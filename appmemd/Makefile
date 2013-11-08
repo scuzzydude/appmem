@@ -9,16 +9,16 @@ else
   DEBFLAGS = -O2 -D_APPMEMD
 endif
 
-EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR)
+EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR) -I$(PWD)/inc 
 
 TARGET = appmemd
 
 ifneq ($(KERNELRELEASE),)
 
 
-#obj-m	:=  ../appmemlib/am_flat.o appmemd.o
+#obj-m	:=  ../appmemlib/am_flat.o appmemd.o 
 obj-m += appmemk.o
-appmemk-objs := appmemd.o ../appmemlib/am_flat.o 
+appmemk-objs := appmemd.o ../appmemlib/am_flat.o am_k_flat.o
 
 else
 

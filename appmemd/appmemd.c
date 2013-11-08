@@ -4,8 +4,8 @@
 #include "appmemlib.h"
 #include "appmemd_ioctl.h"
 
+#include "am_k.h"
 
-#include "am_flat.h"
 
 
 
@@ -224,6 +224,7 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
 }
 
 
+#if 0
 AM_RETURN appmem_flat_release(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
 {
     /* We don't need the pKCmd, it can be NULL and driver can call this directly on exit */
@@ -347,6 +348,7 @@ int appmem_create_flat_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
     return error;
 
 }
+#endif
 
 
 AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
