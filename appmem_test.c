@@ -7,11 +7,16 @@
 #ifndef _WIN32
 double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2)
 {
-	double elap = 1;
-	printf("TS1 = %d.%d\n", pTs1->tv_sec, pTs1->tv_nsec);
-	printf("TS2 = %d.%d\n", pTs2->tv_sec, pTs2->tv_nsec);
+	double elap;
+	double elap1 = (double)pTs1->tv_sec + ( (double)pTs1->tv_nsec / (double)(1000 * 1000 * 1000));
+	double elap2 = (double)pTs2->tv_sec + ( (double)pTs2->tv_nsec / (double)(1000 * 1000 * 1000));
 
-	elap = ((double) (pTs2->tv_nsec - pTs1->tv_nsec) / (double)(1000 * 1000 * 1000));
+
+	printf("TS1 = %d.%d = %f\n", pTs1->tv_sec, pTs1->tv_nsec, elap1);
+	printf("TS2 = %d.%d = %f\n", pTs2->tv_sec, pTs2->tv_nsec, elap2);
+
+
+	elap = elap2 - elap1;
 	
 	return elap;
 }
