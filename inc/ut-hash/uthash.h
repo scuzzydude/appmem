@@ -24,9 +24,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTHASH_H
 #define UTHASH_H 
 
+#ifndef _APPMEMD /* Brandon */
 #include <string.h>   /* memcmp,strlen */
 #include <stddef.h>   /* ptrdiff_t */
 #include <stdlib.h>   /* exit() */
+#endif
 
 /* These macros use decltype or the earlier __typeof GNU extension.
    As decltype is only available in newer compilers (VS2010 or gcc 4.3+
@@ -57,23 +59,26 @@ do {                                                                            
 #endif
 
 /* a number of the hash function use uint32_t which isn't defined on win32 */
+#ifdef _APPMEMD /* Brandon */
+#else
 #ifdef _MSC_VER
 typedef unsigned int uint32_t;
 typedef unsigned char uint8_t;
 #else
 #include <inttypes.h>   /* uint32_t */
 #endif
+#endif
 
 #define UTHASH_VERSION 1.9.8
 
 #ifndef uthash_fatal
-#define uthash_fatal(msg) exit(-1)        /* fatal error (out of memory,etc) */
+#define uthash_fatal(msg) AM_ASSERT(0) //Brandon exit(-1)        /* fatal error (out of memory,etc) */
 #endif
 #ifndef uthash_malloc
-#define uthash_malloc(sz) malloc(sz)      /* malloc fcn                      */
+#define uthash_malloc(sz) AM_VALLOC(sz) //Brandon - malloc(sz)      /* malloc fcn                      */
 #endif
 #ifndef uthash_free
-#define uthash_free(ptr,sz) free(ptr)     /* free fcn                        */
+#define uthash_free(ptr,sz) AM_VFREE(ptr)//Brandon free(ptr)     /* free fcn                        */
 #endif
 
 #ifndef uthash_noexpand_fyi

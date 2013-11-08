@@ -9,6 +9,7 @@ extern "C"
 {
 #include "am_assca.h"
 char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size);
+double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2);
 
 }
 #define USE_OPERATORS 1

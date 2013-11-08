@@ -16,6 +16,8 @@
 #define OS_HR_PRINT_STOP_TIME()
 #define AM_MALLOC(x) malloc(x)
 #define AM_FREE(x) free(x)
+#define AM_VALLOC(x) malloc(x)
+#define AM_VFREE(x) free(x)
 
 #else
 #ifdef _APPMEMD
@@ -38,6 +40,8 @@
 
 #define AM_MALLOC(x) kmalloc(x, GFP_KERNEL)
 #define AM_FREE(x) kfree(x)
+#define AM_VALLOC(x) vmalloc(x)
+#define AM_VFREE(x) vfree(x)
 
 
 
@@ -65,6 +69,8 @@
 
 #define AM_MALLOC(x) malloc(x)
 #define AM_FREE(x) free(x)
+#define AM_VALLOC(x) malloc(x)
+#define AM_VFREE(x) free(x)
 
 
 

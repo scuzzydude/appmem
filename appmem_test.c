@@ -1,3 +1,32 @@
+/*****************************************************************************************
+
+Copyright (c) 2013, Brandon Awbrey
+All rights reserved.
+
+https://github.com/scuzzydude/appmem
+
+
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met: 
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+********************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include "appmemlib.h"
@@ -226,6 +255,14 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		return;
 	}
 	
+
+	if(AM_RET_GOOD != amFa.fn->open(&amFa))
+	{
+		printf("Open Function Error\n");
+		return;
+	}
+
+
 	handle = amFa.handle;
 	localArray = (UINT32 *) AM_MALLOC(array_size * data_size);
 
@@ -274,7 +311,14 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		rval = rand();
 		idx = (val + rval) % array_size;
 		val = localArray[idx]; 
+		temp = array_size - idx;
 		running_val += val;
+		if(temp != val)
+		{
+			printf("MISCOMPARE IDX=%d VAL=%d TEMP=%d\n", idx, val, temp);
+			break;
+		}
+
 	}
 	OS_HR_TIMER_STOP();
 	elap1 = OS_HR_TIMER_GET_ELAP();
@@ -290,7 +334,15 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		rval = rand();
 		idx = (val + rval) % array_size;
 		aCalls->read_al(handle,&idx, &val);
+		temp = array_size - idx;
 		running_val += val;
+		if(temp != val)
+		{
+			printf("MISCOMPARE IDX=%d VAL=%d TEMP=%d\n", idx, val, temp);
+			break;
+		}
+
+
 	}
 	OS_HR_TIMER_STOP();
 	elap2 = OS_HR_TIMER_GET_ELAP();
@@ -414,6 +466,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		OS_HR_TIMER_STOP();
 		elap2 = OS_HR_TIMER_GET_ELAP();
 		printf("%s Assc Array Write %d entries ELAP = %f\n", pEntry->am_name, key_count, elap2);
+	    printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
 
 
@@ -480,6 +533,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		OS_HR_TIMER_STOP();
 		elap2 = OS_HR_TIMER_GET_ELAP();
 		printf("%s Assc Array Read %d ops ELAP = %f\n", pEntry->am_name, random_ops, elap2);
+        printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
 
 
@@ -624,11 +678,8 @@ int main(int argc, char **argv)
 			}
 
 		}
-	
 
 	}
-
-
 
 	
 	return 0;

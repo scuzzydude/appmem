@@ -1,6 +1,6 @@
 
 # Comment/uncomment the following line to enable/disable debugging
-#DEBUG = y
+DEBUG = y
 
 
 ifeq ($(DEBUG),y)
@@ -9,7 +9,7 @@ else
   DEBFLAGS = -O2 -D_APPMEMD
 endif
 
-EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR) -I$(PWD)/inc 
+EXTRA_CFLAGS += $(DEBFLAGS) -I$(APPMINCDIR) -I$(PWD)/inc -I$(APPMINCDIR)/ut-hash
 
 TARGET = appmemk
 
@@ -17,8 +17,7 @@ ifneq ($(KERNELRELEASE),)
 
 
 obj-m += appmem.o
-appmem-objs := appmemk.o ../appmemlib/am_flat.o am_k_flat.o
-
+appmem-objs := appmemk.o ../appmemlib/am_flat.o am_k_flat.o ../appmemlib/am_stata.o am_k_stata.o ../appmemlib/am_assca.o am_k_assca.o
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build

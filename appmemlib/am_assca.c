@@ -31,7 +31,9 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	HASH_FIND(hh, pAA->head, pKey, pAA->key_len, pAI);
 	if(pAI)
 	{
-		memcpy(pData, pAI->data, pAA->data_len);		
+//		memcpy(pData, pAI->data, pAA->data_len);		
+        COPY_TO_USER(pData, pAI->data, pAA->data_len);
+        
 		
 		return AM_RET_GOOD;
 	}
@@ -56,9 +58,9 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 		pAI->data = AM_MALLOC(pAA->data_len);
 		pAI->key = AM_MALLOC(pAA->key_len);
 
-		memcpy(pAI->data, pData, pAA->data_len);
-		memcpy(pAI->key, pKey, pAA->key_len);
-		
+		COPY_FROM_USER(pAI->data, pData, pAA->data_len);
+		COPY_FROM_USER(pAI->key, pKey, pAA->key_len);
+
 		HASH_ADD_KEYPTR( hh, pAA->head, pAI->key, pAA->key_len, pAI );
 
 	}
@@ -97,7 +99,7 @@ AM_RETURN am_assca_write32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UIN
 
 AM_RETURN am_assca_read32_align(AM_HANDLE handle, void * p1, void *p2)
 {
-	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
+	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	AMLIB_ASSCA *pAA = NULL;
 	if(fd)
 	{
@@ -115,7 +117,7 @@ AM_RETURN am_assca_read32_align(AM_HANDLE handle, void * p1, void *p2)
 
 AM_RETURN am_assca_write32_align(AM_HANDLE handle, void * p1, void *p2)
 {
-	AM_FUNC_DATA_U * fd = am_handle_to_funcdata(handle);
+	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	AMLIB_ASSCA *pAA = NULL;
 	if(fd)
 	{
