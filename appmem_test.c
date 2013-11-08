@@ -12,8 +12,8 @@ double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2)
 	double elap2 = (double)pTs2->tv_sec + ( (double)pTs2->tv_nsec / (double)(1000 * 1000 * 1000));
 
 
-	printf("TS1 = %d.%d = %f\n", pTs1->tv_sec, pTs1->tv_nsec, elap1);
-	printf("TS2 = %d.%d = %f\n", pTs2->tv_sec, pTs2->tv_nsec, elap2);
+//	printf("TS1 = %d.%d = %f\n", pTs1->tv_sec, pTs1->tv_nsec, elap1);
+//	printf("TS2 = %d.%d = %f\n", pTs2->tv_sec, pTs2->tv_nsec, elap2);
 
 
 	elap = elap2 - elap1;
