@@ -80,11 +80,25 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                 memset(pDevice->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
                 
                 pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_stata_release;
+                respCr.data_size = 0;
+                respCr.key_size = 0;
 
-                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
-                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
+                if((TRUE == bFixedKey) && (TRUE == bFixedData))
+                {
+
+                    pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
+                    pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
+
+                    respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_PACKET;
+                    respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_PACKET;
+
+                    respCr.idx_size = pVdF->stata.idx_size;
+                    respCr.data_size = pVdF->stata.data_size;
+
+                }
 
 
+                
                 pDevice->pVdF = pVdF;
                 
                 if(pBDCmd->len_out >= sizeof(APPMEM_RESP_CR_FUNC_T))

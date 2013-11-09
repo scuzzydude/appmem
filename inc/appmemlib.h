@@ -94,12 +94,6 @@ typedef struct am_mem_cap_t
 }	AM_MEM_CAP_T;
 
 
-#if 0
-typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
-typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
-typedef AM_RETURN (*am_fn_raw)(void * p1);
-#endif
-
 typedef struct _am_func_calls
 {
 	am_fn_raw open;
@@ -115,15 +109,6 @@ typedef struct _am_func_calls
 
 } AM_FUNC_CALLS_T;
 
-
-typedef struct am_mem_function_t
-{
-	UINT32 handle;
-	AM_MEM_CAP_T amCap;
-	APPMEM_RESP_CR_FUNC_T crResp;
-	AM_FUNC_CALLS_T *fn;
-
-} AM_MEM_FUNCTION_T;
 
 /* PRIVATE */
 typedef union am_func_data
@@ -157,6 +142,17 @@ typedef union am_func_data
 
 
 } AM_FUNC_DATA_U;
+
+
+typedef struct am_mem_function_t
+{
+	UINT32 handle;
+	AM_MEM_CAP_T amCap;
+	APPMEM_RESP_CR_FUNC_T crResp;
+	AM_FUNC_CALLS_T *fn;
+	AM_FUNC_DATA_U *pVdF;
+
+} AM_MEM_FUNCTION_T;
 
 
 typedef struct _am_command

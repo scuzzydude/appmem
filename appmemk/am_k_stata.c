@@ -73,6 +73,9 @@ int appmem_create_stata_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
 
                     AM_DEBUGPRINT( "appmem_create_stata_device: am_name=%s devt=%d\n", pDevice->am_name, pDevice->devt);
 
+                    respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN;
+                    respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_ALIGN;
+
                     if(copy_to_user ((void *)pBDCmd->data_out, &respCr, sizeof(APPMEM_RESP_CR_FUNC_T)))
                     {
                          error =  -ENOMEM;
