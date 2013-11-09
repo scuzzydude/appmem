@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 #include "am_assca.h"
 
-
-#define MAX_VIRTD_FUNC_HANDLES 8
-#define VIRTD_HANDLE_SIG          (0xBADBA00)
-#define VIRTD_HANDLE_IDX_MASK     (0x00000FF)
-
-AM_FUNC_DATA_U *g_ptrFuncHandles[MAX_VIRTD_FUNC_HANDLES] = { NULL };
-
 AM_MEM_CAP_T virtd_caps[] = 
 {
 
@@ -318,13 +311,6 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 
 }
 
-AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle)
-{
-	AM_ASSERT(VIRTD_HANDLE_SIG == (~VIRTD_HANDLE_IDX_MASK & handle));
-	AM_ASSERT(((VIRTD_HANDLE_IDX_MASK & handle) < MAX_VIRTD_FUNC_HANDLES));
-
-	return g_ptrFuncHandles[(VIRTD_HANDLE_IDX_MASK & handle)];
-}
 
 AM_RETURN am_virtd_open(void * p1)
 {
