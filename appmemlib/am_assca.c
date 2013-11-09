@@ -1,4 +1,5 @@
 #include "appmemlib.h"
+#include "appmemd_ioctl.h"
 #include "am_assca.h"
 
 
@@ -41,6 +42,8 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	return AM_RET_KEY_NOT_FOUND;
 }
 
+/* This form takes a local copy (packet in kernel) so safe to use memcpy */
+
 AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 {
 	AMLIB_ASSCA_ITEM *pAI;
@@ -55,11 +58,16 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 	if(pAI)
 	{
+	    /* TODO - One Malloc , adjust pointers */
 		pAI->data = AM_MALLOC(pAA->data_len);
 		pAI->key = AM_MALLOC(pAA->key_len);
 
-		COPY_FROM_USER(pAI->data, pData, pAA->data_len);
-		COPY_FROM_USER(pAI->key, pKey, pAA->key_len);
+		//COPY_FROM_USER(pAI->data, pData, pAA->data_len);
+		//COPY_FROM_USER(pAI->key, pKey, pAA->key_len);
+
+        memcpy(pAI->data, pData, pAA->data_len);
+		memcpy(pAI->key, pKey, pAA->key_len);
+            
 
 		HASH_ADD_KEYPTR( hh, pAA->head, pAI->key, pAA->key_len, pAI );
 

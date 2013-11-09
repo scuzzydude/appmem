@@ -78,80 +78,95 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                 pDevice->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
                 
                 memset(pDevice->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
-                
-                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_assca_release;
-                respCr.data_size = data_size;
-                respCr.idx_size = key_size;
-
-                if((TRUE == bFixedKey) && (TRUE == bFixedData))
-                {
-
-                    pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
-                    pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
-
-                    respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_FIX_PACKET;
-                    respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
-
-               
-                    /* To Make Sure that data segment is 32 bit aligned */
-                    respCr.pack_DataOffset = respCr.idx_size / sizeof(UINT32);
-                    
-                    if(respCr.idx_size % sizeof(UINT32))
-                    {
-                        respCr.pack_DataOffset++;    
-                    }
-
-                    printk("PACKET DATA IDX SIZE=%d\n", respCr.idx_size);
-                    printk("PACKET DATA DATA SIZE=%d\n", respCr.data_size);
-                    printk("PACKET DATA DATA OFFSET DWORDS=%d\n", respCr.pack_DataOffset);
-                    
-                    
-                    respCr.wr_pack_qword_size = respCr.pack_DataOffset;
-
-                    respCr.wr_pack_qword_size += (respCr.data_size / sizeof(UINT32));
-                    
-                    if(respCr.data_size % sizeof(UINT32))
-                    {
-                        respCr.wr_pack_qword_size++;
-                    }
-
-                    respCr.wr_pack_qword_size++; /* Always need one for opcode */   
-                    
-                    printk("WR PACKET SIZE DWORDS=%d\n", respCr.wr_pack_qword_size);
-                    
-                    if(respCr.wr_pack_qword_size % 2)
-                    {
-                        respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
-                    }
-                    else
-                    {
-                        respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
-                    }
-
-                        
-                    printk("WR PACKET SIZE QWORDS=%d\n", respCr.wr_pack_qword_size);
-                    
-                                      
-                   
-
-                }
 
 
-                
-                pDevice->pVdF = pVdF;
-                
                 if(pBDCmd->len_out >= sizeof(APPMEM_RESP_CR_FUNC_T))
                 {
                     memset(&respCr, 0, sizeof(APPMEM_RESP_CR_FUNC_T));
                     strncpy((char *)&respCr.am_name, (char *)pDevice->am_name, 32);
                     respCr.devt = pDevice->devt;
 
+                
+                    pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_assca_release;
+                    respCr.data_size = data_size;
+                    respCr.idx_size = key_size;
+
+                    if((TRUE == bFixedKey) && (TRUE == bFixedData))
+                    {
+
+                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
+                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
+
+                        respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_FIX_PACKET;
+                        respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
+
+               
+                        /* To Make Sure that data segment is 32 bit aligned */
+                        respCr.pack_DataOffset = respCr.idx_size / sizeof(UINT32);
+                    
+                        if(respCr.idx_size % sizeof(UINT32))
+                        {
+                            respCr.pack_DataOffset++;    
+                        }
+
+                        printk("PACKET DATA IDX SIZE=%d\n", respCr.idx_size);
+                        printk("PACKET DATA DATA SIZE=%d\n", respCr.data_size);
+                        printk("PACKET DATA DATA OFFSET DWORDS=%d\n", respCr.pack_DataOffset);
+                    
+                    
+                        respCr.wr_pack_qword_size = respCr.pack_DataOffset;
+
+                        respCr.wr_pack_qword_size += (respCr.data_size / sizeof(UINT32));
+                    
+                        if(respCr.data_size % sizeof(UINT32))
+                        {
+                            respCr.wr_pack_qword_size++;
+                        }
+
+                        respCr.wr_pack_qword_size++; /* Always need one for opcode */   
+                    
+                        printk("WR PACKET SIZE DWORDS=%d\n", respCr.wr_pack_qword_size);
+                    
+                        if(respCr.wr_pack_qword_size % 2)
+                        {
+                            respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
+                        }
+                        else
+                        {
+                            respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
+                        }
+
+                        
+                        printk("WR PACKET SIZE QWORDS=%d\n", respCr.wr_pack_qword_size);
+                    
+
+                        respCr.rd_pack_qword_size = respCr.pack_DataOffset;
+                        respCr.rd_pack_qword_size++; //read user data pointer - two dwords 
+                        
+
+
+
+                        pDevice->wr_pack_qword_size = respCr.wr_pack_qword_size;
+                        pDevice->rd_pack_qword_size = respCr.wr_pack_qword_size;
+                        pDevice->pack_DataOffset = respCr.pack_DataOffset;     
+                    
+
+                    }
+
+
+                
+                    pDevice->pVdF = pVdF;
+                
+                
                     AM_DEBUGPRINT( "appmem_create_assca_device: am_name=%s devt=%d\n", pDevice->am_name, pDevice->devt);
 
                     if(copy_to_user ((void *)pBDCmd->data_out, &respCr, sizeof(APPMEM_RESP_CR_FUNC_T)))
                     {
                          error =  -ENOMEM;
                     }
+
+
+            
 
                 }
                 else

@@ -486,6 +486,35 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                         }
 
                     }
+                    else if(IS_OP_PACKET(pKCmd->cmd.common.op))
+                    {
+                        if(0x1 & pKCmd->cmd.common.op)
+                        {
+                        
+                                    
+                        }
+                        else
+                        {
+
+                            if(cmd_bytes >= (pDevice->wr_pack_qword_size * 8))
+                            {
+
+                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, (void *)pKCmd->cmd.aligned.data);
+                            }
+                            else
+                            {
+                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_qword_size);
+                                return -ENOTTY;
+            
+                            }
+
+                        }
+
+
+                    }
+
+
+
                     else
                     {
                         printk("Appmemd : config\n");

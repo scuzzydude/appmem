@@ -394,7 +394,6 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 val;
 	AM_MEM_FUNCTION_T amSa;
 	AM_FUNC_CALLS_T *aCalls;
-	UINT32 handle = 0;
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
 
@@ -428,9 +427,6 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			AM_FREE(aCalls);
 			return;
 		}
-		//temp
-		return;
-		handle = amSa.handle;
 		
 
 		/* Since C doesn't have an associtive array type */
@@ -454,18 +450,25 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 
 
 		OS_HR_TIMER_START();
-		for(i = 0; i < key_count; i++)
+        for(i = 0; i < key_count; i++)
 		{
+		    
+             
 			pK = pKeys[i];
-		
+
+		    printf("pK[%d] = %s func=%p\n", i, pK, amSa.fn->write_al);
+		    
 			amSa.fn->write_al(&amSa, pK, &i);
 			
 		}
+
 		OS_HR_TIMER_STOP();
 		elap2 = OS_HR_TIMER_GET_ELAP();
 		printf("%s Assc Array Write %d entries ELAP = %f\n", pEntry->am_name, key_count, elap2);
 	    printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
+		//temp
+		return;
 
 
 
