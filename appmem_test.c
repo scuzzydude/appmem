@@ -389,7 +389,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 10000000;
+	UINT32 random_ops = 10;
 	UINT32 idx;
 	UINT32 val;
 	AM_MEM_FUNCTION_T amAA;
@@ -472,8 +472,6 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		printf("%s Assc Array Write %d entries ELAP = %f\n", pEntry->am_name, key_count, elap2);
 	    printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
-		//temp
-		return;
 
 
 

@@ -416,6 +416,8 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     APPMEM_KAM_CMD_T *pKCmd;
     UINT32 cmd_bytes;
     APPMEM_KDEVICE *pDevice;
+    void *rdptr;
+    
 
 //    printk("Appmemd : ioctl cmd=%08x\n", cmd);
 
@@ -497,7 +499,26 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
                         if(0x1 & pKCmd->cmd.common.op)
                         {
-                        
+
+
+                            if(cmd_bytes >= (pDevice->rd_pack_size))
+                            {
+                                rdptr = (void *)(*(UINT64 *)&pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
+                                
+                                printk("Valid PACKET READ cmd_bytes=%d rd_pack_size =%d RDPTR=%p Rp0=0x%08x Rp1=0x%08x\n", 
+                                cmd_bytes , pDevice->rd_pack_size, rdptr,
+                                pKCmd->cmd.packet.data[pDevice->pack_DataOffset],
+                                pKCmd->cmd.packet.data[pDevice->pack_DataOffset + 1]);
+                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], rdptr);
+                            }
+                            else
+                            {
+                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
+                                return -ENOTTY;
+            
+                            }
+
+
                                     
                         }
                         else
@@ -505,6 +526,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
                             if(cmd_bytes >= (pDevice->wr_pack_size))
                             {
+                                
                                 printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
                                 return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
