@@ -86,7 +86,7 @@ AM_MEM_CAP_T virtd_caps[] =
 
 };
 
-AM_RETURN am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
+UINT32 am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 {
 	UINT32 count = 0;
 
@@ -291,13 +291,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 			}
 			break;
 
-		
-		
-		
 		}
-	
-	
-	
 	
 	}
 	else
@@ -314,28 +308,15 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 
 AM_RETURN am_virtd_open(void * p1)
 {
-	AM_MEM_FUNCTION_T *pFunc = p1;
-	if(pFunc->handle)
-	{
-		return AM_RET_GOOD;
-	}
-	else
-	{
-		return AM_RET_INVALID_HDL;
-	}
+	//AM_MEM_FUNCTION_T *pFunc = p1;
+	/* TODO - VIRTD Persistances (i.e. file based) */
+	return AM_RET_GOOD;
 }
 AM_RETURN am_virtd_close(void * p1)
 {
-	AM_MEM_FUNCTION_T *pFunc = p1;
-
-	if(pFunc->handle)
-	{
-		return AM_RET_GOOD;
-	}
-	else
-	{
-		return AM_RET_INVALID_HDL;
-	}
-
+	//AM_MEM_FUNCTION_T *pFunc = p1;
+	/* TODO - VIRTD Persistances (i.e. file based) */
+	return AM_RET_GOOD;
+	
 
 }

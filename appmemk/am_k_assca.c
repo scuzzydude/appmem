@@ -32,18 +32,18 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
     APPMEM_KDEVICE *pDevice = NULL;
     APPMEM_RESP_CR_FUNC_T respCr;
 	AMLIB_ASSCA *pAA = (AMLIB_ASSCA *)NULL;
+           
     
-
     AM_DEBUGPRINT( "appmem_create_assca_device: maxSize=%lld\n", pCap->maxSize );
     pVdF = AM_MALLOC(sizeof(AM_FUNC_DATA_U));
 
    
 	if(pVdF && pCap && (AM_TYPE_ASSOC_ARRAY == pCap->amType))
     {
-		pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
-		pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
-		pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
-		pVdF->stata.data = vmalloc((size_t)pVdF->stata.size);
+	//	pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
+	//	pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
+	//	pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
+	//	pVdF->stata.data = vmalloc((size_t)pVdF->stata.size);
 
 
         key_size = pCap->typeSpecific[TS_ASSCA_KEY_MAX_SIZE];
@@ -79,9 +79,9 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                 
                 memset(pDevice->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
                 
-                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_stata_release;
-                respCr.data_size = 0;
-                respCr.key_size = 0;
+                pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = appmem_assca_release;
+                respCr.data_size = data_size;
+                respCr.idx_size = key_size;
 
                 if((TRUE == bFixedKey) && (TRUE == bFixedData))
                 {
@@ -89,11 +89,50 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                     pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
                     pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
 
-                    respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_PACKET;
-                    respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_PACKET;
+                    respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_FIX_PACKET;
+                    respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
 
-                    respCr.idx_size = pVdF->stata.idx_size;
-                    respCr.data_size = pVdF->stata.data_size;
+               
+                    /* To Make Sure that data segment is 32 bit aligned */
+                    respCr.pack_DataOffset = respCr.idx_size / sizeof(UINT32);
+                    
+                    if(respCr.idx_size % sizeof(UINT32))
+                    {
+                        respCr.pack_DataOffset++;    
+                    }
+
+                    printk("PACKET DATA IDX SIZE=%d\n", respCr.idx_size);
+                    printk("PACKET DATA DATA SIZE=%d\n", respCr.data_size);
+                    printk("PACKET DATA DATA OFFSET DWORDS=%d\n", respCr.pack_DataOffset);
+                    
+                    
+                    respCr.wr_pack_qword_size = respCr.pack_DataOffset;
+
+                    respCr.wr_pack_qword_size += (respCr.data_size / sizeof(UINT32));
+                    
+                    if(respCr.data_size % sizeof(UINT32))
+                    {
+                        respCr.wr_pack_qword_size++;
+                    }
+
+                    respCr.wr_pack_qword_size++; /* Always need one for opcode */   
+                    
+                    printk("WR PACKET SIZE DWORDS=%d\n", respCr.wr_pack_qword_size);
+                    
+                    if(respCr.wr_pack_qword_size % 2)
+                    {
+                        respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
+                    }
+                    else
+                    {
+                        respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
+                    }
+
+                        
+                    printk("WR PACKET SIZE QWORDS=%d\n", respCr.wr_pack_qword_size);
+                    
+                                      
+                   
 
                 }
 

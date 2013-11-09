@@ -151,7 +151,7 @@ typedef struct am_mem_function_t
 	APPMEM_RESP_CR_FUNC_T crResp;
 	AM_FUNC_CALLS_T *fn;
 	AM_FUNC_DATA_U *pVdF;
-
+    
 } AM_MEM_FUNCTION_T;
 
 

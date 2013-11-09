@@ -428,6 +428,8 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			AM_FREE(aCalls);
 			return;
 		}
+		//temp
+		return;
 		handle = amSa.handle;
 		
 

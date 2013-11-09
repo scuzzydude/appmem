@@ -295,6 +295,13 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
                     error = appmem_create_stata_device(&aCap, pBDCmd);     
                 }
                 break;
+
+                case AM_TYPE_ASSOC_ARRAY:
+                {
+                    error = appmem_create_assca_device(&aCap, pBDCmd);
+
+                }
+                break;
                 
                 default:
                 {
