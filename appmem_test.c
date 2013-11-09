@@ -389,7 +389,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 1000;
+	UINT32 random_ops = 10000;
 	UINT32 idx;
 	UINT32 val;
 	AM_MEM_FUNCTION_T amAA;

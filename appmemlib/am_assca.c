@@ -55,13 +55,15 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	AM_ASSERT(pKey);
 	AM_ASSERT(pData);
 
-	pAI = AM_MALLOC(sizeof(AMLIB_ASSCA_ITEM));
+	pAI = (AMLIB_ASSCA_ITEM *) AM_MALLOC( sizeof(AMLIB_ASSCA_ITEM) + pAA->key_len + pAA->data_len );
 
 	if(pAI)
 	{
-	    /* TODO - One Malloc , adjust pointers */
 		pAI->data = AM_MALLOC(pAA->data_len);
 		pAI->key = AM_MALLOC(pAA->key_len);
+
+		pAI->key = (UINT8 *)pAI + sizeof(AMLIB_ASSCA_ITEM);
+		pAI->data = (UINT8 *)pAI->key + pAA->key_len;
 
 		//COPY_FROM_USER(pAI->data, pData, pAA->data_len);
 		//COPY_FROM_USER(pAI->key, pKey, pAA->key_len);
