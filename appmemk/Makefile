@@ -21,6 +21,7 @@ appmem-objs := appmemk.o ../appmemlib/am_flat.o am_k_flat.o ../appmemlib/am_stat
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+##RaspberryPi -- KERNELDIR ?= /lib/modules/3.6-trunk-rpi/build
 PWD       := $(shell pwd)
 
 modules:

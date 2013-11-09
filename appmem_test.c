@@ -456,7 +456,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
              
 			pK = pKeys[i];
 
-		    printf("pK[%d] = %s func=%p\n", i, pK, amSa.fn->write_al);
+//		    printf("pK[%d] = %s func=%p\n", i, pK, amSa.fn->write_al);
 		    
 			amSa.fn->write_al(&amSa, pK, &i);
 			
@@ -617,6 +617,12 @@ int main(int argc, char **argv)
 	if(argc > 1)
 	{
 		driver_name = argv[1];	
+
+        if(0 == strcmp(argv[1], "virtd"))
+        {
+            driver_name = NULL;
+        }
+
 	}
 
 	if(argc > 2)
