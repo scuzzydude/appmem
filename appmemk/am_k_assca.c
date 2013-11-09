@@ -94,8 +94,8 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                     if((TRUE == bFixedKey) && (TRUE == bFixedData))
                     {
 
-                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
-                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
+                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_READ_FIX_PACKET)].align  = am_assca_read32_align;
+                        pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_FIX_PACKET)].align  = am_assca_write32_align;
 
                         respCr.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_FIX_PACKET;
                         respCr.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
@@ -133,24 +133,47 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
                         }
                         else
                         {
-                            respCr.wr_pack_qword_size = 1 + (respCr.wr_pack_qword_size / 2);
+                            respCr.wr_pack_qword_size = (respCr.wr_pack_qword_size / 2);
                         }
 
                         
                         printk("WR PACKET SIZE QWORDS=%d\n", respCr.wr_pack_qword_size);
                     
 
-                        respCr.rd_pack_qword_size = respCr.pack_DataOffset;
+
+                        respCr.rd_pack_qword_size = respCr.pack_DataOffset;                    
+
                         respCr.rd_pack_qword_size++; //read user data pointer - two dwords 
+
+                        respCr.rd_pack_qword_size++; //read user data pointer - two dwords 
+                        respCr.rd_pack_qword_size++; //read user data pointer - two dwords 
+
+
+                        printk("RD PACKET SIZE DWORDS=%d\n", respCr.rd_pack_qword_size);
+
+                        if(respCr.rd_pack_qword_size % 2)
+                        {
+
+                            respCr.rd_pack_qword_size = 1 + (respCr.rd_pack_qword_size / 2);
+                        }
+                        else
+                        {
+                             respCr.rd_pack_qword_size = (respCr.rd_pack_qword_size / 2);
                         
+                        }
+
+                        printk("RD PACKET SIZE QWORDS=%d\n", respCr.rd_pack_qword_size);
 
 
-
-                        pDevice->wr_pack_qword_size = respCr.wr_pack_qword_size;
-                        pDevice->rd_pack_qword_size = respCr.wr_pack_qword_size;
                         pDevice->pack_DataOffset = respCr.pack_DataOffset;     
                     
+                        pDevice->wr_pack_size = respCr.wr_pack_qword_size * 8;
+                        pDevice->rd_pack_size = respCr.rd_pack_qword_size * 8;
+                        
+                        printk("WT PACKET SIZE BYTES=%d\n", pDevice->wr_pack_size);
+                        printk("RD PACKET SIZE BYTES=%d\n", pDevice->rd_pack_size);
 
+                        
                     }
 
 

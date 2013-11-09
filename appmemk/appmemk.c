@@ -434,8 +434,8 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     }
 
     cmd_bytes = (cmd_bytes * 8) + 8;
-    
-  //  printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
+
+    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
 
     if(arg)
     {
@@ -458,6 +458,8 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
         {
             //ASSERT(cmd_bytes <= sizeof(APPMEM_CMD_U));
 
+       
+
             if(copy_from_user (&pKCmd->cmd, (void *)arg, cmd_bytes))
             {
                 printk("Appmemd : copy from user error\n");
@@ -465,14 +467,17 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
             else
             {
 
-
-     //           printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
+     
+           //     printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
 
                 if(NULL != pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config)
                 {
+
+
+                
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
-       //                 printk("Appmemd : aligned\n");
+                        printk("Appmemd : aligned\n");
 
                         if(0x1 & pKCmd->cmd.common.op)
                         {
@@ -488,6 +493,8 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                     }
                     else if(IS_OP_PACKET(pKCmd->cmd.common.op))
                     {
+
+
                         if(0x1 & pKCmd->cmd.common.op)
                         {
                         
@@ -496,14 +503,14 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                         else
                         {
 
-                            if(cmd_bytes >= (pDevice->wr_pack_qword_size * 8))
+                            if(cmd_bytes >= (pDevice->wr_pack_size))
                             {
-
-                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, (void *)pKCmd->cmd.aligned.data);
+                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
+                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
                             else
                             {
-                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_qword_size);
+                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
                                 return -ENOTTY;
             
                             }

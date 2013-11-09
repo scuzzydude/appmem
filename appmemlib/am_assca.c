@@ -127,6 +127,9 @@ AM_RETURN am_assca_write32_align(AM_HANDLE handle, void * p1, void *p2)
 {
 	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	AMLIB_ASSCA *pAA = NULL;
+
+//    printk("assca_write32_align p1=%p p2=%p\n", p1, p2);
+    
 	if(fd)
 	{
 		pAA = (AMLIB_ASSCA *) fd->assca.data;

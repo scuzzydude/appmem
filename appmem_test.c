@@ -392,7 +392,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 random_ops = 10000000;
 	UINT32 idx;
 	UINT32 val;
-	AM_MEM_FUNCTION_T amSa;
+	AM_MEM_FUNCTION_T amAA;
 	AM_FUNC_CALLS_T *aCalls;
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
@@ -419,15 +419,21 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		}
 		
 		aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
-		amSa.fn = aCalls;
+		amAA.fn = aCalls;
 		
-		if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amSa))
+		if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amAA))
 		{
 			printf("Create Function Error\n");
 			AM_FREE(aCalls);
 			return;
 		}
 		
+
+	    if(AM_RET_GOOD != amAA.fn->open(&amAA))
+	    {
+		    printf("Open Function Error\n");
+		    return;
+	    }
 
 		/* Since C doesn't have an associtive array type */
 		/* We'll use our library functions directly */
@@ -448,17 +454,16 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		printf("Assc Array Write %d entries ELAP = %f\n", key_count, elap1);
 	
 
-
-		OS_HR_TIMER_START();
+        OS_HR_TIMER_START();
         for(i = 0; i < key_count; i++)
 		{
 		    
              
 			pK = pKeys[i];
 
-//		    printf("pK[%d] = %s func=%p\n", i, pK, amSa.fn->write_al);
+		    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
 		    
-			amSa.fn->write_al(&amSa, pK, &i);
+			amAA.fn->write_al(&amAA, pK, &i);
 			
 		}
 
@@ -515,7 +520,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			idx = rand() % key_count;		
 			pK = pKeys[idx];
 
-			if(AM_RET_GOOD == amSa.fn->read_al(&amSa, pK, &val))
+			if(AM_RET_GOOD == amAA.fn->read_al(&amAA, pK, &val))
 			{
 				if(val != idx)
 				{
