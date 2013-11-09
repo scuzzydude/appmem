@@ -437,7 +437,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
     cmd_bytes = (cmd_bytes * 8) + 8;
 
-    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
+    //printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
 
     if(arg)
     {
@@ -479,7 +479,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                 
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
-                        printk("Appmemd : aligned\n");
+      //                  printk("Appmemd : aligned\n");
 
                         if(0x1 & pKCmd->cmd.common.op)
                         {
@@ -504,11 +504,13 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             if(cmd_bytes >= (pDevice->rd_pack_size))
                             {
                                 rdptr = (void *)(*(UINT64 *)&pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
+#if 0
                                 
                                 printk("Valid PACKET READ cmd_bytes=%d rd_pack_size =%d RDPTR=%p Rp0=0x%08x Rp1=0x%08x\n", 
                                 cmd_bytes , pDevice->rd_pack_size, rdptr,
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset],
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset + 1]);
+#endif
                                 return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], rdptr);
                             }
                             else
@@ -527,7 +529,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             if(cmd_bytes >= (pDevice->wr_pack_size))
                             {
                                 
-                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
+  //                              printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
                                 return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
                             else

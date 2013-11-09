@@ -389,7 +389,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 10;
+	UINT32 random_ops = 1000;
 	UINT32 idx;
 	UINT32 val;
 	AM_MEM_FUNCTION_T amAA;
@@ -457,12 +457,8 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
         OS_HR_TIMER_START();
         for(i = 0; i < key_count; i++)
 		{
-		    
-             
 			pK = pKeys[i];
-
-		    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
-		    
+	//	    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
 			amAA.fn->write_al(&amAA, pK, &i);
 			
 		}
@@ -494,7 +490,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			{
 				if(val != idx)
 				{
-					printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+					printf("ERROR Key[%s] VAL MISMATCH  %d=%d\n", pK, val, idx);
 					break;
 			
 				}
@@ -517,12 +513,13 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		{
 			idx = rand() % key_count;		
 			pK = pKeys[idx];
-
+            val = 0;
+            
 			if(AM_RET_GOOD == amAA.fn->read_al(&amAA, pK, &val))
 			{
 				if(val != idx)
 				{
-					printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+					printf("ERROR Key[%s] VAL MISMATCH  %d=%d VALPTR=%p\n", pK, val, idx, &val);
 					break;
 			
 				}

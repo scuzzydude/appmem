@@ -30,7 +30,8 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	AM_ASSERT(pAA);
 
 	HASH_FIND(hh, pAA->head, pKey, pAA->key_len, pAI);
-	if(pAI)
+
+    if(pAI)
 	{
 //		memcpy(pData, pAI->data, pAA->data_len);		
         COPY_TO_USER(pData, pAI->data, pAA->data_len);
@@ -67,7 +68,6 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
         memcpy(pAI->data, pData, pAA->data_len);
 		memcpy(pAI->key, pKey, pAA->key_len);
-            
 
 		HASH_ADD_KEYPTR( hh, pAA->head, pAI->key, pAA->key_len, pAI );
 
