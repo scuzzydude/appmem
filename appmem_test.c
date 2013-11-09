@@ -66,7 +66,6 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 val;
 	UINT32 *ptr32;
 	UINT32 *local_buf;
-	int handle;
 	double elap1, elap2;
 	INIT_OS_HR_TIMER(0);
 	UINT32 random_ops = 10000000;
@@ -102,8 +101,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		return;
 	}
 
-	handle = amFmf.handle;
-
+	
 
 
 	local_buf = (UINT32 *)AM_MALLOC(mem_size);
@@ -134,7 +132,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 
 	for( i = 0; i < mem_size ; i += 4)
 	{
-		amFmf.fn->write_al(handle, &i, &i);
+		amFmf.fn->write_al(&amFmf, &i, &i);
 	}
 	OS_HR_TIMER_STOP();
 	elap2 = OS_HR_TIMER_GET_ELAP();
@@ -181,7 +179,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	{
 		addr = (((val + rval) % mem_size) & ~3); 
 		rval = rand();
-		amFmf.fn->read_al(handle, &addr, &val);
+		amFmf.fn->read_al(&amFmf, &addr, &val);
 		
 		if(val != addr)
 		{
@@ -223,7 +221,6 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 handle;
 	UINT32 random_ops = 10000000;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
@@ -263,7 +260,6 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	}
 
 
-	handle = amFa.handle;
 	localArray = (UINT32 *) AM_MALLOC(array_size * data_size);
 
 	if(localArray)
@@ -294,7 +290,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	for(i = 0; i < array_size; i++)
 	{
 		temp = array_size - i;
-		aCalls->write_al(handle, &i, &temp);
+		aCalls->write_al(&amFa, &i, &temp);
 	}
 	OS_HR_TIMER_STOP();
 	elap2 = OS_HR_TIMER_GET_ELAP();
@@ -333,7 +329,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	{
 		rval = rand();
 		idx = (val + rval) % array_size;
-		aCalls->read_al(handle,&idx, &val);
+		aCalls->read_al(&amFa,&idx, &val);
 		temp = array_size - idx;
 		running_val += val;
 		if(temp != val)
@@ -365,7 +361,7 @@ char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size)
 
 	for(i = 0; i < key_count; i++)
 	{
-		pK = AM_MALLOC(key_size);
+		pK = (char *) AM_MALLOC(key_size);
 
 		for(j = 0; j < (key_size - 1); j++)
 		{
@@ -460,7 +456,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		{
 			pK = pKeys[i];
 		
-			amSa.fn->write_al(handle, pK, &i);
+			amSa.fn->write_al(&amSa, pK, &i);
 			
 		}
 		OS_HR_TIMER_STOP();
@@ -514,7 +510,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			idx = rand() % key_count;		
 			pK = pKeys[idx];
 
-			if(AM_RET_GOOD == amSa.fn->read_al(handle, pK, &val))
+			if(AM_RET_GOOD == amSa.fn->read_al(&amSa, pK, &val))
 			{
 				if(val != idx)
 				{
@@ -597,8 +593,8 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 int main(int argc, char **argv)
 {
 //	UINT32 test = AM_TYPE_ARRAY;
-//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
-	UINT32 test = AM_TYPE_FLAT_MEM;
+	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+//	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;
 	UINT32 cap_count = 0;

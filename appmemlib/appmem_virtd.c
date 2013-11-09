@@ -190,7 +190,6 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc)
 {
 	AM_RETURN error = AM_RET_GOOD;
-	UINT32 i;
 	AM_FUNC_DATA_U *pVdF = NULL;
 	AM_FUNC_CALLS_T *fn_array =  NULL;
 
@@ -201,27 +200,12 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 	
 	memcpy((void *)&pFunc->amCap, (void *)pCap, sizeof(AM_MEM_CAP_T));
 
-	for(i = 0; i < MAX_VIRTD_FUNC_HANDLES; i++)
+	pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
+
+	if((NULL != pVdF) && (NULL != pFunc))
 	{
-		if(NULL == g_ptrFuncHandles[i])
-		{
-			pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
-			if(pVdF)
-			{
-				g_ptrFuncHandles[i] = pVdF;
-				
-				pFunc->handle = (VIRTD_HANDLE_SIG | i);
-			
-			}
-			break;
+		pFunc->pVdF = pVdF;
 
-		
-		}
-
-	}
-
-	if(NULL != pFunc)
-	{
 		switch(pCap->amType)
 		{
 			case AM_TYPE_FLAT_MEM:

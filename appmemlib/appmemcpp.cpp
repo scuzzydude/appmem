@@ -197,7 +197,7 @@ AM_RETURN CAppMemFlat::write32(UINT32 offset, UINT32 val)
 {
 	if(sizeof(UINT32) == address_size)
 	{
-		return pCalls->write_al(amFunc.handle, &offset, &val); 
+		return pCalls->write_al(&amFunc, &offset, &val); 
 	}
 	else
 	{
@@ -211,7 +211,7 @@ AM_RETURN CAppMemFlat::read32(UINT32 offset, UINT32 *pVal)
 {
 	if(sizeof(UINT32) == address_size)
 	{
-		return pCalls->read_al(amFunc.handle, &offset, pVal);	
+		return pCalls->read_al(&amFunc, &offset, pVal);	
 	}
 	else
 	{
@@ -314,7 +314,7 @@ AM_RETURN CAppMemStaticArray::insert(UINT32 index, void *pVal)
 	
 	if(index < elements)
 	{
-		return pCalls->write_al(amFunc.handle, &index, pVal);
+		return pCalls->write_al(&amFunc, &index, pVal);
 	}
 	return AM_RET_KEY_OUT_OF_RANGE;
 
@@ -323,7 +323,7 @@ AM_RETURN CAppMemStaticArray::get(UINT32 index, void *pVal)
 {
 	if(index < elements)
 	{
-		return pCalls->read_al(amFunc.handle, &index, pVal);
+		return pCalls->read_al(&amFunc, &index, pVal);
 	}
 	return AM_RET_KEY_OUT_OF_RANGE;
 }
@@ -382,7 +382,7 @@ AM_RETURN CAppMemAsscArray::insert(void *pKey, void *pVal)
 {
 	if(bFixedKey && bFixedData)
 	{
-		return pCalls->write_al(amFunc.handle, pKey, pVal);
+		return pCalls->write_al(&amFunc, pKey, pVal);
 	}
 	else
 	{
