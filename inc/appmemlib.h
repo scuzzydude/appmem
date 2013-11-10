@@ -131,6 +131,7 @@ typedef union am_func_data
 		UINT64 size;
 	    UINT32 idx_size;
 		UINT32 data_size;
+		UINT32 array_size;
 
 	} stata; /* Static Array */
 	struct

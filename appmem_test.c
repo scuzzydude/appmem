@@ -212,8 +212,8 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
-//	UINT32 array_size = 1024 * 1024;
-	UINT32 array_size = 4 * 4;
+	UINT32 array_size = 1024 * 1024;
+//	UINT32 array_size = 1024;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;

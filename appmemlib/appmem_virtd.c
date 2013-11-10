@@ -258,7 +258,8 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 				pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
 				pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
 				pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
-				
+				pVdF->stata.array_size = pCap->maxSize;
+
 				pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
 
 				if(NULL != pVdF->stata.data)

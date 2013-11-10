@@ -62,12 +62,14 @@ int am_unsigned_intg_sort_comp32(void *p1, void *p2)
 {
 	UINT32 a1 = *(UINT32 *)p1;
 	UINT32 a2 = *(UINT32 *)p2;
-
+#if 0
 	if(a1 == a2)
 	{
 		return 0;
 	}
-	else if(a1 < a2)
+	else 
+#endif
+		if(a1 < a2)
 	{
 		return -1;
 	}
@@ -102,11 +104,11 @@ void am_stata_merge(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, UINT8
 	jptr = mid_ptr + data_size;
 	kptr = merge_buffer;
 	
-	while( (iptr < mid_ptr) && (jptr < end_ptr))
+	while( (iptr <= mid_ptr) && (jptr <= end_ptr))
 	{
 		compare = sort_fn(iptr, jptr);
 	
-		if(compare < 0)
+		if(compare ==  -1)
 		{
 			am_set_ptrval(kptr, iptr, data_size);
 			kptr += data_size;
@@ -120,7 +122,7 @@ void am_stata_merge(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, UINT8
 		}
 	}
 
-	while(iptr < mid_ptr)
+	while(iptr <= mid_ptr)
 	{
 
 		am_set_ptrval(kptr, iptr, data_size);
@@ -128,7 +130,7 @@ void am_stata_merge(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, UINT8
 		iptr += data_size;
 
 	}
-	while(jptr < end_ptr)
+	while(jptr <= end_ptr)
 	{
 		am_set_ptrval(kptr, jptr, data_size);
 		kptr += data_size;
@@ -138,7 +140,7 @@ void am_stata_merge(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, UINT8
 	iptr = start_ptr;
 	kptr = merge_buffer;
 
-	while(iptr < end_ptr)
+	while(iptr <= end_ptr)
 	{
 		am_set_ptrval(iptr, kptr, data_size);
 		iptr += data_size;
@@ -152,19 +154,20 @@ void am_stata_merge(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, UINT8
 void am_stata_merge_sort(UINT8 *merge_buffer, UINT8 *start_ptr, UINT8 *end_ptr, int data_size, am_sort_compare_fn sort_fn)
 {
 	UINT8 *mid_ptr;
-
+	UINT32 data_unit_count;
+	data_unit_count = (end_ptr - start_ptr) / data_size;
+	data_unit_count /= 2;
 		
-	if(start_ptr < end_ptr)
+	if((start_ptr < end_ptr))
 	{
 		/* (low + high) / 2 */
 		/* but since these are pointers we could overflow with the addition */
 
-		mid_ptr = ((end_ptr - start_ptr) / 2) + start_ptr;  
+		mid_ptr = start_ptr + (data_unit_count * data_size);  
 		am_stata_merge_sort(merge_buffer, start_ptr, mid_ptr, data_size, sort_fn);
 		am_stata_merge_sort(merge_buffer, mid_ptr + data_size, end_ptr, data_size, sort_fn);
 		am_stata_merge(merge_buffer, start_ptr, end_ptr, mid_ptr, data_size, sort_fn);
 
-	//	merge(a,low,high,mid);
 	}
 	
 
@@ -222,10 +225,10 @@ AM_RETURN am_stata_sort(AM_HANDLE handle, void * p1, UINT64 l1)
 		if(AM_SORT_TYPE_STATA_INTEGRAL_MERGE == pSort->common.type)
 		{
 			/* size for stata is max index + 1 i.e. array[100] size if 100 */
-			if(pSort->stata_integral.start_idx < fd->stata.size)
+			if(pSort->stata_integral.start_idx < fd->stata.array_size)
 			{
 				byte_ptr = (UINT8 *)fd->stata.data;
-				byte_ptr += (pSort->stata_integral.start_idx * fd->stata.data_size);
+				byte_ptr += (pSort->stata_integral.start_idx * fd->stata.array_size);
 				start_ptr = byte_ptr;
 			}
 			else
@@ -233,13 +236,13 @@ AM_RETURN am_stata_sort(AM_HANDLE handle, void * p1, UINT64 l1)
 				return AM_RET_PARAM_ERR;
 			}
 	
-			if(pSort->stata_integral.end_idx < fd->stata.size)
+			if(pSort->stata_integral.end_idx < fd->stata.array_size)
 			{
 				/* Lazy man's way to sort the whole array */
 				if(0 == pSort->stata_integral.end_idx)
 				{
 					byte_ptr = (UINT8 *)fd->stata.data;
-					byte_ptr += ((fd->stata.size - 1) * fd->stata.data_size);		
+					byte_ptr += ((fd->stata.array_size - 1) * fd->stata.data_size);		
 					end_ptr = byte_ptr;
 				}
 				else
