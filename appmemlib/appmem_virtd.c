@@ -35,6 +35,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 #include "am_assca.h"
 
+int g_virtd_minor_count = 1;
+
+
 AM_MEM_CAP_T virtd_caps[] = 
 {
 
@@ -60,7 +63,7 @@ AM_MEM_CAP_T virtd_caps[] =
 	{ 
 		AM_TYPE_ARRAY,
 		(1024 * 1024),
-		7,
+		8,
 		{
 			(8 | 4 | 2 | 1),  /* Array - Index Size Bytes */ 
 			1,                /* Min Value Size - Bytes */
@@ -161,6 +164,7 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 			fn_array->write = am_assca_write32;
 			fn_array->read_al = am_assca_read32_align;
 			fn_array->write_al = am_assca_write32_align;
+		
 			fn_array->copy = NULL;
 	
 
@@ -203,6 +207,8 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 		{
 			case AM_TYPE_FLAT_MEM:
 			{
+				sprintf(pFunc->crResp.am_name, "virtd_flat%d", g_virtd_minor_count);
+
 				pVdF->flat.size = pCap->maxSize;
 				pVdF->flat.add_size = pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE];
 				pVdF->flat.data = AM_MALLOC((size_t)pCap->maxSize);
@@ -247,6 +253,8 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 			case AM_TYPE_ARRAY:
 			{
 	
+				sprintf(pFunc->crResp.am_name, "virtd_stata%d", g_virtd_minor_count);
+
 				pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
 				pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
 				pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
@@ -267,6 +275,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 						fn_array->read_al = am_stata_read_idx32;
 						fn_array->write_al = am_stata_write_idx32;
 						fn_array->copy = NULL;
+						fn_array->sort = am_stata_sort;
 					}
 
 				}
@@ -280,6 +289,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 
 			case AM_TYPE_ASSOC_ARRAY:
 			{
+				sprintf(pFunc->crResp.am_name, "virtd_assca%d", g_virtd_minor_count);
 				error = am_virtd_init_assca(pEntry, pCap, pFunc, pVdF);
 			}
 			break;
@@ -300,6 +310,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 	}
 
 
+	g_virtd_minor_count++;
 
 	return error;
 

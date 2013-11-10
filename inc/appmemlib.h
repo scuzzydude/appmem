@@ -103,7 +103,7 @@ typedef struct _am_func_calls
 	am_fn_align read_al;
 	am_fn_align write_al;
 	am_fn copy;
-	am_fn sort;
+	am_fn_action sort;
 	am_fn *fn;
 
 
@@ -142,6 +142,38 @@ typedef union am_func_data
 
 
 } AM_FUNC_DATA_U;
+
+/* Sort Types */
+#define AM_SORT_TYPE_STATA_INTEGRAL_MERGE    1
+
+/* Sort Orders */
+#define AM_SORT_ORDER_ASC			         0
+#define AM_SORT_ORDER_DESC                   1
+
+
+
+typedef union am_sort_param
+{
+	struct
+	{
+		UINT32 type;
+
+	} common;
+	struct
+	{
+		UINT32 type;
+		UINT32 start_idx;
+		UINT32 end_idx;
+		UINT32 order;
+		UINT8  data_signed; /* flags, can be bit fields if we think of more of them */	
+
+	} stata_integral;
+
+
+} AM_SORT_PARAM_U;
+
+
+
 
 
 typedef struct am_mem_function_t

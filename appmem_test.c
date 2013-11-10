@@ -221,9 +221,10 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 10000000;
+	UINT32 random_ops = 1000;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
+	AM_SORT_PARAM_U sortP;
 
 	OS_HR_TIME_PRINT_TIMER_RES();
 
@@ -345,6 +346,27 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	printf("APMEM READ %d ops ELAP = %f\n", random_ops, elap2);
 	printf("DELTA = %f PERCENT (Running Val=%d)\n",  100 * ((elap1 - elap2) / elap1), running_val);	
 
+	sortP.stata_integral.type = AM_SORT_TYPE_STATA_INTEGRAL_MERGE;
+	sortP.stata_integral.order = AM_SORT_ORDER_ASC;
+	sortP.stata_integral.start_idx = 0;
+	sortP.stata_integral.end_idx = 0; //sort all if 0
+	
+	printf("STATA Array Sort %s\n", amFa.crResp.am_name);
+
+	OS_HR_TIMER_START();
+	if(AM_RET_GOOD != aCalls->sort(&amFa, &sortP, sizeof(AM_SORT_PARAM_U)))
+	{
+		printf("Sort Error\n");
+	}
+
+	OS_HR_TIMER_STOP();
+	elap2 = OS_HR_TIMER_GET_ELAP();
+	printf("STATA Array Sort %s Elap=%f\n", amFa.crResp.am_name, elap2);
+
+	
+	
+	
+	
 	free(localArray);
 	free(aCalls);
 }
@@ -597,8 +619,8 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-//	UINT32 test = AM_TYPE_ARRAY;
-	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+	UINT32 test = AM_TYPE_ARRAY;
+//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
 //	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;
