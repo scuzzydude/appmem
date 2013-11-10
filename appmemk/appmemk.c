@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmemlib.h"
 #include "appmemd_ioctl.h"
 #include "am_k.h"
-
+#include "am_k_sock.h"
 
 
 
@@ -656,6 +656,11 @@ static int __init appmemd_init(void)
 
     appmemd_minor++;
     
+     
+    
+    am_k_sock_init(0xC0A801DD); //192.168.1.221
+
+
     return result;
 }
  
