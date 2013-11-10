@@ -212,7 +212,8 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
-	UINT32 array_size = 1024 * 1024;
+//	UINT32 array_size = 1024 * 1024;
+	UINT32 array_size = 4 * 4;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -350,7 +351,8 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	sortP.stata_integral.order = AM_SORT_ORDER_ASC;
 	sortP.stata_integral.start_idx = 0;
 	sortP.stata_integral.end_idx = 0; //sort all if 0
-	
+	sortP.stata_integral.data_signed = 0;
+
 	printf("STATA Array Sort %s\n", amFa.crResp.am_name);
 
 	OS_HR_TIMER_START();
@@ -634,6 +636,8 @@ int main(int argc, char **argv)
 	printf("SIZEOF UINT32 = %d\n", sizeof(UINT32));
 	printf("SIZEOF UINT16 = %d\n", sizeof(UINT16));
 	printf("SIZEOF UINT8 = %d\n", sizeof(UINT8));
+	printf("SIZEOF size_t = %d\n", sizeof(size_t));
+	printf("SIZEOF void * = %d\n", sizeof(void *));
 	printf("ARGC = %d\n", argc);
 
 	if(argc > 1)
