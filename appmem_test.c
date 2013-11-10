@@ -625,7 +625,9 @@ int main(int argc, char **argv)
 //	UINT32 test = AM_TYPE_ASSOC_ARRAY;
 //	UINT32 test = AM_TYPE_FLAT_MEM;
 
-	char *driver_name = NULL;
+//	char *driver_name = NULL;
+	char *driver_name = "127.0.0.1";
+
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
 	UINT32 i;
@@ -648,7 +650,6 @@ int main(int argc, char **argv)
         {
             driver_name = NULL;
         }
-
 	}
 
 	if(argc > 2)

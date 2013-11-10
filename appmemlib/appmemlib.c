@@ -40,16 +40,81 @@ char * AmCapTypeStr[4] = {
 	"Associative Array"
 };
 
+UINT32 am_get_ip_address(char *am_name)
+{
+	int  byte[4];
+	union _ipaddr_t
+	{
+		UINT32 dw;
+		UINT8 byte[4];
+	} ipaddr_t;
+
+	UINT32 len;
+	UINT32 i;
+	UINT32 dcnt = 0;
+
+
+	/* TODO: IF it's IP Address -- there is probably a better way to do this */
+
+	len = strlen(am_name);
+
+	if(len > strlen("1.1.1.1"))
+	{
+		for(i = 0; i < len; i++)
+		{
+			if(am_name[i] == '.')
+			{
+				dcnt++;
+			}
+		}
+
+		if(dcnt == 3)
+		{
+			sscanf(am_name, "%d.%d.%d.%d", 
+				&byte[0],
+				&byte[1],
+				&byte[2],
+				&byte[3]);
+		}
+	}
+
+	ipaddr_t.byte[3] = (UINT8) (0xFF & byte[0]);
+	ipaddr_t.byte[2] = (UINT8) (0xFF & byte[1]);
+	ipaddr_t.byte[1] = (UINT8) (0xFF & byte[2]);
+	ipaddr_t.byte[0] = (UINT8) (0xFF & byte[3]);
+
+	
+	return ipaddr_t.dw;
+}
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 {
+	UINT32 ipaddr = 0;
+
 	if(pEntry)
 	{
+
 		if(am_name)
 		{
-			pEntry->am_name = am_name;
-			pEntry->create_function = am_kd_create_function;
-			pEntry->get_capabilities = am_kd_get_capabilities;
-			pEntry->get_cap_count = am_kd_get_capabilities_count;
+
+			ipaddr = am_get_ip_address(am_name);
+			printf("IP ADDR = %08x\n", ipaddr);
+#if _WIN32
+			/* No reason this can't be supported in Windows test code */
+			/* Just need abstraction for the socket API calls */
+			ipaddr = 0;
+#endif
+
+			if(0 != ipaddr)
+			{
+		
+			}
+			else
+			{
+				pEntry->am_name = am_name;
+				pEntry->create_function = am_kd_create_function;
+				pEntry->get_capabilities = am_kd_get_capabilities;
+				pEntry->get_cap_count = am_kd_get_capabilities_count;
+			}
 		}
 		else
 		{
