@@ -256,11 +256,6 @@ AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
 
 
-/* Os Specific */
-AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr);
-AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len);
-AM_RETURN am_int_recv_msg(void *pTransport, void *pMsg, UINT32 len);
-
 
 
 

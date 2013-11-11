@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmem_virtd.h"
 #include "appmemd_ioctl.h"
 #include "appmem_kd.h"
-
+#include "appmem_net.h"
 
 char * AmCapTypeStr[4] = {
 	"Appmem Base Capabilites",

@@ -9,7 +9,6 @@
 #include "appmemd_ioctl.h"
 #include "appmem_net.h"
 
-#define DEFAULT_PORT 4950
 // TCP socket type
 #define DEFAULT_PROTO SOCK_STREAM
 
@@ -41,7 +40,7 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
 		memset(pSocket, 0, sizeof(AM_WIN_SOCKET_T));
 	}
 	
-	pSocket->port_number = DEFAULT_PORT;				
+	pSocket->port_number = DEFAULT_AM_NET_PORT;				
 
 	if (WSAStartup(0x0101, &pSocket->w) != 0)
 	{
