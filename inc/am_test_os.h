@@ -19,6 +19,8 @@
 #define AM_VALLOC(x) malloc(x)
 #define AM_VFREE(x) free(x)
 
+
+
 #else
 #ifdef _APPMEMD
 

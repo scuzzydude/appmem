@@ -89,6 +89,7 @@ UINT32 am_get_ip_address(char *am_name)
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 {
 	UINT32 ipaddr = 0;
+	char *buf;
 
 	if(pEntry)
 	{
@@ -98,15 +99,22 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 
 			ipaddr = am_get_ip_address(am_name);
 			printf("IP ADDR = %08x\n", ipaddr);
-#if _WIN32
-			/* No reason this can't be supported in Windows test code */
-			/* Just need abstraction for the socket API calls */
-			ipaddr = 0;
-#endif
 
 			if(0 != ipaddr)
 			{
-		
+				buf = (char *)AM_MALLOC(64);
+
+				sprintf(buf, "appmem%s", am_name);		
+				pEntry->am_name = buf;
+				
+				if(AM_RET_GOOD != am_net_init_entry(pEntry, ipaddr))
+				{
+					printf("Error NET Init IP=%08x\n", ipaddr);
+					pEntry->am_name = NULL;
+					AM_FREE(buf);
+					return AM_RET_IO_ERR;
+				}
+
 			}
 			else
 			{

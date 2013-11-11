@@ -72,6 +72,7 @@ typedef unsigned char UINT8;
 #define AM_RET_INVALID_FUNC     (6)
 #define AM_RET_INVALID_HDL      (7)
 #define AM_RET_KEY_OUT_OF_RANGE (8)
+#define AM_RET_SOCKET_ERR       (9)
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
@@ -228,7 +229,24 @@ typedef struct amlib_entry_
 	UINT32             (*get_cap_count)(struct amlib_entry_ *pEntry);
 	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+	void               *pTransport;
 } AMLIB_ENTRY_T;
+
+#define AM_PACK_TYPE_OPCODE_ONLY   1
+typedef struct _am_pack_wrapper
+{
+	UINT32 packType;
+	UINT16 appTag;
+	UINT16 size; /* Includes wrapper size of 8 */
+} AM_PACK_WRAPPER_T; 
+
+#define AM_FUNC_OPCODE_IDENTIFY    1
+typedef struct _am_pack_identify
+{
+	AM_PACK_WRAPPER_T wrap;
+	UINT32 op;
+
+} AM_PACK_IDENTIFY;
 
 
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
@@ -236,6 +254,12 @@ UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
 AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
 
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
+
+
+/* Os Specific */
+AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr);
+AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len);
+AM_RETURN am_int_recv_msg(void *pTransport, void *pMsg, UINT32 len);
 
 
 
