@@ -73,6 +73,8 @@ typedef unsigned char UINT8;
 #define AM_RET_INVALID_HDL      (7)
 #define AM_RET_KEY_OUT_OF_RANGE (8)
 #define AM_RET_SOCKET_ERR       (9)
+#define AM_RET_IO_UNDERRUN     (10)
+
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
