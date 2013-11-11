@@ -11,6 +11,7 @@
 
 // TCP socket type
 #define DEFAULT_PROTO SOCK_STREAM
+//#define DEFAULT_PROTO SOCK_DGRAM
 
 typedef struct _am_win_socket
 {
@@ -24,7 +25,7 @@ typedef struct _am_win_socket
 
 } AM_WIN_SOCKET_T;
 
-AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
+AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 port)
 {
 	char host_name[256];					
 	AM_WIN_SOCKET_T       *pSocket;
@@ -96,7 +97,7 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
 	return 0;
 }
 
-AM_RETURN am_int_recv_msg(void *pTransport, void *pMsg, UINT32 len)
+AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes)
 {
 	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
 	int error;
@@ -130,4 +131,13 @@ AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len)
 	}
 
 	return AM_RET_GOOD;
+}
+
+AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
+{
+	/* TODO: close socket */
+	/* free pSocket */
+
+	return AM_RET_GOOD;
+
 }

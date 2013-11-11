@@ -161,3 +161,6 @@ UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size)
 	return bytes_written;
 }
 
+
+
+

@@ -73,7 +73,7 @@
 #define AM_FREE(x) free(x)
 #define AM_VALLOC(x) malloc(x)
 #define AM_VFREE(x) free(x)
-
+#define AM_SLEEP(x) sleep(x)
 
 
 

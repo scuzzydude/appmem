@@ -59,7 +59,6 @@ typedef unsigned char UINT8;
 #define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
 #endif
 
-//#define AM_ASSERT(x)
 
 
 
@@ -74,7 +73,7 @@ typedef unsigned char UINT8;
 #define AM_RET_KEY_OUT_OF_RANGE (8)
 #define AM_RET_SOCKET_ERR       (9)
 #define AM_RET_IO_UNDERRUN     (10)
-
+#define AM_RET_THREAD_ERR      (11)
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
@@ -232,6 +231,7 @@ typedef struct amlib_entry_
 	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
 	void               *pTransport;
+    void               *pTarget;
 } AMLIB_ENTRY_T;
 
 #define AM_PACK_TYPE_OPCODE_ONLY   1
@@ -243,6 +243,9 @@ typedef struct _am_pack_wrapper
 } AM_PACK_WRAPPER_T; 
 
 #define AM_FUNC_OPCODE_IDENTIFY    1
+
+
+
 typedef struct _am_pack_identify
 {
 	AM_PACK_WRAPPER_T wrap;
@@ -251,11 +254,30 @@ typedef struct _am_pack_identify
 } AM_PACK_IDENTIFY;
 
 
+
+typedef union _am_pack_all_u
+{
+	AM_PACK_WRAPPER_T    wrap;
+    AM_PACK_IDENTIFY     op;
+
+} AM_PACK_ALL_U;
+
+
+typedef struct _am_pack_queue
+{
+    UINT64 *pQwbuf;
+    UINT32  size;
+    UINT32  ci;
+    UINT32  pi;
+    
+
+} AM_PACK_QUEUE_T;
+
+
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
-
 AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
-
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
+AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 qword_count);
 
 
 
