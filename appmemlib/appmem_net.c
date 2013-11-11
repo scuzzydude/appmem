@@ -7,6 +7,9 @@ AM_RETURN am_net_init_entry(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
 {
 	AM_PACK_IDENTIFY id_t;
 	UINT8 tempbuf[100];
+
+    memset(tempbuf, 0, 100);
+    
 	am_net_establish_socket(pEntry, ipaddr);
 
 	id_t.wrap.packType = AM_PACK_TYPE_OPCODE_ONLY; 
@@ -23,6 +26,9 @@ AM_RETURN am_net_init_entry(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
 		if(AM_RET_GOOD == am_int_recv_msg(pEntry->pTransport, &tempbuf[0], 100))
 		{
 			printf("Rcv Identify Packet Response\n");
+            //TEMP - noreason for real rcv to be a string .... 
+            
+            printf("REC MESSAGE =%s\n", tempbuf);
 		}
 
 	}
