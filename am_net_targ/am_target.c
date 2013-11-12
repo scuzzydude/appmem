@@ -5,52 +5,274 @@
 #include "appmem_net.h"
 
 
-AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 qword_count)
+AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
 {
     AM_PACK_QUEUE_T *pQueue = NULL;
-    UINT64 *pQwbuf;
+    AM_PACK_ALL_U *pRxBuf = NULL;
+	AM_REC_CMD_T *pRxCmd = NULL;
+	int error  = 0;
+    UINT32 i;
 
-    pQwbuf = (UINT64 *)AM_MALLOC(qword_count * sizeof(UINT64));
+	pRxCmd = (AM_REC_CMD_T *)AM_MALLOC(pack_count * sizeof(AM_REC_CMD_T));
+	pRxBuf = (AM_PACK_ALL_U *)AM_MALLOC(pack_count * sizeof(AM_PACK_ALL_U));
 
-    if(pQwbuf)
+    if((NULL != pRxBuf) && (NULL != pRxCmd))
     {
-        printf("pQwbuf(%d) = %p\n", (qword_count * sizeof(UINT64), pQwbuf));
+        printf("pRxBuf(%d) = %p\n", pack_count * sizeof(AM_PACK_ALL_U), pRxBuf);
+        printf("  pRxCmd(%d) = %p\n", sizeof(AM_REC_CMD_T) * pack_count, pRxCmd);
         
-        pQueue = AM_MALLOC(sizeof(AM_PACK_QUEUE_T)); 
+		memset(pRxCmd, 0, pack_count * sizeof(AM_REC_CMD_T));
+		memset(pRxBuf, 0, pack_count * sizeof(AM_PACK_ALL_U));
 
-        if(pQueue)
+
+
+		for(i = 0; i < pack_count; i++)
+		{
+			pRxCmd[i].pRxBuf = &pRxBuf[i];	
+			pRxCmd[i].idx = i;
+			pRxCmd[i].state = RX_CMD_STATE_FREE;
+			pRxCmd[i].recv_len = 0;
+			pRxCmd[i].pvClient = am_net_alloc_client();
+
+			if(i < (pack_count - 1))
+			{
+				pRxCmd[i].next = &pRxCmd[i + 1];
+			}
+			else
+			{
+				/* TODO: Maybe this is circular */
+				/* We can't use it as circular queue directly */
+				/* as we will use only continuguous data buffer and they may be multiple packet unions */
+				/* we always know head/tail pRxCmd[0] and pRxCmd[pack_count - 1] */
+				pRxCmd[i].next = NULL;
+			}
+		
+		
+		}
+
+		pQueue = (AM_PACK_QUEUE_T *)AM_MALLOC(sizeof(AM_PACK_QUEUE_T)); 
+		
+		if(pQueue)
         {
-            pQueue->pQwbuf = pQwbuf;
-            pQueue->size = qword_count;
-            pQueue->ci = 0;
-            pQueue->pi = 0;
+            pQueue->pRxBuf = pRxBuf;
+			pQueue->pRxCmd = pRxCmd;
+            pQueue->size = pack_count;
+            pQueue->rx_ci = 0;
+            pQueue->rx_pi = 0;
+            pQueue->tx_ci = 0;
+            pQueue->tx_pi = 0;
 
 
         }
         else
         {
-            AM_FREE(pQwbuf);
-        }
+			error++;
+		}
 
 
     }
+	else
+	{
+		error++;
+	}
 
-    return pQueue;
+	if(error)
+	{
+		if(pRxBuf)
+		{
+			AM_FREE(pRxBuf);
+		}
+
+	}
+	
+	
+	return pQueue;
     
 }
 
 
-UINT64 * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 min_qwords)
+AM_RETURN am_update_pack_queue_rx_idx(AM_PACK_QUEUE_T *pQueue, AM_REC_CMD_T *pRxCmd)
 {
+	UINT32 inc_size = 0;
+	AM_REC_CMD_T *pCmdNext;
+	UINT32 i;
+	AM_ASSERT(pQueue);
+	AM_ASSERT(pRxCmd);
+	AM_ASSERT((pRxCmd->idx == pQueue->rx_pi));
 
-    AM_ASSERT(pQueue);
+	if(pRxCmd->recv_len)
+	{
+		inc_size = (pRxCmd->recv_len  / sizeof(AM_PACK_ALL_U));
 
-    return &(pQueue->pQwbuf[pQueue->pi]);
+		if(pRxCmd->recv_len  % sizeof(AM_PACK_ALL_U))
+		{
+			inc_size++;
+		}
 
+		pQueue->rx_pi += inc_size;
+		
+		pRxCmd->buf_count = inc_size;
 
+		
+		
+		if(pQueue->rx_pi > pQueue->size)
+		{
+			/* I'm assuming the the RECV packet function will error */
+			/* If packet comes in bigger than max_bytes */
+			/* So we shouldn't get here */
+			/* Need to explore this later */
+			/* We need to push back and either stall */
+			/* Or wrap to front of the queue in this case */
+			return AM_RET_Q_OVERFLOW;
+		}
+		
+		pRxCmd->state = RX_CMD_STATE_ACTIVE;
+		
+		if(inc_size > 1)
+		{
+			pCmdNext = pRxCmd->next;
+			i = 1;
+			/* TODO: Mark the next series as inuse */
+			while((NULL != pCmdNext) &&  (i < inc_size))
+			{
+					
+				pCmdNext->state = RX_CMD_STATE_CONT_BUF_2 + (i - 1);
+				i++;
+			}
+			
+			AM_ASSERT(0);
+		}
+	
+		
+		
+		
+		
+		if(pQueue->rx_pi == pQueue->size)
+		{
+			/* Normal Wrap Around when rcv_pack_size <= normal_pack_size */
+			pQueue->rx_pi = 0;
+		}
+	
+	
+	}
+	else
+	{
+		AM_ASSERT(0); //received a packet with 0 length? 
+	}
+	
+	printf("pQueue->rx_pi = %d INC_SIZE=%d\n", pQueue->rx_pi, inc_size);
+	return AM_RET_GOOD;
+	
 }
 
 
+AM_REC_CMD_T * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 *max_bytes)
+{
+
+    AM_ASSERT(pQueue);
+	
+	*max_bytes = sizeof(AM_PACK_ALL_U); /* TODO: Calculate number of continguous bytes left in the buffer */
+
+    return &(pQueue->pRxCmd[pQueue->rx_pi]);
+
+}
+
+AM_RETURN am_validate_function_id(UINT16 packOp, UINT16 func_id)
+{
+	if(0)
+	{
+		//TODO: Lookup index of the function device 
+	}
+	if(AM_PACK_FUNC_ID_BASEAPPMEM == func_id)
+	{
+		return AM_RET_GOOD;
+	}
+	else
+	{
+		/* Can send identify to any device number (discovery) */
+		if(AM_FUNC_OPCODE_IDENTIFY == packOp)
+		{
+			return AM_RET_GOOD;
+		}
+	
+	}
+
+
+
+	return AM_RET_INVALID_FUNC;
+}
+
+AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
+{
+	AM_RETURN error;	
+
+	error = am_validate_function_id(pRxCmd->pRxBuf->wrap.func_id, pRxCmd->pRxBuf->wrap.func_id);
+	
+	if(AM_RET_GOOD == error)
+	{
+
+		switch(pRxCmd->pRxBuf->wrap.func_id)
+		{
+
+
+			default:
+				error = AM_RET_INVALID_PACK_OP;
+				break;
+
+		}
+	
+	
+	
+	}
+	else
+	{
+		error = AM_RET_INVALID_FUNC;
+	}
+
+	return error;
+}
+
+UINT32 am_targ_check_cmd_queue(AM_TARGET_T *pTarget)
+{
+	UINT32 count = 0;
+	AM_PACK_QUEUE_T *pQueue = NULL;
+	AM_REC_CMD_T *pRxCmd;
+
+	AM_ASSERT(pTarget);
+	
+	pQueue = pTarget->pPackQueue;
+	
+	AM_ASSERT(pQueue);
+
+	while(pQueue->rx_ci != pQueue->rx_pi)
+	{
+			pRxCmd = &pQueue->pRxCmd[pQueue->rx_ci];
+
+
+			printf("**** CONSUME THREAD ***\n");
+            printf("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
+            printf("packType = %08x\n", pRxCmd->pRxBuf->wrap.packType);
+            printf("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
+            printf("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
+
+			if(AM_RET_GOOD == am_targ_process_cmd(pRxCmd, pTarget))
+			{
+
+			}
+			else
+			{
+				/* TODO -- Some error, stall, backpressure etc... some action */
+			}
+	
+			pQueue->rx_ci += pRxCmd->buf_count;
+			pQueue->rx_ci = (pQueue->rx_ci % pQueue->size); 
+			
+			count++;
+	}
+
+	return count;
+
+}
 
 
 
@@ -64,11 +286,10 @@ void * am_targ_recv_thread(void *p1)
     AM_TARGET_T *pTarget = pEntry->pTarget;
     AM_PACK_QUEUE_T *pQueue;
     void *pTransport;
-    UINT32 rcv_bytes;
-    const int max_len_bytes = (512);
-    const int max_len_qwords = max_len_bytes / 8; 
-    AM_PACK_ALL_U *pPack;
-    
+    UINT32 max_len_bytes;
+    AM_REC_CMD_T *pRxCmd;
+	AM_RETURN error;
+
     pTransport = pEntry->pTransport;
     pQueue = pTarget->pPackQueue;
 
@@ -79,17 +300,24 @@ void * am_targ_recv_thread(void *p1)
         printf("Thread count =%d\n", count);
         count++;
 
-        pPack = (AM_PACK_ALL_U *)am_get_pack_queue_buf(pQueue, max_len_qwords);
+        pRxCmd = am_get_pack_queue_buf(pQueue, &max_len_bytes);
 
-        printf("pPack(%d) = %p\n", max_len_bytes, pPack);
+        printf("pPack(%d) = %p\n", max_len_bytes, pRxCmd);
         
-        
-        if(AM_RET_GOOD == am_net_recv_msg(pTransport, pPack, max_len_bytes, &rcv_bytes))
+        if(AM_RET_GOOD ==  am_net_recv_unsol_msg(pTransport, pRxCmd->pRxBuf, max_len_bytes, &pRxCmd->recv_len, pRxCmd->pvClient))
+//        if(AM_RET_GOOD == am_net_recv_msg(pTransport, pRxCmd->pRxBuf, max_len_bytes, &pRxCmd->recv_len))
         {
-            printf("message RECIEVED LEN = %d (0x%08x)\n", rcv_bytes, rcv_bytes);
-            printf("packType = %08x\n", pPack->wrap.packType);
-            printf("appTag   =     %04x\n", pPack->wrap.appTag);
-            printf("size     =     %04x\n", pPack->wrap.size);
+            printf("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
+            printf("packType = %08x\n", pRxCmd->pRxBuf->wrap.packType);
+            printf("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
+            printf("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
+
+			error = am_update_pack_queue_rx_idx(pQueue, pRxCmd);
+
+			if(AM_RET_GOOD == error)
+			{
+				printf("Queue RX_IDX updated\n");
+			}
 
 
         }
@@ -173,8 +401,8 @@ AM_RETURN am_targ_start_target(void)
             printf("Start Target Loop Waiting on Threads...\n");
             while(1)
             {
-                AM_SLEEP(1);
-            }
+				am_targ_check_cmd_queue(pTarget);
+			}
             
         }
         else
@@ -198,7 +426,16 @@ int main(int argc, char **argv)
 
     error = am_targ_start_target();
     
-    if(AM_RET_GOOD != error)
+	/* Check environment */
+	AM_ASSERT((sizeof(AM_PACK_ALL_U) == MAX_BASIC_PACK_UNION_SIZE));
+	AM_ASSERT((sizeof(UINT64) == 8));	
+	
+	
+	
+	
+	
+	
+	if(AM_RET_GOOD != error)
     {
         printf("Start Target error = %d\n", error);
 

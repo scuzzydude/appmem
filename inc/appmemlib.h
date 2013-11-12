@@ -74,6 +74,11 @@ typedef unsigned char UINT8;
 #define AM_RET_SOCKET_ERR       (9)
 #define AM_RET_IO_UNDERRUN     (10)
 #define AM_RET_THREAD_ERR      (11)
+#define AM_RET_Q_OVERFLOW      (12)
+#define AM_RET_INVALID_PACK_OP (13)
+
+
+
 typedef enum amTypeEnum 
 {
 	AM_TYPE_BASE_APPMEM,
@@ -234,10 +239,14 @@ typedef struct amlib_entry_
     void               *pTarget;
 } AMLIB_ENTRY_T;
 
-#define AM_PACK_TYPE_OPCODE_ONLY   1
+#define AM_PACK_TYPE_OPCODE_ONLY      1
+#define AM_PACK_FUNC_ID_BASEAPPMEM    0xFFFA
+
+
 typedef struct _am_pack_wrapper
 {
-	UINT32 packType;
+	UINT16 func_id;
+	UINT16 packType;
 	UINT16 appTag;
 	UINT16 size; /* Includes wrapper size of 8 */
 } AM_PACK_WRAPPER_T; 
@@ -254,21 +263,46 @@ typedef struct _am_pack_identify
 } AM_PACK_IDENTIFY;
 
 
+#define MAX_BASIC_PACK_UNION_SIZE 512
 
 typedef union _am_pack_all_u
 {
 	AM_PACK_WRAPPER_T    wrap;
     AM_PACK_IDENTIFY     op;
 
+	UINT8               raw[MAX_BASIC_PACK_UNION_SIZE];
 } AM_PACK_ALL_U;
 
 
+typedef struct _am_recv_cmd
+{
+	AM_PACK_ALL_U         *pRxBuf;
+	void                  *pvClient;
+	UINT32                recv_len;
+	UINT32                state;
+	UINT32                idx;
+	UINT32                buf_count;
+	struct _am_recv_cmd   *next;
+
+} AM_REC_CMD_T;
+
+#define RX_CMD_STATE_FREE        (0)
+#define RX_CMD_STATE_ACTIVE      (1)
+#define RX_CMD_STATE_CONT_BUF_2  (2) /* 3... 4...5... */ 
+
+/* The idea is a single lock-less TX/RX queue */
+/* The data buffers are continguous, so if we over run we just use the next segment */
 typedef struct _am_pack_queue
 {
-    UINT64 *pQwbuf;
+	AM_REC_CMD_T *pRxCmd;
+
+    AM_PACK_ALL_U *pRxBuf;
+    AM_PACK_ALL_U *pTxQwbuf;
     UINT32  size;
-    UINT32  ci;
-    UINT32  pi;
+    UINT32  rx_ci;
+    UINT32  rx_pi;
+    UINT32  tx_ci;
+    UINT32  tx_pi;
     
 
 } AM_PACK_QUEUE_T;
@@ -277,7 +311,7 @@ typedef struct _am_pack_queue
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
 AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
-AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 qword_count);
+AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 
 
 

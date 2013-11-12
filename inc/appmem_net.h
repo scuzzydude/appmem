@@ -13,6 +13,8 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 p
 AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len);
 AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes);
 AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry);
+void *    am_net_alloc_client(void);
+AM_RETURN am_net_recv_unsol_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes, void *pvClient);
 
 
 

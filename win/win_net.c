@@ -119,6 +119,33 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 p
 	return 0;
 }
 
+AM_RETURN am_net_recv_unsol_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes, void *pvClient)
+{
+	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
+	int error;
+	struct sockaddr *pClient = pvClient;
+	int client_len = sizeof(struct sockaddr_in);
+
+	AM_ASSERT(pSocket);
+	AM_ASSERT(pClient);
+	error = recvfrom(pSocket->sd, pMsg, len, 0, (struct sockaddr *)pClient, &client_len);
+	
+	if(error < 0)
+	{
+		printf("Error receiving data =%d.\n", error);
+		return AM_RET_IO_ERR;
+	}
+	else
+	{
+		*rcv_bytes = error;
+	}
+	return AM_RET_GOOD;
+
+
+}
+
+
+
 AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes)
 {
 	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
@@ -133,7 +160,10 @@ AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_
 		printf("Error receiving data =%d.\n", error);
 		return AM_RET_IO_ERR;
 	}
-
+	else
+	{
+		*rcv_bytes = error;
+	}
 	return AM_RET_GOOD;
 
 
@@ -244,3 +274,12 @@ void * am_thread_create(am_fn_thread thread_fn, void *arg)
 }
 
 
+void * am_net_alloc_client(void)
+{
+	struct sockaddr_in *pClient = NULL;
+
+	pClient = (struct sockaddr_in *)AM_MALLOC(sizeof(struct sockaddr_in));
+
+	return (void *)pClient;
+
+}
