@@ -10,14 +10,17 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 qword_count)
     AM_PACK_QUEUE_T *pQueue = NULL;
     UINT64 *pQwbuf;
 
-    pQwbuf = AM_MALLOC(qword_count * sizeof(UINT64));
+    pQwbuf = (UINT64 *)AM_MALLOC(qword_count * sizeof(UINT64));
 
     if(pQwbuf)
     {
+        printf("pQwbuf(%d) = %p\n", (qword_count * sizeof(UINT64), pQwbuf));
+        
         pQueue = AM_MALLOC(sizeof(AM_PACK_QUEUE_T)); 
 
         if(pQueue)
         {
+            pQueue->pQwbuf = pQwbuf;
             pQueue->size = qword_count;
             pQueue->ci = 0;
             pQueue->pi = 0;
@@ -57,25 +60,31 @@ UINT64 * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 min_qwords)
 void * am_targ_recv_thread(void *p1)
 {
     int count = 0;
-    AMLIB_ENTRY_T *pEntry = p1;
+    AMLIB_ENTRY_T *pEntry = (AMLIB_ENTRY_T *)p1;
     AM_TARGET_T *pTarget = pEntry->pTarget;
     AM_PACK_QUEUE_T *pQueue;
     void *pTransport;
     UINT32 rcv_bytes;
-    const int max_len = (512 / 8);
+    const int max_len_bytes = (512);
+    const int max_len_qwords = max_len_bytes / 8; 
     AM_PACK_ALL_U *pPack;
     
     pTransport = pEntry->pTransport;
     pQueue = pTarget->pPackQueue;
+
+    AM_ASSERT(pQueue);
     
     while(1)
     {
         printf("Thread count =%d\n", count);
         count++;
 
-        pPack = am_get_pack_queue_buf(pQueue, max_len);
+        pPack = (AM_PACK_ALL_U *)am_get_pack_queue_buf(pQueue, max_len_qwords);
+
+        printf("pPack(%d) = %p\n", max_len_bytes, pPack);
         
-        if(AM_RET_GOOD == am_net_recv_msg(pTransport, pPack, max_len, &rcv_bytes))
+        
+        if(AM_RET_GOOD == am_net_recv_msg(pTransport, pPack, max_len_bytes, &rcv_bytes))
         {
             printf("message RECIEVED LEN = %d (0x%08x)\n", rcv_bytes, rcv_bytes);
             printf("packType = %08x\n", pPack->wrap.packType);
@@ -103,7 +112,7 @@ void * am_targ_recv_thread(void *p1)
 AM_RETURN am_targ_recv_thread_create(AMLIB_ENTRY_T	*pEntry)
 {
     void *pThread = NULL;
-    AM_TARGET_T *pTarget = pEntry->pTarget;
+    AM_TARGET_T *pTarget = (AM_TARGET_T *)pEntry->pTarget;
 
     pThread = am_thread_create(am_targ_recv_thread, pEntry);
     AM_ASSERT(pEntry->pTarget);
@@ -136,7 +145,7 @@ AM_RETURN am_targ_start_target(void)
     memset(&targEntry, 0, sizeof(AMLIB_ENTRY_T));
 
 
-    pTarget = AM_MALLOC(sizeof(AM_TARGET_T));
+    pTarget = (AM_TARGET_T *)AM_MALLOC(sizeof(AM_TARGET_T));
 
     if(pTarget == NULL)
     {
@@ -164,7 +173,7 @@ AM_RETURN am_targ_start_target(void)
             printf("Start Target Loop Waiting on Threads...\n");
             while(1)
             {
-                sleep(1);
+                AM_SLEEP(1);
             }
             
         }

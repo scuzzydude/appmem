@@ -10,8 +10,8 @@
 #include "appmem_net.h"
 
 // TCP socket type
-#define DEFAULT_PROTO SOCK_STREAM
-//#define DEFAULT_PROTO SOCK_DGRAM
+//#define DEFAULT_PROTO SOCK_STREAM
+#define DEFAULT_PROTO SOCK_DGRAM
 
 typedef struct _am_win_socket
 {
@@ -41,7 +41,18 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 p
 		memset(pSocket, 0, sizeof(AM_WIN_SOCKET_T));
 	}
 	
-	pSocket->port_number = DEFAULT_AM_NET_PORT;				
+	
+	if(0 == port)
+	{
+		pSocket->port_number = 4950;				
+
+	}
+	/*
+	else
+	{
+		pSocket->port_number = port;				
+	}
+	*/
 
 	if (WSAStartup(0x0101, &pSocket->w) != 0)
 	{
@@ -63,7 +74,18 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 p
 
 	/* Client config */
 	pSocket->client.sin_family = AF_INET;
-	pSocket->client.sin_port = htons(0);
+	
+	if(0 == port)
+	{
+		pSocket->client.sin_port = htons(1117);
+	}
+	else
+	{
+		pSocket->client.sin_port = htons(port);
+	}
+	
+	printf("Client Port = %d\n", pSocket->client.sin_port);
+
 	gethostname(host_name, sizeof(host_name));
 	pSocket->hp = gethostbyname(host_name);
 
@@ -122,11 +144,14 @@ AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_
 AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len)
 {
 	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
+
 	AM_ASSERT(pSocket);
 
 	if (sendto(pSocket->sd, pMsg, len, 0, (struct sockaddr *)&pSocket->server, pSocket->server_length) == -1)
 	{
-		printf("Error transmitting data.\n");
+		printf("Error transmitting data =%d.%s\n" );
+		
+		
 		return AM_RET_IO_ERR;
 	}
 
@@ -141,3 +166,81 @@ AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
 	return AM_RET_GOOD;
 
 }
+
+
+/***************************************************************************************/
+/* Thread Specific stuff - move to another file later                                 **/
+/***************************************************************************************/
+
+
+typedef struct _am_thread
+{
+
+    HANDLE threadHandle;
+    DWORD dwThreadId;
+    am_fn_thread     thread_fn;
+    void             *thread_arg;
+    
+
+} AM_THREAD_T;
+
+
+DWORD WINAPI amThreadProc(  _In_  LPVOID lpParameter)
+{
+    AM_THREAD_T *pThread = lpParameter;
+	AM_ASSERT(pThread);
+	
+	pThread->thread_fn(pThread->thread_arg);
+
+#if 0
+	int count = 0;
+	while(1)
+	{
+		printf("amThreadProc count=%d\n", count);
+		count++;
+		Sleep(1000);
+	}
+#endif
+	return 0;
+}
+
+void * am_thread_create(am_fn_thread thread_fn, void *arg)
+{
+
+    AM_THREAD_T *pThread = NULL;
+  
+    printf("am_thread_create()\n");
+
+
+    pThread = (AM_THREAD_T *)AM_MALLOC(sizeof(AM_THREAD_T));
+
+    if(pThread)
+    {
+
+        memset(pThread, 0, sizeof(AM_THREAD_T));
+
+        pThread->thread_fn = thread_fn;
+        pThread->thread_arg = arg;
+
+        pThread->threadHandle = CreateThread(NULL, //Choose default security
+                                    0, //Default stack size
+                                    (LPTHREAD_START_ROUTINE)&amThreadProc,//Routine to execute
+                                    (LPVOID) pThread, //Thread parameter
+                                    0, //Immediately run the thread
+                                    &pThread->dwThreadId //Thread Id
+                                    );
+        
+		if(NULL == pThread->threadHandle)
+		{
+			printf("create thread error\n");
+			AM_FREE(pThread);
+			pThread = NULL;
+		}
+
+	
+	
+	}
+    return (void *)pThread;
+}
+
+
