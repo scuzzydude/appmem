@@ -10,21 +10,23 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
     AM_PACK_QUEUE_T *pQueue = NULL;
     AM_PACK_ALL_U *pRxBuf = NULL;
 	AM_REC_CMD_T *pRxCmd = NULL;
+	AM_PACK_RESP_U *pTxBuf = NULL;
+
 	int error  = 0;
     UINT32 i;
 
 	pRxCmd = (AM_REC_CMD_T *)AM_MALLOC(pack_count * sizeof(AM_REC_CMD_T));
 	pRxBuf = (AM_PACK_ALL_U *)AM_MALLOC(pack_count * sizeof(AM_PACK_ALL_U));
+	pTxBuf = (AM_PACK_RESP_U *)AM_MALLOC(pack_count * sizeof(AM_PACK_RESP_U));
 
-    if((NULL != pRxBuf) && (NULL != pRxCmd))
+    if((NULL != pRxBuf) && (NULL != pRxCmd) && (NULL != pTxBuf))
     {
         printf("pRxBuf(%d) = %p\n", pack_count * sizeof(AM_PACK_ALL_U), pRxBuf);
         printf("  pRxCmd(%d) = %p\n", sizeof(AM_REC_CMD_T) * pack_count, pRxCmd);
         
 		memset(pRxCmd, 0, pack_count * sizeof(AM_REC_CMD_T));
 		memset(pRxBuf, 0, pack_count * sizeof(AM_PACK_ALL_U));
-
-
+		memset(pTxBuf, 0, pack_count * sizeof(AM_PACK_RESP_U));
 
 		for(i = 0; i < pack_count; i++)
 		{
@@ -56,12 +58,13 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
         {
             pQueue->pRxBuf = pRxBuf;
 			pQueue->pRxCmd = pRxCmd;
-            pQueue->size = pack_count;
+            pQueue->pTxBuf = pTxBuf;
+			pQueue->size = pack_count;
             pQueue->rx_ci = 0;
             pQueue->rx_pi = 0;
             pQueue->tx_ci = 0;
             pQueue->tx_pi = 0;
-
+			
 
         }
         else
@@ -82,6 +85,19 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
 		{
 			AM_FREE(pRxBuf);
 		}
+		if(pTxBuf)
+		{
+			AM_FREE(pTxBuf);
+		}
+		if(pRxCmd)
+		{
+			AM_FREE(pRxCmd);
+		}
+		if(pQueue)
+		{
+			AM_FREE(pQueue);
+		}
+		pQueue = NULL;
 
 	}
 	
@@ -166,6 +182,16 @@ AM_RETURN am_update_pack_queue_rx_idx(AM_PACK_QUEUE_T *pQueue, AM_REC_CMD_T *pRx
 }
 
 
+AM_PACK_RESP_U * am_get_pack_resp_buf(AM_PACK_QUEUE_T *pQueue, UINT32 *max_bytes)
+{
+	AM_ASSERT(pQueue);
+	
+	*max_bytes = sizeof(AM_PACK_RESP_U); /* TODO: Calculate number of continguous bytes left in the buffer */
+
+	return &(pQueue->pTxBuf[pQueue->tx_pi]);
+
+}
+
 AM_REC_CMD_T * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 *max_bytes)
 {
 
@@ -177,7 +203,7 @@ AM_REC_CMD_T * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 *max_bytes)
 
 }
 
-AM_RETURN am_validate_function_id(UINT16 packOp, UINT16 func_id)
+AM_RETURN am_validate_function_id(UINT16 Op, UINT16 func_id)
 {
 	if(0)
 	{
@@ -190,7 +216,7 @@ AM_RETURN am_validate_function_id(UINT16 packOp, UINT16 func_id)
 	else
 	{
 		/* Can send identify to any device number (discovery) */
-		if(AM_FUNC_OPCODE_IDENTIFY == packOp)
+		if(AM_FUNC_OPCODE_IDENTIFY == Op)
 		{
 			return AM_RET_GOOD;
 		}
@@ -204,17 +230,47 @@ AM_RETURN am_validate_function_id(UINT16 packOp, UINT16 func_id)
 
 AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 {
-	AM_RETURN error;	
+	AM_RETURN error = 0;	
+	AM_PACK_RESP_U *pResp;
+	UINT32 max_resp_bytes;
+	UINT32 tx_bytes = 0;
+	AMLIB_ENTRY_T *pEntry;
 
-	error = am_validate_function_id(pRxCmd->pRxBuf->wrap.func_id, pRxCmd->pRxBuf->wrap.func_id);
+	AM_ASSERT(pTarget);
+
+	pEntry = (AMLIB_ENTRY_T *)pTarget->pEntry;
+
+	AM_ASSERT(pEntry);
 	
+
+	pResp = am_get_pack_resp_buf(pTarget->pPackQueue, &max_resp_bytes);
+
+	
+
+	if(NULL == pResp)
+	{
+		AM_ASSERT(0); /* in this simple model, each process (target) has it's own queue and this thread is sending the responses */
+		              /* No need to backpressure but perhaps we should always have an "emergency" resp frame we can send */
+	}
+
+	/* Copy the wrapper to the response */
+	memcpy(&pResp->wrap, &pRxCmd->pRxBuf->wrap, sizeof(AM_PACK_WRAPPER_T));
+
+	pResp->wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_RESP;
+
+	error = am_validate_function_id(pRxCmd->pRxBuf->op.op, pRxCmd->pRxBuf->wrap.func_id);
+
 	if(AM_RET_GOOD == error)
 	{
 
 		switch(pRxCmd->pRxBuf->wrap.func_id)
 		{
 
+			case AM_FUNC_OPCODE_IDENTIFY:
+				
+				break;
 
+		
 			default:
 				error = AM_RET_INVALID_PACK_OP;
 				break;
@@ -229,6 +285,20 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 		error = AM_RET_INVALID_FUNC;
 	}
 
+	
+	if(AM_RET_GOOD != error)
+	{
+		pResp->error.wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_ERR;
+		pResp->error.status = error;
+		pResp->error.wrap.size = sizeof(AM_PACK_RESP_ERR);
+		tx_bytes = sizeof(AM_PACK_RESP_ERR);
+	}
+	
+	
+	am_net_send_resp_msg(pEntry->pTransport, pResp, pRxCmd->pvClient, tx_bytes);
+
+	
+	
 	return error;
 }
 
@@ -237,8 +307,13 @@ UINT32 am_targ_check_cmd_queue(AM_TARGET_T *pTarget)
 	UINT32 count = 0;
 	AM_PACK_QUEUE_T *pQueue = NULL;
 	AM_REC_CMD_T *pRxCmd;
+	AMLIB_ENTRY_T *pEntry;
 
 	AM_ASSERT(pTarget);
+
+	pEntry = (AMLIB_ENTRY_T *)pTarget->pEntry;
+
+	AM_ASSERT(pEntry);
 	
 	pQueue = pTarget->pPackQueue;
 	
@@ -273,8 +348,6 @@ UINT32 am_targ_check_cmd_queue(AM_TARGET_T *pTarget)
 	return count;
 
 }
-
-
 
 
 

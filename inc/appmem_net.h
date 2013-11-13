@@ -15,6 +15,7 @@ AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_
 AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry);
 void *    am_net_alloc_client(void);
 AM_RETURN am_net_recv_unsol_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_bytes, void *pvClient);
+AM_RETURN am_net_send_resp_msg(void *pTransport, void *pMsg, void *pvClient, UINT32 len);
 
 
 

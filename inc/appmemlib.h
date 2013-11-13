@@ -239,8 +239,12 @@ typedef struct amlib_entry_
     void               *pTarget;
 } AMLIB_ENTRY_T;
 
-#define AM_PACK_TYPE_OPCODE_ONLY      1
-#define AM_PACK_FUNC_ID_BASEAPPMEM    0xFFFA
+#define AM_FUNC_PACK_TYPE_FLAG_RESP    0x8000
+#define AM_FUNC_PACK_TYPE_FLAG_ERR     0x4000
+
+#define AM_PACK_TYPE_OPCODE_ONLY       0x0001
+
+#define AM_PACK_FUNC_ID_BASEAPPMEM     0xFFFA
 
 
 typedef struct _am_pack_wrapper
@@ -251,7 +255,8 @@ typedef struct _am_pack_wrapper
 	UINT16 size; /* Includes wrapper size of 8 */
 } AM_PACK_WRAPPER_T; 
 
-#define AM_FUNC_OPCODE_IDENTIFY    1
+
+#define AM_FUNC_OPCODE_IDENTIFY  0x0001
 
 
 
@@ -263,6 +268,9 @@ typedef struct _am_pack_identify
 } AM_PACK_IDENTIFY;
 
 
+
+
+
 #define MAX_BASIC_PACK_UNION_SIZE 512
 
 typedef union _am_pack_all_u
@@ -272,6 +280,25 @@ typedef union _am_pack_all_u
 
 	UINT8               raw[MAX_BASIC_PACK_UNION_SIZE];
 } AM_PACK_ALL_U;
+
+
+
+typedef struct _am_pack_resp_err
+{
+	AM_PACK_WRAPPER_T     wrap;
+	AM_RETURN           status;
+
+} AM_PACK_RESP_ERR;
+
+
+typedef struct _am_pack_resp_u
+{
+	AM_PACK_WRAPPER_T     wrap;
+	AM_PACK_RESP_ERR     error;
+	UINT8                  raw[MAX_BASIC_PACK_UNION_SIZE];
+
+} AM_PACK_RESP_U;
+
 
 
 typedef struct _am_recv_cmd
@@ -292,12 +319,13 @@ typedef struct _am_recv_cmd
 
 /* The idea is a single lock-less TX/RX queue */
 /* The data buffers are continguous, so if we over run we just use the next segment */
+
 typedef struct _am_pack_queue
 {
 	AM_REC_CMD_T *pRxCmd;
 
-    AM_PACK_ALL_U *pRxBuf;
-    AM_PACK_ALL_U *pTxQwbuf;
+    AM_PACK_ALL_U   *pRxBuf;
+    AM_PACK_RESP_U  *pTxBuf;
     UINT32  size;
     UINT32  rx_ci;
     UINT32  rx_pi;

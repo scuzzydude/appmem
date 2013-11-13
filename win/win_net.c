@@ -170,6 +170,30 @@ AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_
 }
 
 
+AM_RETURN am_net_send_resp_msg(void *pTransport, void *pMsg, void *pvClient, UINT32 len)
+{
+	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
+	struct sockaddr *pClient = (struct sockaddr *)pvClient;
+	int client_len = sizeof(struct sockaddr_in);
+	int error;
+
+	AM_ASSERT(pSocket);
+
+	error = sendto(pSocket->sd, pMsg, len, 0, (struct sockaddr *)pClient, client_len);
+
+    if(error < 0)
+	{
+	
+		printf("Error transmitting data =%d\n", error );
+		
+		
+		return AM_RET_IO_ERR;
+	}
+
+	return AM_RET_GOOD;
+}
+
+
 
 AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len)
 {
