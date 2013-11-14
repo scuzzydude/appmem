@@ -1,6 +1,9 @@
 #ifndef _AM_TEST_OS_H
 #define _AM_TEST_OS_H
 
+#define AMLIB_DEBUG 1
+
+
 #ifdef _WIN32
 #pragma warning(disable : 4996) /* Warns about sprintf not safe */
 
@@ -20,6 +23,11 @@
 #define AM_VFREE(x) free(x)
 #define AM_SLEEP(x) 
 
+#if AMLIB_DEBUG
+#define AM_DEBUGPRINT(fmt, ...) printf(fmt, __VA_ARGS__)
+#else
+#define AM_DEBUGPRINT(fmt, ...) /* not debugging: nothing */
+#endif
 
 
 #else
@@ -75,6 +83,13 @@
 #define AM_VALLOC(x) malloc(x)
 #define AM_VFREE(x) free(x)
 #define AM_SLEEP(x) sleep(x)
+
+#if AMLIB_DEBUG
+#define AM_DEBUGPRINT(fmt, args...) printf(fmt, ## args)
+#else
+#define AM_DEBUGPRINT(fmt, args...) /* not debugging: nothing */
+#endif
+
 
 
 

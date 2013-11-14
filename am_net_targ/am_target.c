@@ -4,6 +4,15 @@
 #include "am_test_os.h"
 #include "appmem_net.h"
 
+#define AM_TARGET_MAX_FUNCTIONS          (256)
+#define AM_TARGET_FUNCTION_ID_SIG        (0xAA00)
+#define AM_TARGET_FUNCTION_ID_SIG_MASK   (0xFF00)
+#define AM_TARGET_FUNCTION_ID_IDX_MASK   (0x00FF)
+
+AM_MEM_FUNCTION_T * g_pfnFunctionTable[AM_TARGET_MAX_FUNCTIONS];
+
+
+
 
 AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
 {
@@ -203,30 +212,69 @@ AM_REC_CMD_T * am_get_pack_queue_buf(AM_PACK_QUEUE_T *pQueue, UINT32 *max_bytes)
 
 }
 
-AM_RETURN am_validate_function_id(UINT16 Op, UINT16 func_id)
+AM_MEM_FUNCTION_T * am_validate_function_id(UINT16 func_id)
 {
-	if(0)
-	{
-		//TODO: Lookup index of the function device 
-	}
+	UINT16 idx;
+
+	AM_DEBUGPRINT("am_validate_function_id %04x\n",  func_id);
+
 	if(AM_PACK_FUNC_ID_BASEAPPMEM == func_id)
 	{
-		return AM_RET_GOOD;
+		AM_DEBUGPRINT("BASEAPPMEM\n");
+
+		return g_pfnFunctionTable[0];
 	}
 	else
 	{
-		/* Can send identify to any device number (discovery) */
-		if(AM_FUNC_OPCODE_IDENTIFY == Op)
+		
+		if(AM_TARGET_FUNCTION_ID_SIG == (func_id & AM_TARGET_FUNCTION_ID_SIG_MASK))
 		{
-			return AM_RET_GOOD;
+
+			idx = (func_id & AM_TARGET_FUNCTION_ID_IDX_MASK);
+
+			AM_ASSERT(idx < AM_TARGET_MAX_FUNCTIONS);
+
+			return g_pfnFunctionTable[idx];
 		}
-	
+		else
+		{
+			/* No signature */
+			return NULL;
+		}
 	}
 
-
-
-	return AM_RET_INVALID_FUNC;
 }
+
+
+
+AM_RETURN am_targ_identify_resp(AM_MEM_FUNCTION_T *pFunc, AM_PACK_RESP_U *pResp, UINT32 *tx_bytes)
+{
+	AM_PACK_RESP_IDENTIFY *pIdResp = (AM_PACK_RESP_IDENTIFY *)pResp;
+	
+	AM_DEBUGPRINT("am_targ_identify_resp %p\n", pFunc);
+	
+	pIdResp->amType = 0xBBBB;
+	pIdResp->amVersion.version.major = AM_VER_MAJOR;
+	pIdResp->amVersion.version.minor = AM_VER_MINOR;
+	pIdResp->amVersion.version.build = AM_VER_BUILD;
+	pIdResp->amVersion.version.bugfix = AM_VER_BUGFIX;
+
+	*tx_bytes = sizeof(AM_PACK_RESP_IDENTIFY); 
+	
+
+
+
+	return AM_RET_GOOD;
+}
+
+
+
+
+
+
+
+
+
 
 AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 {
@@ -235,70 +283,116 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 	UINT32 max_resp_bytes;
 	UINT32 tx_bytes = 0;
 	AMLIB_ENTRY_T *pEntry;
+	AM_MEM_FUNCTION_T *pFunc = NULL;
+	AM_FN_U *opFn;
+	UINT32 op;
+
+	UINT32 i;
 
 	AM_ASSERT(pTarget);
 
 	pEntry = (AMLIB_ENTRY_T *)pTarget->pEntry;
 
 	AM_ASSERT(pEntry);
-	
+
 
 	pResp = am_get_pack_resp_buf(pTarget->pPackQueue, &max_resp_bytes);
-
-	
 
 	if(NULL == pResp)
 	{
 		AM_ASSERT(0); /* in this simple model, each process (target) has it's own queue and this thread is sending the responses */
-		              /* No need to backpressure but perhaps we should always have an "emergency" resp frame we can send */
+		/* No need to backpressure but perhaps we should always have an "emergency" resp frame we can send */
 	}
+
+	if(pRxCmd->recv_len < sizeof(AM_PACK_WRAPPER_T))
+	{
+		/* TODO deal with case where we get a stray packet */
+		/* That doesn't have a wrapper */
+		/* We should send a response to the port that send it */
+
+
+		AM_ASSERT(0);
+	}
+
 
 	/* Copy the wrapper to the response */
 	memcpy(&pResp->wrap, &pRxCmd->pRxBuf->wrap, sizeof(AM_PACK_WRAPPER_T));
 
 	pResp->wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_RESP;
 
-	error = am_validate_function_id(pRxCmd->pRxBuf->op.op, pRxCmd->pRxBuf->wrap.func_id);
+	pFunc = am_validate_function_id(pRxCmd->pRxBuf->wrap.func_id);
 
-	if(AM_RET_GOOD == error)
+	AM_DEBUGPRINT("process_cmd : pFunc =%p PackType=0x%04x\n", pFunc,  pRxCmd->pRxBuf->wrap.packType);
+
+
+	if(NULL != pFunc)
 	{
 
-		switch(pRxCmd->pRxBuf->wrap.func_id)
-		{
+		opFn = pFunc->pfnOps;	
+		op = pRxCmd->pRxBuf->wrap.op;
 
-			case AM_FUNC_OPCODE_IDENTIFY:
-				
+		AM_ASSERT(opFn);
+
+		if(NULL != opFn[op].raw)
+		{
+			switch(pRxCmd->pRxBuf->wrap.packType)
+			{
+
+				case AM_PACK_TYPE_OPCODE_ONLY:
+				{
+					error = opFn[op].op_only(pFunc, pResp, &tx_bytes);			
+				}
 				break;
 
-		
-			default:
+
+				default:
 				error = AM_RET_INVALID_PACK_OP;
 				break;
 
+			}
 		}
-	
-	
-	
+		else
+		{
+			error = AM_RET_INVALID_OPCODE;
+		}
+
+
 	}
 	else
 	{
 		error = AM_RET_INVALID_FUNC;
 	}
 
-	
+
 	if(AM_RET_GOOD != error)
 	{
 		pResp->error.wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_ERR;
 		pResp->error.status = error;
 		pResp->error.wrap.size = sizeof(AM_PACK_RESP_ERR);
 		tx_bytes = sizeof(AM_PACK_RESP_ERR);
+		AM_DEBUGPRINT("am_targ_process_cmd : pack_type=%04x size = %d\n", pResp->error.wrap.packType, pResp->error.wrap.size); 
+
+
 	}
-	
-	
+	else
+	{
+		pResp->wrap.size = tx_bytes;
+	}
+
+
+
+	AM_DEBUGPRINT("am_targ_process_cmd : tx_bytes=%d Error = %d\n", tx_bytes, error); 
+#if 1
+	for(i = 0; i < tx_bytes; i++)
+	{
+		AM_DEBUGPRINT("%02x ", pResp->raw[i]);
+	}
+	AM_DEBUGPRINT(" count =%d\n", tx_bytes);
+#endif
 	am_net_send_resp_msg(pEntry->pTransport, pResp, pRxCmd->pvClient, tx_bytes);
 
-	
-	
+
+
 	return error;
 }
 
@@ -435,6 +529,63 @@ AM_RETURN am_targ_recv_thread_create(AMLIB_ENTRY_T	*pEntry)
 
 }
 
+AM_RETURN am_targ_init_base_function(AM_TARGET_T *pTarget)
+{
+	AM_MEM_FUNCTION_T *pBaseFunc = NULL;
+
+	AM_ASSERT(pTarget);
+
+	pBaseFunc = (AM_MEM_FUNCTION_T *)AM_MALLOC(sizeof(AM_MEM_FUNCTION_T));
+
+	if(pBaseFunc)
+	{
+		memset(pBaseFunc, 0, sizeof(AM_MEM_FUNCTION_T));
+	
+		pBaseFunc->pfnOps = (AM_FN_U *) AM_MALLOC((sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+
+		if(pBaseFunc->pfnOps)
+		{
+			memset(pBaseFunc->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+		
+			pBaseFunc->pfnOps[AM_OP_IDENTIFY].op_only = (am_fn_op_only)am_targ_identify_resp;
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		}
+		else
+		{
+			AM_FREE(pBaseFunc);
+			return AM_RET_ALLOC_ERR;
+		}
+
+
+
+
+
+		
+		
+		pTarget->pBaseFunc = pBaseFunc;
+	
+		
+	
+	}
+	else
+	{
+		return AM_RET_ALLOC_ERR;
+	}
+
+	return AM_RET_GOOD;
+
+
+}
+
+
 
 
 AM_RETURN am_targ_start_target(void)
@@ -442,6 +593,7 @@ AM_RETURN am_targ_start_target(void)
     AM_RETURN error;
     AMLIB_ENTRY_T	targEntry;
     AM_TARGET_T *pTarget = NULL;
+	int i;
 
     memset(&targEntry, 0, sizeof(AMLIB_ENTRY_T));
 
@@ -455,8 +607,31 @@ AM_RETURN am_targ_start_target(void)
 
     memset(pTarget, 0, sizeof(AM_TARGET_T));
     
+	
+
+
     targEntry.pTarget = pTarget;
-    pTarget->pEntry = &targEntry;
+	pTarget->pEntry = &targEntry;
+
+
+
+
+
+	if(AM_RET_GOOD != am_targ_init_base_function(pTarget))
+	{
+		AM_FREE(pTarget);
+		return AM_RET_ALLOC_ERR;
+		
+	}
+
+	for(i = 0; i < AM_TARGET_MAX_FUNCTIONS; i++)
+	{
+		g_pfnFunctionTable[i] = NULL;
+	}
+	g_pfnFunctionTable[0] = pTarget->pBaseFunc;
+
+
+
 
 
     error = am_net_establish_socket(&targEntry, 0, 4950);

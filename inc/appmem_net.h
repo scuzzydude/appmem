@@ -33,7 +33,8 @@ typedef struct _am_target
     void              *pThread;
     void              *pEntry;
     AM_PACK_QUEUE_T   *pPackQueue;
-    
+    AM_MEM_FUNCTION_T *pBaseFunc;
+
 } AM_TARGET_T;
 
 typedef void * (*am_fn_thread)(void * p1);

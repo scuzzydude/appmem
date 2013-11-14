@@ -198,12 +198,18 @@ AM_RETURN am_net_send_resp_msg(void *pTransport, void *pMsg, void *pvClient, UIN
 AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len)
 {
 	AM_WIN_SOCKET_T       *pSocket = (AM_WIN_SOCKET_T *)pTransport;
+	int error;
+	DWORD dw;
 
 	AM_ASSERT(pSocket);
 
-	if (sendto(pSocket->sd, pMsg, len, 0, (struct sockaddr *)&pSocket->server, pSocket->server_length) == -1)
+	error = sendto(pSocket->sd, pMsg, len, 0, (struct sockaddr *)&pSocket->server, pSocket->server_length);
+
+	if(error < 0)
 	{
-		printf("Error transmitting data =%d.%s\n" );
+		dw = GetLastError();
+
+		printf("Error transmitting data =%d (%d)\n", error, dw );
 		
 		
 		return AM_RET_IO_ERR;
@@ -216,6 +222,7 @@ AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
 {
 	/* TODO: close socket */
 	/* free pSocket */
+	AM_DEBUGPRINT("destroy_socket pEntry=%p\n", pEntry);
 
 	return AM_RET_GOOD;
 

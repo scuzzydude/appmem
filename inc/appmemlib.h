@@ -59,6 +59,26 @@ typedef unsigned char UINT8;
 #define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
 #endif
 
+#define AM_VER_MAJOR  0
+#define AM_VER_MINOR  1
+#define AM_VER_BUILD  1
+#define AM_VER_BUGFIX 0
+
+typedef union _am_version_u
+{
+	UINT32 dwVersion;
+	struct 
+	{
+		UINT8 major;
+		UINT8 minor;
+		UINT8 build;
+		UINT8 bugfix;
+
+	} version;
+
+} AM_VERSION_U;
+
+
 
 
 
@@ -76,6 +96,8 @@ typedef unsigned char UINT8;
 #define AM_RET_THREAD_ERR      (11)
 #define AM_RET_Q_OVERFLOW      (12)
 #define AM_RET_INVALID_PACK_OP (13)
+#define AM_RET_INVALID_DEV     (14)
+#define AM_RET_INVALID_OPCODE  (15)
 
 
 
@@ -191,7 +213,8 @@ typedef struct am_mem_function_t
 	APPMEM_RESP_CR_FUNC_T crResp;
 	AM_FUNC_CALLS_T *fn;
 	AM_FUNC_DATA_U *pVdF;
-    
+    AM_FN_U             *pfnOps;     
+
 } AM_MEM_FUNCTION_T;
 
 
@@ -253,17 +276,16 @@ typedef struct _am_pack_wrapper
 	UINT16 packType;
 	UINT16 appTag;
 	UINT16 size; /* Includes wrapper size of 8 */
+	UINT32 op;
 } AM_PACK_WRAPPER_T; 
 
 
-#define AM_FUNC_OPCODE_IDENTIFY  0x0001
 
 
 
 typedef struct _am_pack_identify
 {
 	AM_PACK_WRAPPER_T wrap;
-	UINT32 op;
 
 } AM_PACK_IDENTIFY;
 
@@ -290,11 +312,20 @@ typedef struct _am_pack_resp_err
 
 } AM_PACK_RESP_ERR;
 
-
-typedef struct _am_pack_resp_u
+typedef struct _am_pack_resp_identify
 {
-	AM_PACK_WRAPPER_T     wrap;
-	AM_PACK_RESP_ERR     error;
+	AM_PACK_WRAPPER_T      wrap;
+	UINT32                 amType;
+	AM_VERSION_U           amVersion;
+
+
+} AM_PACK_RESP_IDENTIFY;
+
+typedef union _am_pack_resp_u
+{
+	AM_PACK_WRAPPER_T        wrap;
+	AM_PACK_RESP_ERR         error;
+	AM_PACK_RESP_IDENTIFY identify;
 	UINT8                  raw[MAX_BASIC_PACK_UNION_SIZE];
 
 } AM_PACK_RESP_U;
