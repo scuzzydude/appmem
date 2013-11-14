@@ -267,9 +267,30 @@ AM_RETURN am_targ_identify_resp(AM_MEM_FUNCTION_T *pFunc, AM_PACK_RESP_U *pResp,
 	return AM_RET_GOOD;
 }
 
+AM_RETURN am_targ_get_cap_count(AM_MEM_FUNCTION_T *pFunc, AM_PACK_RESP_U *pResp, UINT32 *tx_bytes)
+{
+	AM_PACK_RESP_CAP_COUNT *pCCResp = (AM_PACK_RESP_CAP_COUNT *)pResp;
+	
+    pCCResp->cap_count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
 
+	*tx_bytes = sizeof(AM_PACK_RESP_CAP_COUNT);
+	
+	return AM_RET_GOOD;
 
+}
 
+AM_RETURN am_targ_get_cap(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p2, UINT32 *ret_len)
+{
+	UINT32 count = (UINT32) *(UINT64 *)p1;
+	UINT32 tx_bytes = count * sizeof(AM_MEM_CAP_T);
+
+	AM_DEBUGPRINT("am_targ_get_cap count=%d tx_bytes=%d\n", count, tx_bytes);
+
+	memcpy(p2, &virtd_caps,tx_bytes);
+	*ret_len = tx_bytes;
+
+	return AM_RET_GOOD;
+}
 
 
 
@@ -344,6 +365,23 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 				}
 				break;
 
+				
+				case AM_PACK_TYPE_FIVO:
+				{
+				//	error = opFn[op].align(pFunc, pIn_out, &pResp->align_resp.resp_bytes[0], )			
+				//	am_fn
+
+				//	tx_bytes = (UINT32)*pIn_out; 
+				
+					error = opFn[op].fivo(pFunc, 
+											&pRxCmd->pRxBuf->fivo.data_in[0], 
+											pRxCmd->pRxBuf->fivo.l1,
+											&pResp->align_resp.resp_bytes[0],
+											&tx_bytes);
+
+				
+				}
+				break;
 
 				default:
 				error = AM_RET_INVALID_PACK_OP;
@@ -418,11 +456,12 @@ UINT32 am_targ_check_cmd_queue(AM_TARGET_T *pTarget)
 			pRxCmd = &pQueue->pRxCmd[pQueue->rx_ci];
 
 
-			printf("**** CONSUME THREAD ***\n");
-            printf("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
-            printf("packType = %08x\n", pRxCmd->pRxBuf->wrap.packType);
-            printf("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
-            printf("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
+			AM_DEBUGPRINT("**** CONSUME THREAD (%d)***\n", count);
+            AM_DEBUGPRINT("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
+            AM_DEBUGPRINT("packType =     %04x\n", pRxCmd->pRxBuf->wrap.packType);
+            AM_DEBUGPRINT("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
+            AM_DEBUGPRINT("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
+            AM_DEBUGPRINT("op       = %08x\n",     pRxCmd->pRxBuf->wrap.op);
 
 			if(AM_RET_GOOD == am_targ_process_cmd(pRxCmd, pTarget))
 			{
@@ -548,14 +587,8 @@ AM_RETURN am_targ_init_base_function(AM_TARGET_T *pTarget)
 			memset(pBaseFunc->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
 		
 			pBaseFunc->pfnOps[AM_OP_IDENTIFY].op_only = (am_fn_op_only)am_targ_identify_resp;
-		
-		
-		
-		
-		
-		
-		
-		
+			pBaseFunc->pfnOps[AM_OP_GET_CAP_COUNT].op_only = (am_fn_op_only) am_targ_get_cap_count;
+			pBaseFunc->pfnOps[AM_OP_GET_CAP].fivo = (am_fivo) am_targ_get_cap;
 		
 		}
 		else

@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int g_virtd_minor_count = 1;
 
-
+#if 0
 AM_MEM_CAP_T virtd_caps[] = 
 {
 
@@ -88,6 +88,7 @@ AM_MEM_CAP_T virtd_caps[] =
 	}
 
 };
+#endif
 
 UINT32 am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 {
@@ -258,7 +259,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 				pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
 				pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
 				pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
-				pVdF->stata.array_size = pCap->maxSize;
+				pVdF->stata.array_size = (UINT32) pCap->maxSize; //cast.. problematic over 4GB (indexes) size arrays 
 
 				pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
 

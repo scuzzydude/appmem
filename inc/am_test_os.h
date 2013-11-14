@@ -21,7 +21,7 @@
 #define AM_FREE(x) free(x)
 #define AM_VALLOC(x) malloc(x)
 #define AM_VFREE(x) free(x)
-#define AM_SLEEP(x) 
+#define AM_SLEEP(x) Sleep(x * 1000)
 
 #if AMLIB_DEBUG
 #define AM_DEBUGPRINT(fmt, ...) printf(fmt, __VA_ARGS__)
@@ -62,7 +62,9 @@
 
 
 #else
+#include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 #define INIT_OS_HR_TIMER(x) struct timespec _tmSpec1; struct timespec _tmSpec2 
 #define OS_HR_TIME_PRINT_TIMER_RES() clock_getres(CLOCK_THREAD_CPUTIME_ID, &_tmSpec1); printf("CLOCK_THREAD_CPUTIME_ID Resolution Sec=%ld Nano %ld\n", _tmSpec1.tv_sec, _tmSpec1.tv_nsec)
 

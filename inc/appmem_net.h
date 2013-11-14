@@ -6,6 +6,8 @@
 /* common */
 AM_RETURN am_net_init_entry(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr);
 UINT32 am_net_get_capabilites_count(AMLIB_ENTRY_T *pEntry);
+AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
+
 
 
 /* Os Specific */

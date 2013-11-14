@@ -178,6 +178,8 @@ typedef AM_RETURN (*am_fn_action) (AM_HANDLE handle, void * p1, UINT64 l1);
 typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
 typedef AM_RETURN (*am_fn_raw)(void * p1);
 typedef AM_RETURN (*am_fn_op_only)(AM_HANDLE handle, void *p1, UINT32 *ret_len);
+typedef AM_RETURN (*am_fivo) (AM_HANDLE handle, void *p1, UINT64 l1, void *p2, UINT32 *ret_len);
+
 
 typedef union _am_fn_u
 {
@@ -187,6 +189,7 @@ typedef union _am_fn_u
 	am_fn_raw      raw;
 	am_fn_action   action;
 	am_fn_op_only  op_only;
+	am_fivo        fivo;	
 
 } AM_FN_U;
 

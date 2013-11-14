@@ -212,7 +212,7 @@ AM_RETURN am_kd_fixed_read_packet(AM_HANDLE handle, void * p1, void *p2)
 
     memcpy(&cmd.data[0], p1, pFunc->crResp.idx_size);
 
-    *(UINT64 *)(&cmd.data[pFunc->crResp.pack_DataOffset]) = p2;
+    *(UINT64 *)(&cmd.data[pFunc->crResp.pack_DataOffset]) = (UINT64)p2;
 
 //    printf("read_packet = QWORD size =%d, IOCTL=%08x\n", pFunc->crResp.rd_pack_qword_size, APPMEMD_OP_PACKET(pFunc->crResp.wr_pack_qword_size));
     

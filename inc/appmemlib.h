@@ -98,7 +98,7 @@ typedef union _am_version_u
 #define AM_RET_INVALID_PACK_OP (13)
 #define AM_RET_INVALID_DEV     (14)
 #define AM_RET_INVALID_OPCODE  (15)
-
+#define AM_RET_TAG_NOT_FOUND   (16)
 
 
 typedef enum amTypeEnum 
@@ -267,6 +267,7 @@ typedef struct amlib_entry_
 #define AM_FUNC_PACK_TYPE_FLAG_ERR     0x4000
 
 #define AM_PACK_TYPE_OPCODE_ONLY       0x0001
+#define AM_PACK_TYPE_FIVO              0x0002
 
 #define AM_PACK_FUNC_ID_BASEAPPMEM     0xFFFA
 
@@ -282,6 +283,7 @@ typedef struct _am_pack_wrapper
 
 
 
+#define MAX_BASIC_PACK_UNION_SIZE 512
 
 
 typedef struct _am_pack_identify
@@ -296,18 +298,32 @@ typedef struct _am_pack_get_cap_count
 
 } AM_PACK_GET_CAP_COUNT;
 
+typedef struct _am_pack_read_align
+{
+	AM_PACK_WRAPPER_T   wrap;
+	UINT64              p1;
+
+} AM_PACK_READ_ALIGN;
+
+typedef struct _am_pack_fixed_in_var_out
+{
+	AM_PACK_WRAPPER_T   wrap;
+	UINT64              l1;
+	UINT32              data_in[1];
+
+} AM_PACK_FIXED_IN_VAR_OUT;
 
 
-
-#define MAX_BASIC_PACK_UNION_SIZE 512
 
 typedef union _am_pack_all_u
 {
-	AM_PACK_WRAPPER_T      wrap;
-    AM_PACK_IDENTIFY       op;
-	AM_PACK_GET_CAP_COUNT  cap_count;
+	AM_PACK_WRAPPER_T			wrap;
+    AM_PACK_IDENTIFY			op;
+	AM_PACK_GET_CAP_COUNT		cap_count;
+	AM_PACK_READ_ALIGN			read_al;
+	AM_PACK_FIXED_IN_VAR_OUT    fivo;
 
-	UINT8               raw[MAX_BASIC_PACK_UNION_SIZE];
+	UINT8                   raw[MAX_BASIC_PACK_UNION_SIZE];
 } AM_PACK_ALL_U;
 
 
@@ -328,12 +344,32 @@ typedef struct _am_pack_resp_identify
 
 } AM_PACK_RESP_IDENTIFY;
 
+
+typedef struct _am_pack_resp_cap_count
+{
+	AM_PACK_WRAPPER_T      wrap;
+	UINT32                 cap_count;
+
+
+} AM_PACK_RESP_CAP_COUNT;
+
+typedef struct _am_pack_resp_align
+{
+	AM_PACK_WRAPPER_T      wrap;
+	UINT8                  resp_bytes[MAX_BASIC_PACK_UNION_SIZE - sizeof(AM_PACK_WRAPPER_T)];
+
+
+} AM_PACK_RESP_ALIGN;
+
 typedef union _am_pack_resp_u
 {
 	AM_PACK_WRAPPER_T        wrap;
 	AM_PACK_RESP_ERR         error;
-	AM_PACK_RESP_IDENTIFY identify;
-	UINT8                  raw[MAX_BASIC_PACK_UNION_SIZE];
+	AM_PACK_RESP_IDENTIFY    identify;
+	AM_PACK_RESP_CAP_COUNT   cap_count;
+	AM_PACK_RESP_ALIGN       align_resp;
+
+	UINT8                    raw[MAX_BASIC_PACK_UNION_SIZE];
 
 } AM_PACK_RESP_U;
 
@@ -383,7 +419,59 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 
 
 
+static AM_MEM_CAP_T virtd_caps[] = 
+{
+
+	{ 
+		AM_TYPE_BASE_APPMEM,
+		(1024 * 1024 * 128), /* Total Device Memory */
+		2,
+		{
+			0, 0
+		}
+	},
+	{ 
+		AM_TYPE_FLAT_MEM, /* Type */ 
+		(1024 * 1024),    /* maxSizeBytes */
+		7,    			  /* maxFunction  */	
+		{
+			(8 | 4 | 2 | 1),  /* Mem - Address Size */ 
+			1,                /* Mem - Min Byte action */
+			(1024 * 1024)     /* Mem - Max Byte action */
+		}
+	
+	},
+	{ 
+		AM_TYPE_ARRAY,
+		(1024 * 1024),
+		8,
+		{
+			(8 | 4 | 2 | 1),  /* Array - Index Size Bytes */ 
+			1,                /* Min Value Size - Bytes */
+			1024,              /* Max Value Size - Bytes */
+			TS_STAT_DT_FIXED_WIDTH
+		}
+
+	},
+	{
+		AM_TYPE_ASSOC_ARRAY,
+		(1024 * 1024),
+		7,
+		{
+			512,              /* Max - Key Size Bytes */ 
+			1024 * 1024,      /* Max - Data Size Bytes */
+			TS_ASSCA_KEY_FIXED_WIDTH | TS_ASSCA_KEY_VAR_WIDTH,
+			TS_ASSCA_DATA_FIXED_WIDTH | TS_ASSCA_DATA_VAR_WIDTH
+		}
 
 
+
+	}
+
+};
 #endif
+
+
+
+
 
