@@ -260,6 +260,7 @@ typedef struct amlib_entry_
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
 	void               *pTransport;
     void               *pTarget;
+	void               *pThread;
 } AMLIB_ENTRY_T;
 
 #define AM_FUNC_PACK_TYPE_FLAG_RESP    0x8000
@@ -289,6 +290,11 @@ typedef struct _am_pack_identify
 
 } AM_PACK_IDENTIFY;
 
+typedef struct _am_pack_get_cap_count
+{
+	AM_PACK_WRAPPER_T wrap;
+
+} AM_PACK_GET_CAP_COUNT;
 
 
 
@@ -297,8 +303,9 @@ typedef struct _am_pack_identify
 
 typedef union _am_pack_all_u
 {
-	AM_PACK_WRAPPER_T    wrap;
-    AM_PACK_IDENTIFY     op;
+	AM_PACK_WRAPPER_T      wrap;
+    AM_PACK_IDENTIFY       op;
+	AM_PACK_GET_CAP_COUNT  cap_count;
 
 	UINT8               raw[MAX_BASIC_PACK_UNION_SIZE];
 } AM_PACK_ALL_U;

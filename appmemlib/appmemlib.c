@@ -115,6 +115,9 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 					return AM_RET_IO_ERR;
 				}
 
+				pEntry->get_cap_count = am_net_get_capabilites_count;
+
+			
 			}
 			else
 			{
