@@ -293,6 +293,19 @@ AM_RETURN am_targ_get_cap(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p
 }
 
 
+AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p2, UINT32 *ret_len)
+{
+	UINT32 tx_bytes = 0;
+	AM_MEM_CAP_T *pCap = p1;
+
+	AM_DEBUGPRINT("am_targ_create_funct amType=%d tx_bytes=%d\n", pCap->amType, tx_bytes);
+
+//	memcpy(p2, &virtd_caps,tx_bytes);
+//	*ret_len = tx_bytes;
+
+	return AM_RET_GOOD;
+}
+
 
 
 
@@ -368,10 +381,6 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 				
 				case AM_PACK_TYPE_FIVO:
 				{
-				//	error = opFn[op].align(pFunc, pIn_out, &pResp->align_resp.resp_bytes[0], )			
-				//	am_fn
-
-				//	tx_bytes = (UINT32)*pIn_out; 
 				
 					error = opFn[op].fivo(pFunc, 
 											&pRxCmd->pRxBuf->fivo.data_in[0], 
@@ -589,7 +598,7 @@ AM_RETURN am_targ_init_base_function(AM_TARGET_T *pTarget)
 			pBaseFunc->pfnOps[AM_OP_IDENTIFY].op_only = (am_fn_op_only)am_targ_identify_resp;
 			pBaseFunc->pfnOps[AM_OP_GET_CAP_COUNT].op_only = (am_fn_op_only) am_targ_get_cap_count;
 			pBaseFunc->pfnOps[AM_OP_GET_CAP].fivo = (am_fivo) am_targ_get_cap;
-		
+			pBaseFunc->pfnOps[AM_OP_CREATE_FUNC].fivo = (am_fivo)am_targ_create_function;
 		}
 		else
 		{
