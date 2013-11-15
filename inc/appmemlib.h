@@ -361,6 +361,13 @@ typedef struct _am_pack_resp_align
 
 } AM_PACK_RESP_ALIGN;
 
+typedef struct _am_pack_resp_cr_func
+{
+	AM_PACK_WRAPPER_T      wrap;
+	APPMEM_RESP_CR_FUNC_T crResp;
+
+} AM_PACK_RESP_CR_FUNC;
+
 typedef union _am_pack_resp_u
 {
 	AM_PACK_WRAPPER_T        wrap;
@@ -368,6 +375,7 @@ typedef union _am_pack_resp_u
 	AM_PACK_RESP_IDENTIFY    identify;
 	AM_PACK_RESP_CAP_COUNT   cap_count;
 	AM_PACK_RESP_ALIGN       align_resp;
+	AM_PACK_RESP_CR_FUNC     crResp;
 
 	UINT8                    raw[MAX_BASIC_PACK_UNION_SIZE];
 

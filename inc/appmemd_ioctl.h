@@ -254,9 +254,6 @@ typedef struct _appmem_resp_cr_func_t
     UINT8  wr_pack_qword_size; /* We transfer packets in multiples of 64 bits */
     UINT8  rd_pack_qword_size; /* We transfer packets in multiples of 64 bits */
     
-    
-    
-    
 
 } APPMEM_RESP_CR_FUNC_T;
 

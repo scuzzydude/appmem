@@ -6,7 +6,7 @@
 
 /* TODO: Globals are temp -- use a freelist */
 AM_PACK_ALL_U gTxPacket;
-AM_PACK_RESP_U gRxPacket;
+AM_PACK_RESP_U gRxPacket[16];
 
 typedef struct am_net_pack_transaction
 {
@@ -33,8 +33,8 @@ AM_NET_PACK_TRANSACTION *am_net_get_free_req(void)
 
 AM_PACK_RESP_U  * am_net_get_free_resp(AMLIB_ENTRY_T *pEntry, UINT32 *bytes_avail)
 {
-	*bytes_avail = sizeof(AM_PACK_RESP_U); 
-	return &gRxPacket;
+	*bytes_avail = sizeof(gRxPacket); 
+	return &gRxPacket[0];
 
 }
 
@@ -287,4 +287,35 @@ AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, 
 
 
 	return AM_RET_GOOD;
+}
+
+AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) 
+{ 
+	AM_NET_PACK_TRANSACTION *pIop;
+	AM_RETURN error = AM_RET_GOOD;
+ 	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT) + sizeof(AM_MEM_CAP_T) - sizeof(UINT32); /* Fivo defines 1 DWORD of data */
+
+	pIop = am_net_get_free_req();
+
+
+	pIop->pTx->fivo.wrap.func_id = AM_PACK_FUNC_ID_BASEAPPMEM;
+	pIop->pTx->fivo.wrap.packType = AM_PACK_TYPE_FIVO; 
+	pIop->pTx->fivo.wrap.size = tx_size;
+	pIop->pTx->fivo.wrap.op = AM_OP_CREATE_FUNC;
+	pIop->pTx->fivo.l1 = sizeof(AM_MEM_CAP_T);
+
+	memcpy(&pIop->pTx->fivo.data_in[0], pCap, tx_size);
+
+	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+
+	if(AM_RET_GOOD == error)
+	{
+		AM_DEBUGPRINT("Create Function GOOD\n");
+	}
+	else
+	{
+		AM_DEBUGPRINT("Create Function : Error =%d\n", error);
+	}
+	return error;
+
 }
