@@ -99,7 +99,7 @@ typedef union _am_version_u
 #define AM_RET_INVALID_DEV     (14)
 #define AM_RET_INVALID_OPCODE  (15)
 #define AM_RET_TAG_NOT_FOUND   (16)
-
+#define AM_RET_NO_DEVICE_SLOT  (17)
 
 typedef enum amTypeEnum 
 {

@@ -297,11 +297,47 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 {
 	UINT32 tx_bytes = 0;
 	AM_MEM_CAP_T *pCap = p1;
+	UINT32 i;
+	AM_MEM_FUNCTION_T * pDeviceFunc;
 
 	AM_DEBUGPRINT("am_targ_create_funct amType=%d tx_bytes=%d\n", pCap->amType, tx_bytes);
 
-//	memcpy(p2, &virtd_caps,tx_bytes);
-//	*ret_len = tx_bytes;
+	for(i = 0; i < AM_TARGET_MAX_FUNCTIONS; i++)
+	{
+		if(NULL == g_pfnFunctionTable[i])
+		{
+			pDeviceFunc = (AM_MEM_FUNCTION_T *)AM_MALLOC(sizeof(AM_MEM_FUNCTION_T));
+			
+			if(pFunc)
+			{
+				memset(pDeviceFunc, 0, sizeof(AM_MEM_FUNCTION_T));
+				pDeviceFunc->handle = (AM_TARGET_FUNCTION_ID_SIG | i); 
+				AM_DEBUGPRINT("function table slot found =%d Handle=%04x pFunc=%p\n", i, pDeviceFunc->handle, pDeviceFunc);
+			}
+			else
+			{
+				return AM_RET_ALLOC_ERR;
+			}
+
+		}
+
+
+	}
+
+	if(NULL == pDeviceFunc)
+	{
+		return AM_RET_NO_DEVICE_SLOT;
+	}
+
+	switch(pCap->amType)
+	{
+
+
+	default:
+		break;
+
+
+	}
 
 	return AM_RET_GOOD;
 }
