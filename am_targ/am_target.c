@@ -8,6 +8,7 @@
 #define AM_TARGET_FUNCTION_ID_SIG        (0xAA00)
 #define AM_TARGET_FUNCTION_ID_SIG_MASK   (0xFF00)
 #define AM_TARGET_FUNCTION_ID_IDX_MASK   (0x00FF)
+#define AM_TARG_GET_FUNC_IDX(_x) ( (AM_TARGET_FUNCTION_ID_SIG == (_x & AM_TARGET_FUNCTION_ID_SIG_MASK)) ? ((_x & AM_TARGET_FUNCTION_ID_IDX_MASK)) : 0xFF)
 
 AM_MEM_FUNCTION_T * g_pfnFunctionTable[AM_TARGET_MAX_FUNCTIONS];
 
@@ -227,6 +228,9 @@ AM_MEM_FUNCTION_T * am_validate_function_id(UINT16 func_id)
 	else
 	{
 		
+
+
+
 		if(AM_TARGET_FUNCTION_ID_SIG == (func_id & AM_TARGET_FUNCTION_ID_SIG_MASK))
 		{
 
@@ -292,9 +296,71 @@ AM_RETURN am_targ_get_cap(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p
 	return AM_RET_GOOD;
 }
 
+AM_RETURN am_targ_release(AM_HANDLE handle, void *p1, UINT32 *ret_len)
+{
+	return AM_RET_GOOD;
+}
 
+
+AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
+{
+    AM_RETURN error = 0;
+    AM_FUNC_DATA_U *pVdF = NULL;
+ 
+	AM_ASSERT(pCap);
+	AM_ASSERT(pFunc);
+	AM_ASSERT(pFunc->pfnOps);
+
+
+    AM_DEBUGPRINT( "am_tar6g_create_stata_device: maxSize=%lld\n", pCap->maxSize );
+
+    pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
+    
+    if(pVdF)
+    {
+		pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
+		pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
+		pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
+		pVdF->stata.array_size = pCap->maxSize;
+		
+		pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
+        
+		if(NULL != pVdF->stata.data)
+		{
+		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
+			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
+			pFunc->pVdF = pVdF;
+		
+			
+			sprintf(pFunc->crResp.am_name, "am_stata_%04x", pFunc->handle);
+			AM_DEBUGPRINT("CREATE STATA = AM_NAME=%s\n", pFunc->crResp.am_name);		
+			pFunc->crResp.devt = pFunc->handle;
+		}
+		else
+		{
+			error = AM_RET_ALLOC_ERR;
+		}
+
+
+	}
+	else
+	{
+		error = AM_RET_ALLOC_ERR;
+	}
+
+	if(AM_RET_GOOD != error)
+	{
+		if(NULL != pVdF)
+		{
+			AM_FREE(pVdF);
+		}
+	}
+
+	return error;
+}
 AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p2, UINT32 *ret_len)
 {
+	AM_RETURN error = AM_RET_GOOD;
 	UINT32 tx_bytes = 0;
 	AM_MEM_CAP_T *pCap = p1;
 	UINT32 i;
@@ -313,6 +379,21 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 				memset(pDeviceFunc, 0, sizeof(AM_MEM_FUNCTION_T));
 				pDeviceFunc->handle = (AM_TARGET_FUNCTION_ID_SIG | i); 
 				AM_DEBUGPRINT("function table slot found =%d Handle=%04x pFunc=%p\n", i, pDeviceFunc->handle, pDeviceFunc);
+		
+				pDeviceFunc->pfnOps = (AM_FN_U *) AM_MALLOC((sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+				
+				if(NULL != pDeviceFunc->pfnOps)
+				{
+					memset(pDeviceFunc->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+				}
+				else
+				{
+					AM_FREE(pDeviceFunc);
+					pFunc = NULL;
+				}
+
+
+				break;
 			}
 			else
 			{
@@ -332,14 +413,53 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 	switch(pCap->amType)
 	{
 
+		case AM_TYPE_ARRAY:
+		{
+			error = am_targ_create_stata_device(pDeviceFunc, pCap);
+		}
+		break;
 
-	default:
+		default:
+		{
+			error = AM_RET_INVALID_FUNC;
+		}
 		break;
 
 
 	}
 
-	return AM_RET_GOOD;
+	if(error != AM_RET_GOOD)
+	{
+		if(pDeviceFunc)
+		{
+			i = AM_TARG_GET_FUNC_IDX(pDeviceFunc->handle);
+
+			AM_DEBUGPRINT("Create function ERROR =%d DELETING IDX=%d\n", error, i);
+
+			if(g_pfnFunctionTable[i] == pDeviceFunc)
+			{
+				g_pfnFunctionTable[i] = NULL;
+			}
+
+			AM_FREE(pDeviceFunc);
+		}
+
+	}
+	else
+	{
+		/* copy the response */
+		*ret_len = sizeof(APPMEM_RESP_CR_FUNC_T);
+		memcpy(p2, &pDeviceFunc->crResp, *ret_len);
+		AM_DEBUGPRINT("Create function cpy CrFunc bytes=%d\n", *ret_len);
+		AM_DEBUGPRINT("---Device Created = AM_NAME=%s\n", pDeviceFunc->crResp.am_name);		
+		AM_DEBUGPRINT("---Device Created = DEV_T=%08x\n", pDeviceFunc->crResp.devt);		
+
+	
+	}
+
+	
+	
+	return error;
 }
 
 
@@ -465,7 +585,7 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 
 
 	AM_DEBUGPRINT("am_targ_process_cmd : tx_bytes=%d Error = %d\n", tx_bytes, error); 
-#if 1
+#if 0
 	for(i = 0; i < tx_bytes; i++)
 	{
 		AM_DEBUGPRINT("%02x ", pResp->raw[i]);

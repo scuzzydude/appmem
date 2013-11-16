@@ -288,12 +288,34 @@ AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, 
 
 	return AM_RET_GOOD;
 }
+void am_net_print_txrx_buffer(AM_NET_PACK_TRANSACTION *pIop, UINT8 bRx)
+{
+	UINT32 i;
+
+	if(pIop && bRx && pIop->pRx)
+	{
+		for(i = 0; i < pIop->resp_bytes; i++)
+		{
+			if(0 == (i % 8))
+			{
+				AM_DEBUGPRINT("\n%04x :", i);
+			}
+			
+			AM_DEBUGPRINT(" %02x", pIop->pRx->raw[i]);
+
+		
+		}
+
+	}
+
+}
 
 AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) 
 { 
 	AM_NET_PACK_TRANSACTION *pIop;
 	AM_RETURN error = AM_RET_GOOD;
  	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT) + sizeof(AM_MEM_CAP_T) - sizeof(UINT32); /* Fivo defines 1 DWORD of data */
+	APPMEM_RESP_CR_FUNC_T *pCrResp;
 
 	pIop = am_net_get_free_req();
 
@@ -311,6 +333,18 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 	if(AM_RET_GOOD == error)
 	{
 		AM_DEBUGPRINT("Create Function GOOD\n");
+		pCrResp = (APPMEM_RESP_CR_FUNC_T *)&pIop->pRx->align_resp.resp_bytes[0];	
+	
+		AM_DEBUGPRINT("AM_NAME =   [%s]\n", pCrResp->am_name);
+		AM_DEBUGPRINT("AM_HANDLE = %08x\n", pCrResp->devt);
+		
+		pCrResp = (APPMEM_RESP_CR_FUNC_T *)&pIop->pRx->crResp.crResp;	
+	
+		am_net_print_txrx_buffer(pIop,TRUE);
+
+
+
+		
 	}
 	else
 	{

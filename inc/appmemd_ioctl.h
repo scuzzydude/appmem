@@ -183,7 +183,10 @@ typedef AM_RETURN (*am_fivo) (AM_HANDLE handle, void *p1, UINT64 l1, void *p2, U
 
 typedef union _am_fn_u
 {
+#ifdef _APPMEMD
 	am_cmd_fn      config;
+#endif
+
 	am_fn          func;
 	am_fn_align    align;
 	am_fn_raw      raw;
@@ -241,11 +244,11 @@ typedef enum amAccessOps
 
 typedef struct _appmem_resp_cr_func_t
 {
-	UINT32 devt;
+	char am_name[64];
+    UINT32 devt;
 	UINT32 flags;
 	UINT64 globalID;
-	char am_name[64];
-    UINT32 ops[AM_OP_MAX_OPS];
+	UINT32 ops[AM_OP_MAX_OPS];
     UINT32 acOps[AM_MAX_ACCESS_OPS];
     UINT32 data_size;
     UINT32 idx_size;

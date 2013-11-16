@@ -158,9 +158,9 @@ typedef union am_func_data
 	{
 		void *data;
 		UINT64 size;
+		UINT64 array_size;
 	    UINT32 idx_size;
 		UINT32 data_size;
-		UINT32 array_size;
 
 	} stata; /* Static Array */
 	struct
@@ -275,12 +275,11 @@ typedef struct amlib_entry_
 typedef struct _am_pack_wrapper
 {
 	UINT16 func_id;
-	UINT16 packType;
+	UINT8 packType;
+	UINT8 op;
 	UINT16 appTag;
 	UINT16 size; /* Includes wrapper size of 8 */
-	UINT32 op;
 } AM_PACK_WRAPPER_T; 
-
 
 
 #define MAX_BASIC_PACK_UNION_SIZE 512
