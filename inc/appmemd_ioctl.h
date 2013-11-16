@@ -95,15 +95,19 @@ struct am_mem_function_t;
 #define AM_OP_GET_CAP                         0x3
 #define AM_OP_CREATE_FUNC                     0x4
 #define AM_OP_RELEASE_FUNC                    0x5
+#define AM_OP_OPEN_FUNC                       0x6
+#define AM_OP_CLOSE_FUNC                      0x7
 
+#define AM_OP_WRITE_ALIGN                    0x10
+#define AM_OP_READ_ALIGN                     0x11
 
 #define AM_OP_CODE_GETC_CAP_COUNT   (AM_OP_FLAG_COMMON  | AM_OP_GET_CAP_COUNT)
 #define AM_OP_CODE_GET_CAPS         (AM_OP_FLAG_COMMON  | AM_OP_GET_CAP)
 #define AM_OP_CODE_CREATE_FUNC      (AM_OP_FLAG_BIDIR   | AM_OP_CREATE_FUNC)
 #define AM_OP_CODE_RELEASE_FUNC     (AM_OP_FLAG_OP_ONLY | AM_OP_RELEASE_FUNC)
 
-#define AM_OP_CODE_WRITE_ALIGN      (AM_OP_FLAG_COMMON  | 0x0000010 | AM_OP_ALIGNED)
-#define AM_OP_CODE_READ_ALIGN       (AM_OP_FLAG_COMMON  | 0x0000011 | AM_OP_ALIGNED)
+#define AM_OP_CODE_WRITE_ALIGN      (AM_OP_FLAG_COMMON  | AM_OP_WRITE_ALIGN | AM_OP_ALIGNED)
+#define AM_OP_CODE_READ_ALIGN       (AM_OP_FLAG_COMMON  | AM_OP_READ_ALIGN | AM_OP_ALIGNED)
 
 #define AM_OP_CODE_WRITE_FIX_PACKET     (AM_OP_FLAG_PACKET  | 0x0000020 )
 #define AM_OP_CODE_READ_FIX_PACKET      (AM_OP_FLAG_PACKET  | 0x0000021 ) 

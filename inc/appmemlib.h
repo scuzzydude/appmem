@@ -211,9 +211,10 @@ typedef struct am_mem_function_t
 	UINT32 handle;
 	AM_MEM_CAP_T amCap;
 	APPMEM_RESP_CR_FUNC_T crResp;
-	AM_FUNC_CALLS_T *fn;
-	AM_FUNC_DATA_U *pVdF;
-    AM_FN_U             *pfnOps;     
+	AM_FUNC_CALLS_T       *fn;
+	AM_FUNC_DATA_U        *pVdF;
+    AM_FN_U               *pfnOps;     
+	struct amlib_entry_   *pEntry;
 
 } AM_MEM_FUNCTION_T;
 
@@ -263,11 +264,12 @@ typedef struct amlib_entry_
 	void               *pThread;
 } AMLIB_ENTRY_T;
 
-#define AM_FUNC_PACK_TYPE_FLAG_RESP    0x8000
-#define AM_FUNC_PACK_TYPE_FLAG_ERR     0x4000
+#define AM_FUNC_PACK_TYPE_FLAG_RESP    0x80
+#define AM_FUNC_PACK_TYPE_FLAG_ERR     0x40
 
-#define AM_PACK_TYPE_OPCODE_ONLY       0x0001
-#define AM_PACK_TYPE_FIVO              0x0002
+#define AM_PACK_TYPE_OPCODE_ONLY       0x01
+#define AM_PACK_TYPE_FIVO              0x02
+#define AM_PACK_ALIGN                  0x03
 
 #define AM_PACK_FUNC_ID_BASEAPPMEM     0xFFFA
 

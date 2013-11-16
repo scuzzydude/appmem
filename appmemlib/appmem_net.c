@@ -288,6 +288,47 @@ AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, 
 
 	return AM_RET_GOOD;
 }
+
+AM_RETURN am_net_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT32 resp_len)
+{
+	AMLIB_ENTRY_T *pEntry;	
+	AM_NET_PACK_TRANSACTION *pIop;
+	AM_RETURN error = AM_RET_GOOD;
+ 	UINT32 tx_size = sizeof(AM_PACK_IDENTIFY);
+
+	AM_ASSERT(pFunc);
+	pEntry = pFunc->pEntry;
+	AM_ASSERT(pEntry);
+	
+	pIop = am_net_get_free_req();
+
+	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
+	pIop->pTx->op.wrap.packType = AM_PACK_TYPE_OPCODE_ONLY; 
+	pIop->pTx->op.wrap.size = tx_size;
+	pIop->pTx->op.wrap.op = op;
+
+	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+
+	if(AM_RET_GOOD == error)
+	{
+		if((NULL != pResp) && (resp_len))
+		{
+			/* TODO: copy buffer, if we ever require it */
+			AM_ASSERT(0);
+		}
+	}
+
+	return error;
+
+}
+	
+
+AM_RETURN am_net_open(void * p1)
+{
+	return am_net_op_only(p1, AM_OP_OPEN_FUNC, NULL, 0);
+}
+
+
 void am_net_print_txrx_buffer(AM_NET_PACK_TRANSACTION *pIop, UINT8 bRx)
 {
 	UINT32 i;
@@ -338,9 +379,20 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 		AM_DEBUGPRINT("AM_NAME =   [%s]\n", pCrResp->am_name);
 		AM_DEBUGPRINT("AM_HANDLE = %08x\n", pCrResp->devt);
 		
-		pCrResp = (APPMEM_RESP_CR_FUNC_T *)&pIop->pRx->crResp.crResp;	
-	
-		am_net_print_txrx_buffer(pIop,TRUE);
+		memcpy(&pFunc->crResp, pCrResp, pIop->resp_bytes);
+			
+		pFunc->pEntry = pEntry;
+		pFunc->handle = pCrResp->devt;
+
+		if(pCrResp->ops[AM_OP_OPEN_FUNC])
+		{
+			pFunc->fn->open = am_net_open;
+		}
+
+
+
+		//am_net_print_txrx_buffer(pIop,TRUE);
+
 
 
 

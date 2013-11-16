@@ -3,6 +3,7 @@
 #include "appmemlib.h"
 #include "am_test_os.h"
 #include "appmem_net.h"
+#include "am_stata.h"
 
 #define AM_TARGET_MAX_FUNCTIONS          (256)
 #define AM_TARGET_FUNCTION_ID_SIG        (0xAA00)
@@ -236,7 +237,7 @@ AM_MEM_FUNCTION_T * am_validate_function_id(UINT16 func_id)
 
 			idx = (func_id & AM_TARGET_FUNCTION_ID_IDX_MASK);
 
-			AM_ASSERT(idx < AM_TARGET_MAX_FUNCTIONS);
+			AM_ASSERT((idx < AM_TARGET_MAX_FUNCTIONS));
 
 			return g_pfnFunctionTable[idx];
 		}
@@ -296,11 +297,23 @@ AM_RETURN am_targ_get_cap(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_targ_release(AM_HANDLE handle, void *p1, UINT32 *ret_len)
+AM_RETURN am_targ_release(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
 {
 	return AM_RET_GOOD;
 }
 
+AM_RETURN am_targ_open(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
+{
+	*ret_len = sizeof(AM_PACK_WRAPPER_T);
+	AM_DEBUGPRINT("am_targ_open: %04x\n", pFunc->handle);
+
+	return AM_RET_GOOD;
+}
+
+AM_RETURN am_targ_close(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
+{
+	return AM_RET_GOOD;
+}
 
 AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 {
@@ -329,6 +342,25 @@ AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pC
 		{
 		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
 			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
+			
+			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
+			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
+
+			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
+			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
+
+			//#define AM_OP_WRITE_ALIGN                    0x10
+			//#define AM_OP_READ_ALIGN                     0x11
+			
+			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_stata_write_idx32;
+			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_stata_read_idx32;
+			 
+			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
+			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
+
+			
+			pFunc->crResp.pack_DataOffset = pVdF->stata.idx_size;
+			
 			pFunc->pVdF = pVdF;
 		
 			
@@ -374,13 +406,14 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 		{
 			pDeviceFunc = (AM_MEM_FUNCTION_T *)AM_MALLOC(sizeof(AM_MEM_FUNCTION_T));
 			
-			if(pFunc)
+			if(pDeviceFunc)
 			{
 				memset(pDeviceFunc, 0, sizeof(AM_MEM_FUNCTION_T));
 				pDeviceFunc->handle = (AM_TARGET_FUNCTION_ID_SIG | i); 
 				AM_DEBUGPRINT("function table slot found =%d Handle=%04x pFunc=%p\n", i, pDeviceFunc->handle, pDeviceFunc);
 		
 				pDeviceFunc->pfnOps = (AM_FN_U *) AM_MALLOC((sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+				g_pfnFunctionTable[i] = pDeviceFunc;
 				
 				if(NULL != pDeviceFunc->pfnOps)
 				{
