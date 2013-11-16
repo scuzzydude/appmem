@@ -561,6 +561,22 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 			switch(pRxCmd->pRxBuf->wrap.packType)
 			{
 
+				case AM_PACK_ALIGN:
+				{
+					if(op & 1)
+					{
+						/* Read Align */	
+						error = 222;
+					}
+					else
+					{
+						/* Write Align */
+						error = opFn[op].align(pFunc, &pRxCmd->pRxBuf->write_al.data_bytes[0], &pRxCmd->pRxBuf->write_al.data_bytes[pFunc->pVdF->stata.idx_size]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T); /* If there is error, it will tx_bytes will be overridden below */
+					}
+				}
+
+			
 				case AM_PACK_TYPE_OPCODE_ONLY:
 				{
 					error = opFn[op].op_only(pFunc, pResp, &tx_bytes);			

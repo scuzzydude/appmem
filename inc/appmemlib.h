@@ -306,6 +306,14 @@ typedef struct _am_pack_read_align
 
 } AM_PACK_READ_ALIGN;
 
+typedef struct _am_pack_write_align
+{
+	AM_PACK_WRAPPER_T   wrap;
+	UINT8              data_bytes[1];
+
+} AM_PACK_WRITE_ALIGN;
+
+
 typedef struct _am_pack_fixed_in_var_out
 {
 	AM_PACK_WRAPPER_T   wrap;
@@ -322,6 +330,7 @@ typedef union _am_pack_all_u
     AM_PACK_IDENTIFY			op;
 	AM_PACK_GET_CAP_COUNT		cap_count;
 	AM_PACK_READ_ALIGN			read_al;
+	AM_PACK_WRITE_ALIGN         write_al;
 	AM_PACK_FIXED_IN_VAR_OUT    fivo;
 
 	UINT8                   raw[MAX_BASIC_PACK_UNION_SIZE];
