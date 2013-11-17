@@ -5,6 +5,10 @@
 #include "appmem_net.h"
 #include "am_stata.h"
 
+#define SINGLE_THREAD_TARGET 1
+
+
+
 #define AM_TARGET_MAX_FUNCTIONS          (256)
 #define AM_TARGET_FUNCTION_ID_SIG        (0xAA00)
 #define AM_TARGET_FUNCTION_ID_SIG_MASK   (0xFF00)
@@ -740,6 +744,21 @@ void * am_targ_recv_thread(void *p1)
 				AM_DEBUGPRINT("Queue RX_IDX updated\n");
 			}
 
+#if SINGLE_THREAD_TARGET
+
+			if(AM_RET_GOOD == am_targ_process_cmd(pRxCmd, pTarget))
+			{
+
+			}
+			else
+			{
+				/* TODO -- Some error, stall, backpressure etc... some action */
+			}
+	
+			pQueue->rx_ci += pRxCmd->buf_count;
+			pQueue->rx_ci = (pQueue->rx_ci % pQueue->size); 
+#endif
+
 
         }
 
@@ -897,7 +916,11 @@ AM_RETURN am_targ_start_target(void)
             AM_DEBUGPRINT("Start Target Loop Waiting on Threads...\n");
             while(1)
             {
+#if SINGLE_THREAD_TARGET
+				AM_SLEEP(10);
+#else
 				am_targ_check_cmd_queue(pTarget);
+#endif
 			}
             
         }
