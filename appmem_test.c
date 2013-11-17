@@ -212,8 +212,9 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
-	UINT32 array_size = 1024 * 1024;
+//	UINT32 array_size = 1024 * 1024;
 //	UINT32 array_size = 1024;
+	UINT32 array_size = 128;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -298,7 +299,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	elap2 = OS_HR_TIMER_GET_ELAP();
 	printf("APMEM ARRAY WRITE %d entries ELAP = %f\n", array_size, elap2);
 	printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
-
+	return ;//temp
 	srand(100);
 	idx = 0;
 	val = 0;

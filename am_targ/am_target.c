@@ -32,8 +32,8 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)
 
     if((NULL != pRxBuf) && (NULL != pRxCmd) && (NULL != pTxBuf))
     {
-        printf("pRxBuf(%d) = %p\n", pack_count * sizeof(AM_PACK_ALL_U), pRxBuf);
-        printf("  pRxCmd(%d) = %p\n", sizeof(AM_REC_CMD_T) * pack_count, pRxCmd);
+        AM_DEBUGPRINT("pRxBuf(%d) = %p\n", pack_count * sizeof(AM_PACK_ALL_U), pRxBuf);
+        AM_DEBUGPRINT("  pRxCmd(%d) = %p\n", sizeof(AM_REC_CMD_T) * pack_count, pRxCmd);
         
 		memset(pRxCmd, 0, pack_count * sizeof(AM_REC_CMD_T));
 		memset(pRxBuf, 0, pack_count * sizeof(AM_PACK_ALL_U));
@@ -187,7 +187,7 @@ AM_RETURN am_update_pack_queue_rx_idx(AM_PACK_QUEUE_T *pQueue, AM_REC_CMD_T *pRx
 		AM_ASSERT(0); //received a packet with 0 length? 
 	}
 	
-	printf("pQueue->rx_pi = %d INC_SIZE=%d\n", pQueue->rx_pi, inc_size);
+	AM_DEBUGPRINT("pQueue->rx_pi = %d INC_SIZE=%d\n", pQueue->rx_pi, inc_size);
 	return AM_RET_GOOD;
 	
 }
@@ -575,6 +575,7 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 						tx_bytes = sizeof(AM_PACK_WRAPPER_T); /* If there is error, it will tx_bytes will be overridden below */
 					}
 				}
+				break;
 
 			
 				case AM_PACK_TYPE_OPCODE_ONLY:
@@ -717,26 +718,26 @@ void * am_targ_recv_thread(void *p1)
     
     while(1)
     {
-        printf("Thread count =%d\n", count);
+        AM_DEBUGPRINT("Thread count =%d\n", count);
         count++;
 
         pRxCmd = am_get_pack_queue_buf(pQueue, &max_len_bytes);
 
-        printf("pPack(%d) = %p\n", max_len_bytes, pRxCmd);
+        AM_DEBUGPRINT("pPack(%d) = %p\n", max_len_bytes, pRxCmd);
         
         if(AM_RET_GOOD ==  am_net_recv_unsol_msg(pTransport, pRxCmd->pRxBuf, max_len_bytes, &pRxCmd->recv_len, pRxCmd->pvClient))
 //        if(AM_RET_GOOD == am_net_recv_msg(pTransport, pRxCmd->pRxBuf, max_len_bytes, &pRxCmd->recv_len))
         {
-            printf("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
-            printf("packType = %08x\n", pRxCmd->pRxBuf->wrap.packType);
-            printf("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
-            printf("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
+            AM_DEBUGPRINT("message RECIEVED LEN = %d (0x%08x)\n", pRxCmd->recv_len, pRxCmd->recv_len);
+            AM_DEBUGPRINT("packType = %08x\n", pRxCmd->pRxBuf->wrap.packType);
+            AM_DEBUGPRINT("appTag   =     %04x\n", pRxCmd->pRxBuf->wrap.appTag);
+            AM_DEBUGPRINT("size     =     %04x\n", pRxCmd->pRxBuf->wrap.size);
 
 			error = am_update_pack_queue_rx_idx(pQueue, pRxCmd);
 
 			if(AM_RET_GOOD == error)
 			{
-				printf("Queue RX_IDX updated\n");
+				AM_DEBUGPRINT("Queue RX_IDX updated\n");
 			}
 
 
@@ -745,7 +746,7 @@ void * am_targ_recv_thread(void *p1)
 
 
 
-        AM_SLEEP(1);
+//        AM_SLEEP(1);
 
 
     }
@@ -769,13 +770,13 @@ AM_RETURN am_targ_recv_thread_create(AMLIB_ENTRY_T	*pEntry)
     {
         pTarget->pThread = pThread;
 
-        printf("Targ Rev Thread Good %p\n", pThread);
+        AM_DEBUGPRINT("Targ Rev Thread Good %p\n", pThread);
         return AM_RET_GOOD;
         
     }
     else
     {
-        printf("Targ Rev Thread Failed %p\n");
+        AM_DEBUGPRINT("Targ Rev Thread Failed %p\n");
         return AM_RET_THREAD_ERR;
         
     }
@@ -886,14 +887,14 @@ AM_RETURN am_targ_start_target(void)
     
     if(AM_RET_GOOD == error)
     {
-        printf("Socket Established %p\n", targEntry.pTransport);
+        AM_DEBUGPRINT("Socket Established %p\n", targEntry.pTransport);
 
         pTarget->pPackQueue = am_init_pack_queue(1024); /* 8K - packets are multiple of 8 bytes for Appmem */    
             
 
         if((pTarget->pPackQueue) && (AM_RET_GOOD == am_targ_recv_thread_create(&targEntry)))
         {
-            printf("Start Target Loop Waiting on Threads...\n");
+            AM_DEBUGPRINT("Start Target Loop Waiting on Threads...\n");
             while(1)
             {
 				am_targ_check_cmd_queue(pTarget);
@@ -902,7 +903,7 @@ AM_RETURN am_targ_start_target(void)
         }
         else
         {
-            printf("Main Loop Error...\n");
+            AM_DEBUGPRINT("Main Loop Error...\n");
             
         }
 
@@ -917,7 +918,7 @@ int main(int argc, char **argv)
 {
     AM_RETURN error;
     
-    printf("am_targ - Appmem Target\n");
+    AM_DEBUGPRINT("am_targ - Appmem Target\n");
 
     error = am_targ_start_target();
     
@@ -932,7 +933,7 @@ int main(int argc, char **argv)
 	
 	if(AM_RET_GOOD != error)
     {
-        printf("Start Target error = %d\n", error);
+        AM_DEBUGPRINT("Start Target error = %d\n", error);
 
     }
     return 0;

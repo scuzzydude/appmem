@@ -172,7 +172,7 @@ AM_RETURN am_net_recv_msg(void *pTransport, void *pMsg, UINT32 len, UINT32 *rcv_
 
 	AM_ASSERT(pSocket);
     
-    printf("recvfrom ....\n");
+//    printf("recvfrom ....\n");
     
 //    bytes_rcv = recvfrom(pSocket->socket_handle, pMsg, len, 0, (struct sockaddr *)&pSocket->remote_addr, &addr_len );
 

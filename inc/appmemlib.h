@@ -267,9 +267,13 @@ typedef struct amlib_entry_
 #define AM_FUNC_PACK_TYPE_FLAG_RESP    0x80
 #define AM_FUNC_PACK_TYPE_FLAG_ERR     0x40
 
+
+#define AM_NET_GET_PACKTYPE(_x) ((_x >> 16) & 0x3F)
+
 #define AM_PACK_TYPE_OPCODE_ONLY       0x01
 #define AM_PACK_TYPE_FIVO              0x02
 #define AM_PACK_ALIGN                  0x03
+
 
 #define AM_PACK_FUNC_ID_BASEAPPMEM     0xFFFA
 
