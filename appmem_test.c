@@ -213,8 +213,8 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
 //	UINT32 array_size = 1024 * 1024;
-	UINT32 array_size = 1024;
-//	UINT32 array_size = 128;
+//	UINT32 array_size = 1024;
+	UINT32 array_size = 128;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -223,7 +223,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 1000;
+	UINT32 random_ops = 100;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
 	AM_SORT_PARAM_U sortP;
@@ -299,7 +299,6 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	elap2 = OS_HR_TIMER_GET_ELAP();
 	printf("APMEM ARRAY WRITE %d entries ELAP = %f\n", array_size, elap2);
 	printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
-	return ;//temp
 	srand(100);
 	idx = 0;
 	val = 0;
@@ -347,7 +346,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	elap2 = OS_HR_TIMER_GET_ELAP();
 	printf("APMEM READ %d ops ELAP = %f\n", random_ops, elap2);
 	printf("DELTA = %f PERCENT (Running Val=%d)\n",  100 * ((elap1 - elap2) / elap1), running_val);	
-
+	return ;//temp
 	sortP.stata_integral.type = AM_SORT_TYPE_STATA_INTEGRAL_MERGE;
 	sortP.stata_integral.order = AM_SORT_ORDER_ASC;
 	sortP.stata_integral.start_idx = 0;

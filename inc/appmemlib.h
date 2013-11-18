@@ -306,7 +306,7 @@ typedef struct _am_pack_get_cap_count
 typedef struct _am_pack_read_align
 {
 	AM_PACK_WRAPPER_T   wrap;
-	UINT64              p1;
+	UINT8              data_bytes[4];
 
 } AM_PACK_READ_ALIGN;
 

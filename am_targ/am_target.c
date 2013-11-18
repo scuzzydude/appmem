@@ -5,7 +5,7 @@
 #include "appmem_net.h"
 #include "am_stata.h"
 
-#define SINGLE_THREAD_TARGET 1
+#define SINGLE_THREAD_TARGET 0
 
 
 
@@ -342,6 +342,10 @@ AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pC
 		
 		pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
         
+		pFunc->crResp.data_size = pVdF->stata.data_size;
+		pFunc->crResp.idx_size = pVdF->stata.idx_size;
+
+
 		if(NULL != pVdF->stata.data)
 		{
 		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
@@ -570,7 +574,9 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 					if(op & 1)
 					{
 						/* Read Align */	
-						error = 222;
+						error = opFn[op].align(pFunc, &pRxCmd->pRxBuf->write_al.data_bytes[0], &pResp->align_resp.resp_bytes[0]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.data_size; /* If there is error, it will tx_bytes will be overridden below */
+
 					}
 					else
 					{
