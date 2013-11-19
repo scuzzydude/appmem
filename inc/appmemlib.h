@@ -273,6 +273,7 @@ typedef struct amlib_entry_
 #define AM_PACK_TYPE_OPCODE_ONLY       0x01
 #define AM_PACK_TYPE_FIVO              0x02
 #define AM_PACK_ALIGN                  0x03
+#define AM_PACK_ACTION                 0x04
 
 
 #define AM_PACK_FUNC_ID_BASEAPPMEM     0xFFFA
@@ -327,6 +328,14 @@ typedef struct _am_pack_fixed_in_var_out
 } AM_PACK_FIXED_IN_VAR_OUT;
 
 
+typedef struct _am_pack_action_in
+{
+	AM_PACK_WRAPPER_T   wrap;
+	UINT32              data_in[1];
+
+} AM_PACK_ACTION_IN;
+
+
 
 typedef union _am_pack_all_u
 {
@@ -336,6 +345,7 @@ typedef union _am_pack_all_u
 	AM_PACK_READ_ALIGN			read_al;
 	AM_PACK_WRITE_ALIGN         write_al;
 	AM_PACK_FIXED_IN_VAR_OUT    fivo;
+	AM_PACK_ACTION_IN              action;
 
 	UINT8                   raw[MAX_BASIC_PACK_UNION_SIZE];
 } AM_PACK_ALL_U;

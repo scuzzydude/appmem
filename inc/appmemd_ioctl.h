@@ -97,6 +97,8 @@ struct am_mem_function_t;
 #define AM_OP_RELEASE_FUNC                    0x5
 #define AM_OP_OPEN_FUNC                       0x6
 #define AM_OP_CLOSE_FUNC                      0x7
+#define AM_OP_SORT                            0x8
+
 
 #define AM_OP_WRITE_ALIGN                    0x10
 #define AM_OP_READ_ALIGN                     0x11

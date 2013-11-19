@@ -424,6 +424,36 @@ AM_RETURN am_net_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 
 }
 
+AM_RETURN am_net_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
+{
+	AMLIB_ENTRY_T *pEntry;	
+	AM_NET_PACK_TRANSACTION *pIop;
+	AM_RETURN error = AM_RET_GOOD;
+ 	UINT32 tx_size = sizeof(AM_PACK_WRITE_ALIGN) + ((UINT32)l1) ; /* Basic align has one byte od data */
+
+	AM_ASSERT(pFunc);
+	pEntry = pFunc->pEntry;
+	AM_ASSERT(pEntry);
+	
+
+	pIop = am_net_get_free_req();
+
+	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
+	pIop->pTx->op.wrap.packType = AM_PACK_ACTION; 
+	pIop->pTx->op.wrap.size = tx_size;
+	pIop->pTx->op.wrap.op = AM_OP_SORT;
+
+	memcpy(&pIop->pTx->action.data_in[0], p1,(UINT32)l1); 
+
+
+	
+	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+
+
+
+	return error;
+
+}
 
 AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) 
 { 
@@ -463,7 +493,12 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 			pFunc->fn->open = am_net_open;
 		}
 
-		 if(AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE]))
+		if(pCrResp->ops[AM_OP_SORT])
+		{
+			pFunc->fn->sort = am_net_sort;
+		}
+		
+		if(AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE]))
          {
             /* TODO - depending on address size might be different pointers */
     		pFunc->fn->write_al = am_net_write32_align;

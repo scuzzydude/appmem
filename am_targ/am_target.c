@@ -357,6 +357,10 @@ AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pC
 			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
 			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
 
+			pFunc->pfnOps[AM_OP_SORT].action = am_stata_sort;
+			pFunc->crResp.ops[AM_OP_SORT] = (AM_PACK_ACTION << 16) | AM_OP_SORT;
+
+
 			//#define AM_OP_WRITE_ALIGN                    0x10
 			//#define AM_OP_READ_ALIGN                     0x11
 			
@@ -607,6 +611,15 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 				
 				}
 				break;
+
+				case AM_PACK_ACTION:
+				{
+					tx_bytes = sizeof(AM_PACK_WRAPPER_T);
+					error = opFn[op].action(pFunc, &pRxCmd->pRxBuf->action.data_in[0], (pRxCmd->pRxBuf->action.wrap.size - sizeof(AM_PACK_WRAPPER_T)));
+				}
+				break;
+
+
 
 				default:
 				error = AM_RET_INVALID_PACK_OP;
