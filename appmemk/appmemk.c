@@ -659,7 +659,7 @@ static int __init appmemd_init(void)
      
     
 //    am_k_sock_init(0xC0A801DD); //192.168.1.221
-      am_k_sock_init(0x7F000001); //127.0.0.1 - locahost
+//     am_k_sock_init(0x7F000001); //127.0.0.1 - locahost
     
 
 

@@ -77,6 +77,10 @@ UINT32 am_get_ip_address(char *am_name)
 				&byte[2],
 				&byte[3]);
 		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	ipaddr_t.byte[3] = (UINT8) (0xFF & byte[0]);
