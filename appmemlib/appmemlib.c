@@ -119,7 +119,7 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 				pEntry->get_cap_count = am_net_get_capabilites_count;
 				pEntry->get_capabilities = am_net_get_capabilities;
 				pEntry->create_function = am_net_create_function; 
-
+				pEntry->close = am_net_entry_close;
 			
 			}
 			else
@@ -128,6 +128,7 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 				pEntry->create_function = am_kd_create_function;
 				pEntry->get_capabilities = am_kd_get_capabilities;
 				pEntry->get_cap_count = am_kd_get_capabilities_count;
+				pEntry->close = am_kd_entry_close;
 			}
 		}
 		else
@@ -136,6 +137,7 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 			pEntry->create_function = am_virtd_create_function;
 			pEntry->get_capabilities = am_virtd_get_capabilities;
 			pEntry->get_cap_count = am_virtd_get_capabilites_count;
+			pEntry->close = am_virtd_entry_close;
 		}
 
 

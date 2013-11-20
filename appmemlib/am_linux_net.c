@@ -33,6 +33,9 @@ AM_RETURN am_net_establish_socket(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr, UINT16 p
     int error;
     int socket_handle;
 
+    pEntry->pTransport = pSocket;
+
+
     socket_handle = socket(AF_INET, SOCK_DGRAM, 0);
     
 
@@ -228,10 +231,11 @@ AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
 
     AM_ASSERT(pEntry);
     pSocket = pEntry->pTransport;
-
+    printf("am_net_destroy_socket pEntry=%p pSocket=%p\n", pEntry, pSocket);
+    
     if(pSocket)
     {
-
+       
         if(close(pSocket->socket_handle) != 0)
         {
        		error = AM_RET_SOCKET_ERR;
@@ -241,7 +245,7 @@ AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
 
     
     }
-
+    printf("Close Socket %p error=%d\n", pSocket, error);
 	return error;
 
 }
@@ -262,6 +266,19 @@ typedef struct _am_thread
 
 } AM_THREAD_T;
 
+
+AM_RETURN am_thread_destroy(void *pvThread)
+{
+   AM_THREAD_T *pThread = pvThread;
+
+   if(pThread)
+   {
+        pthread_cancel(pThread->thread_id);
+   }
+   
+   return AM_RET_GOOD;
+   
+}
 
 void * am_thread_create(am_fn_thread thread_fn, void *arg)
 {

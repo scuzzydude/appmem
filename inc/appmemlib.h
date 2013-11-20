@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _APPMEMD
 #include <stdio.h>
 #include <memory.h>
+#include <assert.h>
 #endif
 #include "am_test_os.h"
 
@@ -56,7 +57,8 @@ typedef unsigned char UINT8;
 #ifdef _APPMEMD
 #define AM_ASSERT(x) if(!x) printk(KERN_NOTICE "appmemk: ASSERT  File=%s Line=%d", __FILE__, __LINE__)
 #else
-#define AM_ASSERT(x) if(!x) {printf("ASSERT\n"); while(1);}
+#define AM_ASSERT(x) assert(x) 
+//if(!x) {printf("ASSERT\n"); while(1);}
 #endif
 
 #define AM_VER_MAJOR  0
@@ -259,6 +261,7 @@ typedef struct amlib_entry_
 	UINT32             (*get_cap_count)(struct amlib_entry_ *pEntry);
 	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+	AM_RETURN          (*close)(struct amlib_entry_ *pEntry);	
 	void               *pTransport;
     void               *pTarget;
 	void               *pThread;

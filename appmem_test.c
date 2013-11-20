@@ -33,6 +33,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
+#define DEFAULT_MEM_SIZE 1024
+#define DEFAULT_RANDOM_OPS 1024
+
+
 #ifndef _WIN32
 double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2)
 {
@@ -61,14 +65,14 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	AM_MEM_CAP_T aCap;
 	void *func_buf;
 	AM_MEM_FUNCTION_T amFmf;
-	UINT32 mem_size = 1024 * 1024;
+	UINT32 mem_size = DEFAULT_MEM_SIZE;
 	UINT32 i;
 	UINT32 val;
 	UINT32 *ptr32;
 	UINT32 *local_buf;
 	double elap1, elap2;
 	INIT_OS_HR_TIMER(0);
-	UINT32 random_ops = 10000000;
+	UINT32 random_ops = DEFAULT_RANDOM_OPS;
 	UINT32 rval;
 	UINT32 addr;
 	
@@ -213,8 +217,8 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
 //	UINT32 array_size = 1024 * 1024;
-//	UINT32 array_size = 1024;
-	UINT32 array_size = 128;
+	UINT32 array_size = 1024;
+//	UINT32 array_size = 128;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -223,7 +227,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 100;
+	UINT32 random_ops = 1000;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
 	AM_SORT_PARAM_U sortP;
@@ -620,9 +624,9 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-	UINT32 test = AM_TYPE_ARRAY;
+//	UINT32 test = AM_TYPE_ARRAY;
 //	UINT32 test = AM_TYPE_ASSOC_ARRAY;
-//	UINT32 test = AM_TYPE_FLAT_MEM;
+	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;
 //	char *driver_name = "127.0.0.1";
@@ -667,7 +671,7 @@ int main(int argc, char **argv)
 	{
 		printf("APP_MEM DRIVER = VIRTD\n");
 	}
-	
+#ifndef APPMEMCPP_ONLY	
 	if(am_get_entry_point(driver_name, &amEntry))
 	{
 		printf("Invalid Entry Point %s\n", driver_name);
@@ -715,6 +719,9 @@ int main(int argc, char **argv)
 
 	}
 
-	
+	amEntry.close(&amEntry);
+#endif
+//	am_cpp_test(driver_name, test);
+
 	return 0;
 }

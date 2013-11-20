@@ -35,6 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmemd_ioctl.h"
 #include "appmem_kd.h"
 
+AM_RETURN am_kd_entry_close(AMLIB_ENTRY_T *pEntry)
+{
+	return AM_RET_GOOD;
+}
+
 
 #ifdef _WIN32
 UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry){ return 0; }

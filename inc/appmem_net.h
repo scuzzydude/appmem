@@ -8,6 +8,8 @@ AM_RETURN am_net_init_entry(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr);
 UINT32 am_net_get_capabilites_count(AMLIB_ENTRY_T *pEntry);
 AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
 AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+AM_RETURN am_net_entry_close(AMLIB_ENTRY_T *pEntry);
+
 
 
 
@@ -43,6 +45,7 @@ typedef struct _am_target
 
 typedef void * (*am_fn_thread)(void * p1);
 void * am_thread_create(am_fn_thread thread_fn, void *arg);
+AM_RETURN am_thread_destroy(void *pvThread);
 
 
 

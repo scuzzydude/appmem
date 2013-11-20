@@ -149,6 +149,13 @@ void CAppMem::initBase(char *am_name, UINT32 amType)
 			}
 		}
 	}
+	else
+	{
+		AM_DEBUGPRINT("get_entry_point failed %s type=%d\n", am_name, amType); 
+	}
+
+
+
 }
 
 /***************************************************************************/

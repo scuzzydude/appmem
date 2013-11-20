@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry);
 AM_RETURN am_kd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
 AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
+AM_RETURN am_kd_entry_close(AMLIB_ENTRY_T *pEntry);
 
 AM_RETURN am_kd_open(void *p1);
 AM_RETURN am_kd_close(void *p1);

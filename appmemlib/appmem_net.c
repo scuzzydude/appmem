@@ -197,6 +197,24 @@ AM_RETURN am_net_init_entry(AMLIB_ENTRY_T *pEntry, UINT32 ipaddr)
 
 }
 
+AM_RETURN am_net_entry_close(AMLIB_ENTRY_T *pEntry)
+{
+    AM_RETURN error;
+
+    printf("cancelling thread %p\n", pEntry->pThread);
+    error = am_thread_destroy(pEntry->pThread);
+    
+
+
+	printf("closing socket\n");
+	error = am_net_destroy_socket(pEntry);
+
+	return error;
+}
+
+
+
+
 AM_RETURN am_net_send_and_wait(AMLIB_ENTRY_T *pEntry, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs)
 {
 	AM_RETURN error;
@@ -327,6 +345,10 @@ AM_RETURN am_net_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT32
 
 }
 	
+AM_RETURN am_net_close(void * p1)
+{
+	return am_net_op_only(p1, AM_OP_CLOSE_FUNC, NULL, 0);
+}
 
 AM_RETURN am_net_open(void * p1)
 {
@@ -491,6 +513,11 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 		if(pCrResp->ops[AM_OP_OPEN_FUNC])
 		{
 			pFunc->fn->open = am_net_open;
+		}
+
+		if(pCrResp->ops[AM_OP_CLOSE_FUNC])
+		{
+			pFunc->fn->close = am_net_close;
 		}
 
 		if(pCrResp->ops[AM_OP_SORT])

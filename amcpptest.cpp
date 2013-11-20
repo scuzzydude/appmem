@@ -137,9 +137,11 @@ int am_cpp_flat_mem_test(char *am_name)
 
 int am_cpp_stata_test(char *am_name)
 {
-	UINT32 random_ops = 10000000;
+	UINT32 random_ops = 1000;
 	UINT32 i;
-	UINT32 elem_count = 1024 * 1024;
+//	UINT32 elem_count = 1024 * 1024;
+	UINT32 elem_count = 1024;
+
 	INIT_OS_HR_TIMER(0);
 //	UINT32 *ptr32;
 //	UINT32 *pBase;
@@ -151,6 +153,13 @@ int am_cpp_stata_test(char *am_name)
 	CAppMemStaticArray amStata(am_name, elem_count, sizeof(UINT32), sizeof(UINT32));
 
 	printf("Appmem C++ - Flat Mem Test %s\n", am_name);
+
+	if(!amStata.ready())
+	{
+		AM_DEBUGPRINT("Error CAppMemStaticArray()\n");
+		return -1;
+	}
+
 
 
 	localArray = new UINT32[elem_count];

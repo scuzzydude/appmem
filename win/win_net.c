@@ -220,10 +220,24 @@ AM_RETURN am_int_send_msg(void *pTransport, void *pMsg, UINT32 len)
 
 AM_RETURN am_net_destroy_socket(AMLIB_ENTRY_T *pEntry)
 {
-	/* TODO: close socket */
-	/* free pSocket */
-	AM_DEBUGPRINT("destroy_socket pEntry=%p\n", pEntry);
+	int error;
+	AM_WIN_SOCKET_T       *pSocket;
+	AM_ASSERT(pEntry);
+	pSocket = pEntry->pTransport;
 
+	AM_DEBUGPRINT("destroy_socket pEntry=%p pSocket=%p\n", pEntry, pSocket);
+
+	if(pSocket)
+	{
+
+		error = closesocket(pSocket->sd);
+	
+		if(error)
+		{
+			AM_DEBUGPRINT("closesocket error=%d\n", error);
+			return AM_RET_SOCKET_ERR;
+		}
+	}
 	return AM_RET_GOOD;
 
 }
@@ -253,17 +267,26 @@ DWORD WINAPI amThreadProc(  _In_  LPVOID lpParameter)
 	
 	pThread->thread_fn(pThread->thread_arg);
 
-#if 0
-	int count = 0;
-	while(1)
-	{
-		printf("amThreadProc count=%d\n", count);
-		count++;
-		Sleep(1000);
-	}
-#endif
 	return 0;
 }
+
+AM_RETURN am_thread_destroy(void *pvThread)
+{
+   AM_THREAD_T *pThread = pvThread;
+
+   if(pThread)
+   {
+		if(TerminateThread(pThread->threadHandle, 0))
+		{
+			CloseHandle(pThread->threadHandle);
+		}
+
+   }
+   
+   return AM_RET_GOOD;
+   
+}
+
 
 void * am_thread_create(am_fn_thread thread_fn, void *arg)
 {
