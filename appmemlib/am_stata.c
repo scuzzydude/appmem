@@ -1,61 +1,8 @@
 #include "appmemlib.h"
 #include "am_stata.h"
+#include "am_targ.h"
 
 typedef int (*am_sort_compare_fn)(void *p1, void *p2);
-#if 0
-void merge(int a[], int low, int high, int mid)
-{
-	int i, j, k, c[50];
-	i=low;
-	j=mid+1;
-	k=low;
-	while((i<=mid)&&(j<=high))
-	{
-		if(a[i]<a[j])
-		{
-			c[k]=a[i];	
-			k++;
-			i++;
-		}
-		else
-		{
-			c[k]=a[j];
-			k++;
-			j++;
-		}
-	}
-	while(i<=mid)
-	{
-		c[k]=a[i];
-		k++;
-		i++;
-	}
-	while(j<=high)
-	{
-		c[k]=a[j];
-		k++;
-		j++;
-	}
-	for(i=low;i<k;i++)
-	{
-		a[i]=c[i];
-	}
-} 
-
-int mergesort(int a[], int low, int high)
-{
-	int mid;
-	if(low < high)
-	{
-		mid=(low+high)/2;
-		mergesort(a, low, mid);
-		mergesort(a, mid+1, high);
-		merge(a,low,high,mid);
-	}
-	return(0);
-}
-#endif
-
 
 
 int am_unsigned_intg_sort_comp32(void *p1, void *p2)
@@ -350,3 +297,90 @@ AM_RETURN am_stata_write_idx32(AM_HANDLE handle, void *p1, void *p2)
 	return AM_RET_GOOD;
 
 }
+
+
+AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
+{
+    AM_RETURN error = 0;
+    AM_FUNC_DATA_U *pVdF = NULL;
+ 
+	AM_ASSERT(pCap);
+	AM_ASSERT(pFunc);
+	AM_ASSERT(pFunc->pfnOps);
+
+
+    AM_DEBUGPRINT( "am_create_stata_device: maxSize=%lld\n", pCap->maxSize );
+
+    pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
+    
+    if(pVdF)
+    {
+		pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
+		pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
+		pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
+		pVdF->stata.array_size = pCap->maxSize;
+		
+		pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
+        
+		pFunc->crResp.data_size = pVdF->stata.data_size;
+		pFunc->crResp.idx_size = pVdF->stata.idx_size;
+
+
+		if(NULL != pVdF->stata.data)
+		{
+		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
+			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
+			
+			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
+			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
+
+			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
+			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
+
+			pFunc->pfnOps[AM_OP_SORT].action = am_stata_sort;
+			pFunc->crResp.ops[AM_OP_SORT] = (AM_PACK_ACTION << 16) | AM_OP_SORT;
+
+
+			//#define AM_OP_WRITE_ALIGN                    0x10
+			//#define AM_OP_READ_ALIGN                     0x11
+			
+			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_stata_write_idx32;
+			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_stata_read_idx32;
+			 
+			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
+			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
+
+			
+			pFunc->crResp.pack_DataOffset = pVdF->stata.idx_size;
+			
+			pFunc->pVdF = pVdF;
+		
+			
+			sprintf(pFunc->crResp.am_name, "am_stata_%04x", pFunc->handle);
+			AM_DEBUGPRINT("CREATE STATA = AM_NAME=%s\n", pFunc->crResp.am_name);		
+			pFunc->crResp.devt = pFunc->handle;
+		}
+		else
+		{
+			error = AM_RET_ALLOC_ERR;
+		}
+
+
+	}
+	else
+	{
+		error = AM_RET_ALLOC_ERR;
+	}
+
+	if(AM_RET_GOOD != error)
+	{
+		if(NULL != pVdF)
+		{
+			AM_FREE(pVdF);
+		}
+	}
+
+	return error;
+}
+
+

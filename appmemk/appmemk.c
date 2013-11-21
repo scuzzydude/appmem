@@ -110,6 +110,24 @@ AM_MEM_CAP_T appmemd_caps[] =
     
 
 
+/* TODO: For Target code consolidation, rectify  with virtd functions later */
+AM_RETURN am_targ_release(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
+{
+	return AM_RET_GOOD;
+		
+}
+AM_RETURN am_targ_open(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
+{
+	return AM_RET_GOOD;
+
+}
+AM_RETURN am_targ_close(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
+{
+	return AM_RET_GOOD;
+}
+
+
+
 struct file_operations appmemd_fops = 
 {
 	.owner =    THIS_MODULE,

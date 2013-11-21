@@ -5,6 +5,8 @@
 #include "appmem_net.h"
 #include "am_stata.h"
 #include "am_flat.h"
+#include "am_targ.h"
+#include "am_assca.h"
 
 
 #define SINGLE_THREAD_TARGET 0
@@ -321,173 +323,6 @@ AM_RETURN am_targ_close(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_targ_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
-{
-    AM_RETURN error = 0;
-    AM_FUNC_DATA_U *pVdF = NULL;
- 
-	AM_ASSERT(pCap);
-	AM_ASSERT(pFunc);
-	AM_ASSERT(pFunc->pfnOps);
-
-
-    AM_DEBUGPRINT( "am_tar6g_create_stata_device: maxSize=%lld\n", pCap->maxSize );
-
-    pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
-    
-    if(pVdF)
-    {
-		pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
-		pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
-		pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
-		pVdF->stata.array_size = pCap->maxSize;
-		
-		pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
-        
-		pFunc->crResp.data_size = pVdF->stata.data_size;
-		pFunc->crResp.idx_size = pVdF->stata.idx_size;
-
-
-		if(NULL != pVdF->stata.data)
-		{
-		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
-			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
-			
-			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
-			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
-
-			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
-			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
-
-			pFunc->pfnOps[AM_OP_SORT].action = am_stata_sort;
-			pFunc->crResp.ops[AM_OP_SORT] = (AM_PACK_ACTION << 16) | AM_OP_SORT;
-
-
-			//#define AM_OP_WRITE_ALIGN                    0x10
-			//#define AM_OP_READ_ALIGN                     0x11
-			
-			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_stata_write_idx32;
-			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_stata_read_idx32;
-			 
-			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
-			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
-
-			
-			pFunc->crResp.pack_DataOffset = pVdF->stata.idx_size;
-			
-			pFunc->pVdF = pVdF;
-		
-			
-			sprintf(pFunc->crResp.am_name, "am_stata_%04x", pFunc->handle);
-			AM_DEBUGPRINT("CREATE STATA = AM_NAME=%s\n", pFunc->crResp.am_name);		
-			pFunc->crResp.devt = pFunc->handle;
-		}
-		else
-		{
-			error = AM_RET_ALLOC_ERR;
-		}
-
-
-	}
-	else
-	{
-		error = AM_RET_ALLOC_ERR;
-	}
-
-	if(AM_RET_GOOD != error)
-	{
-		if(NULL != pVdF)
-		{
-			AM_FREE(pVdF);
-		}
-	}
-
-	return error;
-}
-
-
-
-
-AM_RETURN am_targ_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
-{
-    AM_RETURN error = 0;
-    AM_FUNC_DATA_U *pVdF = NULL;
- 
-	AM_ASSERT(pCap);
-	AM_ASSERT(pFunc);
-	AM_ASSERT(pFunc->pfnOps);
-
-
-    AM_DEBUGPRINT( "am_targ_create_flat_device: maxSize=%lld\n", pCap->maxSize );
-
-    pVdF = (AM_FUNC_DATA_U *)AM_MALLOC(sizeof(AM_FUNC_DATA_U));
-    
-    if(pVdF)
-    {
-		pVdF->flat.size = pCap->maxSize;
-		pVdF->flat.add_size = pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE];
-		pVdF->flat.data = AM_MALLOC((size_t)pCap->maxSize); /* VMalloc for large virtual buffer */
-				
- 
-		if(NULL != pVdF->flat.data)
-		{
-		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
-			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
-			
-			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
-			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
-
-			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
-			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
-
-			if(pCap->typeSpecific[TS_INIT_MEM_VAL])
-			{
-				/* TODO --- */            
-			}
-			else
-			{
-			    memset(pVdF->flat.data, 0, (size_t) pVdF->flat.size);
-			}
-
-			
-			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_flat_write32_align;
-			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_flat_read32_align;
-			 
-			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
-			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
-
-			pFunc->crResp.data_size = pVdF->flat.add_size;
-			pFunc->crResp.pack_DataOffset = pVdF->flat.add_size;
-			
-			pFunc->pVdF = pVdF;
-		
-			
-			sprintf(pFunc->crResp.am_name, "am_flat_%04x", pFunc->handle);
-			AM_DEBUGPRINT("CREATE FLAT = AM_NAME=%s\n", pFunc->crResp.am_name);		
-			pFunc->crResp.devt = pFunc->handle;
-		}
-		else
-		{
-			error = AM_RET_ALLOC_ERR;
-		}
-
-
-	}
-	else
-	{
-		error = AM_RET_ALLOC_ERR;
-	}
-
-	if(AM_RET_GOOD != error)
-	{
-		if(NULL != pVdF)
-		{
-			AM_FREE(pVdF);
-		}
-	}
-
-	return error;
-}
 
 
 
@@ -555,15 +390,22 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 
 		case AM_TYPE_ARRAY:
 		{
-			error = am_targ_create_stata_device(pDeviceFunc, pCap);
+			error = am_create_stata_device(pDeviceFunc, pCap);
 		}
 		break;
 
 		case AM_TYPE_FLAT_MEM:
 		{
-			error = am_targ_create_flat_device(pDeviceFunc, pCap);
+			error = am_create_flat_device(pDeviceFunc, pCap);
 		}
 		break;
+
+		case AM_TYPE_ASSOC_ARRAY:
+		{
+			error = am_create_assca_device(pDeviceFunc, pCap);
+		}
+		break;
+
 
 		default:
 		{

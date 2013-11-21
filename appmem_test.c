@@ -625,8 +625,8 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 int main(int argc, char **argv)
 {
 //	UINT32 test = AM_TYPE_ARRAY;
-//	UINT32 test = AM_TYPE_ASSOC_ARRAY;
-	UINT32 test = AM_TYPE_FLAT_MEM;
+	UINT32 test = AM_TYPE_ASSOC_ARRAY;
+//	UINT32 test = AM_TYPE_FLAT_MEM;
 
 	char *driver_name = NULL;
 //	char *driver_name = "127.0.0.1";

@@ -40,11 +40,6 @@ int appmem_create_assca_device(AM_MEM_CAP_T *pCap, APPMEM_CMD_BIDIR_T *pBDCmd)
    
 	if(pVdF && pCap && (AM_TYPE_ASSOC_ARRAY == pCap->amType))
     {
-	//	pVdF->stata.idx_size = pCap->typeSpecific[TS_STAT_ARRAY_IDX_BYTE_SIZE];
-	//	pVdF->stata.data_size = pCap->typeSpecific[TS_STAT_ARRAY_VAL_MAX_SIZE];
-	//	pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
-	//	pVdF->stata.data = vmalloc((size_t)pVdF->stata.size);
-
 
         key_size = pCap->typeSpecific[TS_ASSCA_KEY_MAX_SIZE];
 		data_size =	pCap->typeSpecific[TS_ASSCA_DATA_MAX_SIZE];
