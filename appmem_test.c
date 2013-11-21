@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 1024
-#define DEFAULT_RANDOM_OPS 1024
+#define DEFAULT_MEM_SIZE 16
+#define DEFAULT_RANDOM_OPS 100
 
 
 #ifndef _WIN32
@@ -409,14 +409,14 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
 	char **pKeys = NULL;
-	UINT32 key_count = 1000;
+	UINT32 key_count = DEFAULT_MEM_SIZE;
 	UINT32 key_size = 32;
 	char *pK;
 	UINT32 i;
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 10000;
+	UINT32 random_ops = DEFAULT_RANDOM_OPS;
 	UINT32 idx;
 	UINT32 val;
 	AM_MEM_FUNCTION_T amAA;
@@ -485,7 +485,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
         for(i = 0; i < key_count; i++)
 		{
 			pK = pKeys[i];
-	//	    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
+		    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
 			amAA.fn->write_al(&amAA, pK, &i);
 			
 		}
@@ -541,7 +541,9 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			idx = rand() % key_count;		
 			pK = pKeys[idx];
             val = 0;
-            
+    
+			printf("READ pK[%d] = %s \n", idx, pK);
+	
 			if(AM_RET_GOOD == amAA.fn->read_al(&amAA, pK, &val))
 			{
 				if(val != idx)

@@ -48,6 +48,7 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 {
+	char tempkey[64];
 	AMLIB_ASSCA_ITEM *pAI;
 
 	AM_ASSERT(pAA);
@@ -55,13 +56,14 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	AM_ASSERT(pAA->bFixedData == TRUE);
 	AM_ASSERT(pKey);
 	AM_ASSERT(pData);
-
 	pAI = (AMLIB_ASSCA_ITEM *) AM_MALLOC( sizeof(AMLIB_ASSCA_ITEM) + pAA->key_len + pAA->data_len );
 
 	if(pAI)
 	{
 		pAI->data = AM_MALLOC(pAA->data_len);
 		pAI->key = AM_MALLOC(pAA->key_len);
+
+		
 
 		pAI->key = (UINT8 *)pAI + sizeof(AMLIB_ASSCA_ITEM);
 		pAI->data = (UINT8 *)pAI->key + pAA->key_len;
@@ -71,6 +73,12 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
         memcpy(pAI->data, pData, pAA->data_len);
 		memcpy(pAI->key, pKey, pAA->key_len);
+
+		memcpy(&tempkey[0], pKey, pAA->key_len);
+
+		tempkey[pAA->key_len] = 0;
+
+		printf("ADD KEY_LEN=%d KEY = %s DATA = %d\n", pAA->key_len, tempkey, pAI->data);
 
 		HASH_ADD_KEYPTR( hh, pAA->head, pAI->key, pAA->key_len, pAI );
 
@@ -195,8 +203,7 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 			pVdF->assca.size = pCap->maxSize;
 			pVdF->assca.cur_count = 0;
-			pVdF->flat.data = (void *)pAA;
-
+			pVdF->assca.data = (void *)pAA;
 			AM_DEBUGPRINT( "am_create_assca_device: pAA=%p\n", pAA);
 
 			pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
@@ -217,10 +224,10 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 
 				pFunc->pfnOps[AM_OP_READ_ALIGN].align  = am_assca_read32_align;
-				pFunc->crResp.ops[AM_OP_READ_ALIGN] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_READ_ALIGN;
+				pFunc->crResp.ops[AM_OP_READ_ALIGN] = (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
 
 				pFunc->pfnOps[AM_OP_WRITE_ALIGN].align  = am_assca_write32_align;
-				pFunc->crResp.ops[AM_OP_WRITE_ALIGN] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_WRITE_ALIGN;
+				pFunc->crResp.ops[AM_OP_WRITE_ALIGN] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
 
 
 				pFunc->crResp.acOps[ACOP_WRITE] = pFunc->crResp.ops[AM_OP_WRITE_ALIGN];

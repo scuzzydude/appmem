@@ -528,7 +528,7 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 					else
 					{
 						/* Write Align */
-						error = opFn[op].align(pFunc, &pRxCmd->pRxBuf->write_al.data_bytes[0], &pRxCmd->pRxBuf->write_al.data_bytes[pFunc->pVdF->stata.idx_size]);  
+						error = opFn[op].align(pFunc, &pRxCmd->pRxBuf->write_al.data_bytes[0], &pRxCmd->pRxBuf->write_al.data_bytes[pFunc->crResp.idx_size]);  
 						tx_bytes = sizeof(AM_PACK_WRAPPER_T); /* If there is error, it will tx_bytes will be overridden below */
 					}
 				}

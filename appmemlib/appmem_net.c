@@ -379,6 +379,47 @@ void am_net_print_txrx_buffer(AM_NET_PACK_TRANSACTION *pIop, UINT8 bRx)
 }
 
 
+
+
+AM_RETURN am_net_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
+{
+	AMLIB_ENTRY_T *pEntry;	
+	AM_NET_PACK_TRANSACTION *pIop;
+	AM_RETURN error = AM_RET_GOOD;
+ 	UINT32 tx_size; 
+	AM_ASSERT(pFunc);
+	pEntry = pFunc->pEntry;
+	AM_ASSERT(pEntry);
+	
+	tx_size  = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.idx_size;
+
+	pIop = am_net_get_free_req();
+
+	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
+	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
+	pIop->pTx->op.wrap.size = tx_size;
+	pIop->pTx->op.wrap.op = AM_OP_READ_ALIGN;
+	
+	memcpy(&pIop->pTx->write_al.data_bytes[0], p1, pFunc->crResp.idx_size);
+
+	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+
+	if(AM_RET_GOOD == error)
+	{
+		if((NULL != pIop->pRx) && (pIop->resp_bytes >= (sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.data_size))) /* tx_size and resp size same on 32bit aligned */
+		{
+			memcpy(p2, &pIop->pRx->align_resp.resp_bytes[0], pFunc->crResp.data_size);
+		}
+		else
+		{
+			error = AM_RET_IO_ERR;
+		}
+	
+	}
+
+	return error;
+}
+
 AM_RETURN am_net_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 {
 	AMLIB_ENTRY_T *pEntry;	
@@ -415,6 +456,36 @@ AM_RETURN am_net_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 }
 
 
+AM_RETURN am_net_write_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
+{
+	AMLIB_ENTRY_T *pEntry;	
+	AM_NET_PACK_TRANSACTION *pIop;
+	AM_RETURN error = AM_RET_GOOD;
+ 	UINT32 tx_size = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.data_size + pFunc->crResp.idx_size;
+
+
+	AM_ASSERT(pFunc);
+	pEntry = pFunc->pEntry;
+	AM_ASSERT(pEntry);
+	
+	pIop = am_net_get_free_req();
+
+	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
+	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
+	pIop->pTx->op.wrap.size = tx_size;
+	pIop->pTx->op.wrap.op = AM_OP_WRITE_ALIGN;
+	
+	memcpy(&pIop->pTx->write_al.data_bytes[0],p1, pFunc->crResp.idx_size);
+	memcpy(&pIop->pTx->write_al.data_bytes[pFunc->crResp.idx_size], p2, pFunc->crResp.data_size);
+	
+	
+	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	return error;
+
+}
+
+
+
 AM_RETURN am_net_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 {
 	AMLIB_ENTRY_T *pEntry;	
@@ -435,14 +506,8 @@ AM_RETURN am_net_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[4] = *(UINT32 *)p2;
-
-
 	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
-
-
 	return error;
-
-
 
 }
 
@@ -481,7 +546,7 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 { 
 	AM_NET_PACK_TRANSACTION *pIop;
 	AM_RETURN error = AM_RET_GOOD;
- 	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT) + sizeof(AM_MEM_CAP_T) - sizeof(UINT32); /* Fivo defines 1 DWORD of data */
+	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT) + sizeof(AM_MEM_CAP_T) - sizeof(UINT32); /* Fivo defines 1 DWORD of data */
 	APPMEM_RESP_CR_FUNC_T *pCrResp;
 
 	pIop = am_net_get_free_req();
@@ -501,12 +566,12 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 	{
 		AM_DEBUGPRINT("Create Function GOOD\n");
 		pCrResp = (APPMEM_RESP_CR_FUNC_T *)&pIop->pRx->align_resp.resp_bytes[0];	
-	
+
 		AM_DEBUGPRINT("AM_NAME =   [%s]\n", pCrResp->am_name);
 		AM_DEBUGPRINT("AM_HANDLE = %08x\n", pCrResp->devt);
-		
+
 		memcpy(&pFunc->crResp, pCrResp, pIop->resp_bytes);
-			
+
 		pFunc->pEntry = pEntry;
 		pFunc->handle = pCrResp->devt;
 
@@ -524,41 +589,43 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 		{
 			pFunc->fn->sort = am_net_sort;
 		}
-		
+
 		if(AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE]))
-         {
-            /* TODO - depending on address size might be different pointers */
-    		pFunc->fn->write_al = am_net_write32_align;
-			
-		 }
-         else ///if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
-         {
+		{
+			if((sizeof(UINT32) == pFunc->crResp.data_size) && (sizeof(UINT32) == pFunc->crResp.idx_size))
+			{
+				pFunc->fn->write_al = am_net_write32_align;
+			}
+			else /* TODO - we should have alignment function for 64/64 or 32/64 and other common cobmos but always fall back to this one */
+			{
+				pFunc->fn->write_al = am_net_write_align;
+			}
+		}
+		else ///if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
+		{
 			//printf("write_al = am_kd_fixed_write_packet\n");
-            //fn_array->write_al = am_kd_fixed_write_packet;
+			//fn_array->write_al = am_kd_fixed_write_packet;
 			//TODO - 
-         }
-               
-		 if(AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE]))
-         {
-            /* TODO - depending on address size might be different pointers */
-    		pFunc->fn->read_al = am_net_read32_align;
-			
-		 }
-		 else
-		 {
-			 //TODO: 
-		 }
+		}
 
+		if(AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE]))
+		{
 
+			if((sizeof(UINT32) == pFunc->crResp.data_size) && (sizeof(UINT32) == pFunc->crResp.idx_size))
+			{
+				pFunc->fn->read_al = am_net_read32_align;
+			}
+			else
+			{
+				pFunc->fn->read_al = am_net_read_align;
+			}
 
-
-
+		}
+		else
+		{
+			//TODO: 
+		}
 		//am_net_print_txrx_buffer(pIop,TRUE);
-
-
-
-
-		
 	}
 	else
 	{
