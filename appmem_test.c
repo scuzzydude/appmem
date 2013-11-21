@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 16
-#define DEFAULT_RANDOM_OPS 100
+#define DEFAULT_MEM_SIZE 1024
+#define DEFAULT_RANDOM_OPS 1000
 
 
 #ifndef _WIN32
@@ -485,7 +485,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
         for(i = 0; i < key_count; i++)
 		{
 			pK = pKeys[i];
-		    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
+//		    printf("pK[%d] = %s func=%p\n", i, pK, amAA.fn->write_al);
 			amAA.fn->write_al(&amAA, pK, &i);
 			
 		}
@@ -494,18 +494,6 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		elap2 = OS_HR_TIMER_GET_ELAP();
 		printf("%s Assc Array Write %d entries ELAP = %f\n", pEntry->am_name, key_count, elap2);
 	    printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
-
-
-
-
-
-
-
-
-
-
-
-
 
 		OS_HR_TIMER_START();
 		for(i = 0; i < random_ops; i++)
@@ -542,7 +530,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			pK = pKeys[idx];
             val = 0;
     
-			printf("READ pK[%d] = %s \n", idx, pK);
+//			printf("READ pK[%d] = %s \n", idx, pK);
 	
 			if(AM_RET_GOOD == amAA.fn->read_al(&amAA, pK, &val))
 			{

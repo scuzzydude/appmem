@@ -48,7 +48,6 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 {
-	char tempkey[64];
 	AMLIB_ASSCA_ITEM *pAI;
 
 	AM_ASSERT(pAA);
@@ -74,11 +73,6 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
         memcpy(pAI->data, pData, pAA->data_len);
 		memcpy(pAI->key, pKey, pAA->key_len);
 
-		memcpy(&tempkey[0], pKey, pAA->key_len);
-
-		tempkey[pAA->key_len] = 0;
-
-		printf("ADD KEY_LEN=%d KEY = %s DATA = %d\n", pAA->key_len, tempkey, pAI->data);
 
 		HASH_ADD_KEYPTR( hh, pAA->head, pAI->key, pAA->key_len, pAI );
 
