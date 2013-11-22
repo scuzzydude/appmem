@@ -373,14 +373,40 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
                     }
                     break;
 
-#if 0
-                case AM_TYPE_ASSOC_ARRAY:
-                {
-                    error = appmem_create_assca_device(&aCap, pBDCmd);
 
-                }
-                break;
-#endif                
+                    case AM_TYPE_ASSOC_ARRAY:
+                    {
+                        pNewDevice = appmem_device_func_create("am_assca", AM_TYPE_ASSOC_ARRAY);
+
+                        AM_DEBUGPRINT("am_assca pNewDevice=%p\n", pNewDevice);
+                        
+                        if((NULL != pNewDevice) && (NULL != pNewDevice->pfnOps))
+                        {
+                            pFunc->pfnOps = pNewDevice->pfnOps;
+                            
+                            error = am_create_assca_device(pFunc, &aCap);
+
+                            AM_DEBUGPRINT("am_assca am_create_am_assca_device(error=%d)\n", error);
+
+                            if(AM_RET_GOOD == error)
+                            {
+                                pNewDevice->pFunc = pFunc;
+
+                                /* TODO - duplication of this info in various places */
+				                pNewDevice->pack_DataOffset = pFunc->crResp.pack_DataOffset;     
+				                pNewDevice->wr_pack_size = pFunc->crResp.wr_pack_qword_size * 8;
+				                pNewDevice->rd_pack_size = pFunc->crResp.rd_pack_qword_size * 8;
+
+                            }
+                        }
+                        else
+                        {
+                            error = AM_RET_ALLOC_ERR;
+                        }
+
+                    }
+                    break;
+
                 default:
                 {
                     error = -ENOTTY;
