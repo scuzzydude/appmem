@@ -218,11 +218,14 @@ union am_func_data;
 
 typedef struct _appmem_kdevice
 {
+    struct am_mem_function_t *pFunc;
+
     int                    minor;
     UINT32                 amType;
     dev_t                  devt;
     struct cdev            cdev;
-    AM_FN_U             *pfnOps;     
+
+    AM_FN_U                *pfnOps;     
     struct _appmem_kdevice *next;
     union am_func_data     *pVdF;  
     char                   am_name[64];
@@ -234,7 +237,7 @@ typedef struct _appmem_kdevice
 } APPMEM_KDEVICE;
 
 
-#define AM_HANDLE_TO_FUNCDATA(_handle) ((APPMEM_KDEVICE *)(_handle))->pVdF
+#define AM_HANDLE_TO_FUNCDATA(_handle) ((APPMEM_KDEVICE *)(_handle))->pFunc->pVdF
 #else
 #define AM_HANDLE_TO_FUNCDATA(_handle) ((struct am_mem_function_t *)(_handle))->pVdF
 #endif

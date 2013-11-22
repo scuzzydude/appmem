@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 1024
+#define DEFAULT_MEM_SIZE 16
 #define DEFAULT_RANDOM_OPS 1000
 
 
@@ -250,7 +250,10 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		return;
 	}
 
-	aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
+	aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC(sizeof(AM_FUNC_CALLS_T));
+
+    memset(aCalls, 0, (sizeof(AM_FUNC_CALLS_T)));
+    
 	amFa.fn = aCalls;
 	if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amFa))
 	{
@@ -356,18 +359,21 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	sortP.stata_integral.end_idx = 0; //sort all if 0
 	sortP.stata_integral.data_signed = 0;
 
-	printf("STATA Array Sort %s\n", amFa.crResp.am_name);
+    if(NULL != aCalls->sort)
+    {
+    
+	    printf("STATA Array Sort %s sortfn=%p\n", amFa.crResp.am_name, aCalls->sort);
 
-	OS_HR_TIMER_START();
-	if(AM_RET_GOOD != aCalls->sort(&amFa, &sortP, sizeof(AM_SORT_PARAM_U)))
-	{
-		printf("Sort Error\n");
-	}
+	    OS_HR_TIMER_START();
+	    if(AM_RET_GOOD != aCalls->sort(&amFa, &sortP, sizeof(AM_SORT_PARAM_U)))
+	    {
+		    printf("Sort Error\n");
+	    }
 
-	OS_HR_TIMER_STOP();
-	elap2 = OS_HR_TIMER_GET_ELAP();
-	printf("STATA Array Sort %s Elap=%f\n", amFa.crResp.am_name, elap2);
-
+	    OS_HR_TIMER_STOP();
+	    elap2 = OS_HR_TIMER_GET_ELAP();
+	    printf("STATA Array Sort %s Elap=%f\n", amFa.crResp.am_name, elap2);
+    }
 	
 	
 	

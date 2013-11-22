@@ -14,6 +14,13 @@ AM_RETURN am_flat_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64
 	return AM_RET_GOOD;
 }
 
+AM_RETURN am_flat_release(AM_HANDLE handle, void * p1)
+{
+
+	return AM_RET_GOOD;
+
+}
+
 
 /* 32 bit */
 AM_RETURN am_flat_read32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
@@ -73,19 +80,14 @@ AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
     {
 		pVdF->flat.size = pCap->maxSize;
 		pVdF->flat.add_size = pCap->typeSpecific[TS_FLAT_ADDRESS_BYTE_SIZE];
-		pVdF->flat.data = AM_MALLOC((size_t)pCap->maxSize); /* VMalloc for large virtual buffer */
+		pVdF->flat.data = AM_VALLOC((size_t)pCap->maxSize); /* VMalloc for large virtual buffer */
 				
- 
+        AM_DEBUGPRINT( "am_targ_create_flat_device: pVdF=%p\n", pVdF);
+
 		if(NULL != pVdF->flat.data)
 		{
-		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
-			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
-			
-			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
-			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
 
-			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
-			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
+            AM_DEBUGPRINT( "am_targ_create_flat_device: pVdF->flat.data=%p\n", pVdF->flat.data);
 
 			if(pCap->typeSpecific[TS_INIT_MEM_VAL])
 			{
@@ -96,12 +98,37 @@ AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			    memset(pVdF->flat.data, 0, (size_t) pVdF->flat.size);
 			}
 
+
+#ifdef _APPMEMD
+
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = am_flat_release;
+
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_flat_read32_align;
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_flat_write32_align;
+
+
+            pFunc->crResp.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN;
+            pFunc->crResp.acOps[ACOP_READ] = AM_OP_CODE_READ_ALIGN;
+
+
+#else			
+
+		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
+			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
 			
+			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
+			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
+
+			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
+			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
+
+
 			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_flat_write32_align;
 			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_flat_read32_align;
 			 
 			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
 			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
+#endif
 
 			pFunc->crResp.data_size = pVdF->flat.add_size;
 			pFunc->crResp.pack_DataOffset = pVdF->flat.add_size;

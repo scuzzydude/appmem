@@ -57,6 +57,8 @@ int am_kd_close_driver(int fd)
 int am_kd_open_driver(AMLIB_ENTRY_T *pEntry)
 {
 	int fd = open(pEntry->am_name, 0);
+
+    
 	
 	if(fd < 0)
 	{
@@ -141,15 +143,23 @@ UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry)
 AM_RETURN am_kd_write32_align(AM_HANDLE handle, void * p1, void *p2)
 {
 	APPMEM_CMD_ALIGNED_T cmd;
-	int c;
+    AM_MEM_FUNCTION_T *pFunc = handle;
+    int c;
+
+    AM_ASSERT(pFunc);
+    
 	cmd.op = AM_OP_CODE_WRITE_ALIGN;
 	cmd.offset = *(UINT32 *)p1;
 	cmd.data = *(UINT32 *)p2;
 
-	c = ioctl(handle, APPMEMD_OP_COMMON, &cmd);	
+    AM_DEBUGPRINT("write32_align  p1=%p, p2=%p2\n");
+
+	c = ioctl(pFunc->handle, APPMEMD_OP_COMMON, &cmd);	
 	
 	if(c < 0)
 	{
+        AM_DEBUGPRINT("write32_align ERROR =%d\n", c);
+
 		return AM_RET_IO_ERR;
 	}
 	return AM_RET_GOOD;	
@@ -159,12 +169,16 @@ AM_RETURN am_kd_write32_align(AM_HANDLE handle, void * p1, void *p2)
 AM_RETURN am_kd_read32_align(AM_HANDLE handle, void * p1, void *p2)
 {
 	APPMEM_CMD_ALIGNED_T cmd;
-	int c;
+    AM_MEM_FUNCTION_T *pFunc = handle;
+ 	int c;
+
+    AM_ASSERT(pFunc);
+    
 	cmd.op = AM_OP_CODE_READ_ALIGN;
 	cmd.offset = *(UINT32 *)p1;
 	cmd.data = (UINT64)p2;
 
-	c = ioctl(handle, APPMEMD_OP_COMMON, &cmd);	
+	c = ioctl(pFunc->handle, APPMEMD_OP_COMMON, &cmd);	
 	
 	if(c < 0)
 	{
@@ -277,6 +291,7 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
                 
                 if(AM_OP_CODE_WRITE_ALIGN == pFunc->crResp.acOps[ACOP_WRITE])
                 {
+                    AM_DEBUGPRINT("acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN\n");
                     /* TODO - depending on address size might be different pointers */
     				fn_array->write_al = am_kd_write32_align;
                 }

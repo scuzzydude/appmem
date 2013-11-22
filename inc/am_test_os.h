@@ -1,7 +1,7 @@
 #ifndef _AM_TEST_OS_H
 #define _AM_TEST_OS_H
 
-#define AMLIB_DEBUG 0
+#define AMLIB_DEBUG 1
 
 
 #ifdef _WIN32

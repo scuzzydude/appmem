@@ -275,8 +275,10 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 {
    int error = 0;
    APPMEM_CMD_BIDIR_T *pBDCmd = (APPMEM_CMD_BIDIR_T *)&pKCmd->cmd;
-   AM_MEM_CAP_T aCap;
-   
+   AM_MEM_CAP_T           aCap;
+   APPMEM_KDEVICE         *pNewDevice = NULL;
+   AM_MEM_FUNCTION_T      *pFunc = NULL;
+    
    AM_DEBUGPRINT("appmem_create_function = data_in=%p  len_in=%d\n", (void *)pBDCmd->data_in, pBDCmd->len_in);
 
    if(AM_TYPE_BASE_APPMEM != pDevice->amType)
@@ -299,36 +301,94 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
         {
             AM_DEBUGPRINT("Switch aCap.amType=0x%08x maxSize=%lld\n", aCap.amType, aCap.maxSize);
 
-            switch(aCap.amType)
+            pFunc = AM_MALLOC(sizeof(AM_MEM_FUNCTION_T));
+
+            
+            if(NULL == pFunc)
+            {
+                error = AM_RET_ALLOC_ERR;
+                
+            }    
+            else
             {
 
-                case AM_TYPE_FLAT_MEM:
-                {
-                    error = appmem_create_flat_device(&aCap, pBDCmd);     
-                }
-                break;
 
-                case AM_TYPE_ARRAY:
+                switch(aCap.amType)
                 {
-                    error = appmem_create_stata_device(&aCap, pBDCmd);     
-                }
-                break;
 
+
+                    case AM_TYPE_FLAT_MEM:
+                    {
+                        pNewDevice = appmem_device_func_create("am_flat", AM_TYPE_FLAT_MEM);
+
+                        AM_DEBUGPRINT("am_flat pNewDevice=%p\n", pNewDevice);
+                        
+                        if((NULL != pNewDevice) && (NULL != pNewDevice->pfnOps))
+                        {
+                            pFunc->pfnOps = pNewDevice->pfnOps;
+                            
+                            error = am_create_flat_device(pFunc, &aCap);
+
+                            AM_DEBUGPRINT("am_flat am_create_flat_device(error=%d)\n", error);
+
+                            if(AM_RET_GOOD == error)
+                            {
+                                pNewDevice->pFunc = pFunc;
+                            }
+                        
+
+                        }
+                        else
+                        {
+                            error = AM_RET_ALLOC_ERR;
+                        }
+
+                    }
+                    break;
+
+                    case AM_TYPE_ARRAY:
+                    {
+                        pNewDevice = appmem_device_func_create("am_stata", AM_TYPE_ARRAY);
+
+                        AM_DEBUGPRINT("am_stata pNewDevice=%p\n", pNewDevice);
+                        
+                        if((NULL != pNewDevice) && (NULL != pNewDevice->pfnOps))
+                        {
+                            pFunc->pfnOps = pNewDevice->pfnOps;
+                            
+                            error = am_create_stata_device(pFunc, &aCap);
+
+                            AM_DEBUGPRINT("am_stata am_create_stata_device(error=%d)\n", error);
+
+                            if(AM_RET_GOOD == error)
+                            {
+                                pNewDevice->pFunc = pFunc;
+                            }
+                        }
+                        else
+                        {
+                            error = AM_RET_ALLOC_ERR;
+                        }
+
+                    }
+                    break;
+
+#if 0
                 case AM_TYPE_ASSOC_ARRAY:
                 {
                     error = appmem_create_assca_device(&aCap, pBDCmd);
 
                 }
                 break;
-                
+#endif                
                 default:
                 {
                     error = -ENOTTY;
                 }
                 break;
                
+                }
             }
-
         }
 
 
@@ -337,6 +397,30 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
    {
       return -ENOTTY;
    }
+
+   if(AM_RET_GOOD == error)
+   {
+
+        strncpy((char *)&pFunc->crResp.am_name[0], (char *)pNewDevice->am_name, 32);
+        pFunc->crResp.devt = pNewDevice->devt;
+
+        AM_DEBUGPRINT("create_function copy crResp = %s devt = %d\n", pFunc->crResp.am_name, pFunc->crResp.devt );
+
+        if(copy_to_user ((void *)pBDCmd->data_out, &pFunc->crResp, sizeof(APPMEM_RESP_CR_FUNC_T)))
+        {
+            error =  -ENOMEM;
+            AM_DEBUGPRINT("create_function copy crResp error!!!!\n");
+
+        }
+   }
+   else
+   {
+        /* Clean up */
+
+
+
+   }
+
 
 
 
@@ -437,7 +521,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     void *rdptr;
     
 
-//    printk("Appmemd : ioctl cmd=%08x\n", cmd);
+    printk("Appmemd : ioctl cmd=%08x\n", cmd);
 
 	if (_IOC_TYPE(cmd) != APPMEMD_IOC_MAGIC)
     {
@@ -455,7 +539,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
     cmd_bytes = (cmd_bytes * 8) + 8;
 
-    //printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
+    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
 
     if(arg)
     {
@@ -465,7 +549,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
         if(pDevice)
         {
-    //        printk("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
+            printk("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
         }    
         else
         {
@@ -488,7 +572,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
             {
 
      
-           //     printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
+                printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
 
                 if(NULL != pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config)
                 {
@@ -497,7 +581,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                 
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
-      //                  printk("Appmemd : aligned\n");
+                        printk("Appmemd : aligned\n");
 
                         if(0x1 & pKCmd->cmd.common.op)
                         {
@@ -547,7 +631,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             if(cmd_bytes >= (pDevice->wr_pack_size))
                             {
                                 
-  //                              printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
+                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
                                 return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
                             else

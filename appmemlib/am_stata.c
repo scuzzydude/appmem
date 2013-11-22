@@ -259,6 +259,14 @@ AM_RETURN am_stata_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT6
 
 }
 
+AM_RETURN am_stata_release(AM_HANDLE handle, void * p1)
+{
+
+	return AM_RET_GOOD;
+
+}
+
+
 
 /* 32 bit */
 AM_RETURN am_stata_read_multi_idx32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
@@ -328,6 +336,18 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 		if(NULL != pVdF->stata.data)
 		{
+
+
+#ifdef _APPMEMD
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = am_stata_release;
+
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
+             
+            pFunc->crResp.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN;
+            pFunc->crResp.acOps[ACOP_READ] = AM_OP_CODE_READ_ALIGN;
+
+#else
 		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
 			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
 			
@@ -340,17 +360,14 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			pFunc->pfnOps[AM_OP_SORT].action = am_stata_sort;
 			pFunc->crResp.ops[AM_OP_SORT] = (AM_PACK_ACTION << 16) | AM_OP_SORT;
 
-
-			//#define AM_OP_WRITE_ALIGN                    0x10
-			//#define AM_OP_READ_ALIGN                     0x11
 			
 			pFunc->pfnOps[AM_OP_WRITE_ALIGN].align = am_stata_write_idx32;
 			pFunc->pfnOps[AM_OP_READ_ALIGN].align = am_stata_read_idx32;
 			 
 			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
 			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
+#endif
 
-			
 			pFunc->crResp.pack_DataOffset = pVdF->stata.idx_size;
 			
 			pFunc->pVdF = pVdF;
