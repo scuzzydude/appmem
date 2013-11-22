@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmemd_ioctl.h"
 #include "am_k.h"
 #include "am_k_sock.h"
-
+#include "am_caps.h"
 
 
 int appmemd_open(struct inode *inode, struct file *filp);
@@ -58,56 +58,6 @@ dev_t base_AMdev = 0;
 
 APPMEM_KAM_CMD_T g_temp_KCMD; /* TODO: This will be a pool */
 
-
-AM_MEM_CAP_T appmemd_caps[] = 
-{
-
-	{ 
-		AM_TYPE_BASE_APPMEM,
-		(1024 * 1024 * 128), /* Total Device Memory */
-		2,
-		{
-			0, 0
-		}
-	},
-	{ 
-		AM_TYPE_FLAT_MEM, /* Type */ 
-		(1024 * 1024),    /* maxSizeBytes */
-		7,    			  /* maxFunction  */	
-		{
-			(8 | 4 | 2 | 1),  /* Mem - Address Size */ 
-			1,                /* Mem - Min Byte action */
-			(1024 * 1024)     /* Mem - Max Byte action */
-		}
-	
-	},
-	{ 
-		AM_TYPE_ARRAY,
-		(1024 * 1024),
-		7,
-		{
-			(8 | 4 | 2 | 1),  /* Array - Index Size Bytes */ 
-			1,                /* Min Value Size - Bytes */
-			1024,              /* Max Value Size - Bytes */
-			TS_STAT_DT_FIXED_WIDTH
-		}
-
-	},
-	{
-		AM_TYPE_ASSOC_ARRAY,
-		(1024 * 1024),
-		7,
-		{
-			512,              /* Max - Key Size Bytes */ 
-			1024 * 1024,      /* Max - Data Size Bytes */
-			TS_ASSCA_KEY_FIXED_WIDTH | TS_ASSCA_KEY_VAR_WIDTH,
-			TS_ASSCA_DATA_FIXED_WIDTH | TS_ASSCA_DATA_VAR_WIDTH
-		}
-	}
-
-};
-
-    
 
 
 /* TODO: For Target code consolidation, rectify  with virtd functions later */
@@ -474,7 +424,7 @@ AM_RETURN appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 
         transfer_len = cap_count * sizeof(AM_MEM_CAP_T);
         
-        pCaps = (void *)appmemd_caps;
+        pCaps = (void *)virtd_caps;
 
         printk("Appmemd : appmem_get_capabilites BASE_APPMEM len=%d transfer_len=%d cap_count=%d : %p\n", pKCmd->cmd.common.len, transfer_len, cap_count, pCaps);
 
@@ -513,7 +463,7 @@ AM_RETURN appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T
     
     if(AM_TYPE_BASE_APPMEM == pDevice->amType)
     {
-        cap_count = sizeof(appmemd_caps) / sizeof(AM_MEM_CAP_T);
+        cap_count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
         printk("Appmemd : cap_count BASE_APPMEM = %d\n", cap_count);
         
     }
@@ -547,7 +497,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     void *rdptr;
     
 
-    printk("Appmemd : ioctl cmd=%08x\n", cmd);
+    AM_DEBUGPRINT("Appmemd : ioctl cmd=%08x\n", cmd);
 
 	if (_IOC_TYPE(cmd) != APPMEMD_IOC_MAGIC)
     {
@@ -565,7 +515,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
     cmd_bytes = (cmd_bytes * 8) + 8;
 
-    printk("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
+    AM_DEBUGPRINT("Appmemd : appmemd_ioctl inode=%p filp=%p cmd_bytes=%d cmd=0x%08x arg=0x%016lx\n", inode, filp, cmd_bytes, cmd, arg);
 
     if(arg)
     {
@@ -575,7 +525,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
         if(pDevice)
         {
-            printk("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
+            AM_DEBUGPRINT("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
         }    
         else
         {
@@ -593,12 +543,13 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
             if(copy_from_user (&pKCmd->cmd, (void *)arg, cmd_bytes))
             {
                 printk("Appmemd : copy from user error\n");
+           //     return -ENOTTY;
             }
             else
             {
 
      
-                printk("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
+                AM_DEBUGPRINT("Appmemd : cmd(common) cmd=0x%08x len=%d data=%p\n", pKCmd->cmd.common.op, pKCmd->cmd.common.len, (void *)pKCmd->cmd.common.data);
 
                 if(NULL != pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config)
                 {
@@ -607,7 +558,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                 
                     if(IS_OP_ALIGNED(pKCmd->cmd.common.op))
                     {
-                        printk("Appmemd : aligned\n");
+                        AM_DEBUGPRINT("Appmemd : aligned\n");
 
                         if(0x1 & pKCmd->cmd.common.op)
                         {
@@ -634,7 +585,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                                 rdptr = (void *)(*(UINT64 *)&pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
 #if 0
                                 
-                                printk("Valid PACKET READ cmd_bytes=%d rd_pack_size =%d RDPTR=%p Rp0=0x%08x Rp1=0x%08x\n", 
+                                AM_DEBUGPRINT("Valid PACKET READ cmd_bytes=%d rd_pack_size =%d RDPTR=%p Rp0=0x%08x Rp1=0x%08x\n", 
                                 cmd_bytes , pDevice->rd_pack_size, rdptr,
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset],
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset + 1]);
@@ -643,7 +594,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             }
                             else
                             {
-                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
+                                AM_DEBUGPRINT("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
                                 return -ENOTTY;
             
                             }
@@ -671,8 +622,6 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
 
                     }
-
-
 
                     else
                     {

@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_flat.h"
 #include "am_stata.h"
 #include "am_assca.h"
+#include "am_caps.h"
 
 int g_virtd_minor_count = 1;
 

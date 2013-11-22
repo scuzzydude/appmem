@@ -7,6 +7,7 @@
 #include "am_flat.h"
 #include "am_targ.h"
 #include "am_assca.h"
+#include "am_caps.h"
 
 
 #define SINGLE_THREAD_TARGET 0
@@ -910,10 +911,6 @@ int main(int argc, char **argv)
 	/* Check environment */
 	AM_ASSERT((sizeof(AM_PACK_ALL_U) == MAX_BASIC_PACK_UNION_SIZE));
 	AM_ASSERT((sizeof(UINT64) == 8));	
-	
-	
-	
-	
 	
 	
 	if(AM_RET_GOOD != error)

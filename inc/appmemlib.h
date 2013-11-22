@@ -454,56 +454,6 @@ AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 
 
 
-static AM_MEM_CAP_T virtd_caps[] = 
-{
-
-	{ 
-		AM_TYPE_BASE_APPMEM,
-		(1024 * 1024 * 128), /* Total Device Memory */
-		2,
-		{
-			0, 0
-		}
-	},
-	{ 
-		AM_TYPE_FLAT_MEM, /* Type */ 
-		(1024 * 1024),    /* maxSizeBytes */
-		7,    			  /* maxFunction  */	
-		{
-			(8 | 4 | 2 | 1),  /* Mem - Address Size */ 
-			1,                /* Mem - Min Byte action */
-			(1024 * 1024)     /* Mem - Max Byte action */
-		}
-	
-	},
-	{ 
-		AM_TYPE_ARRAY,
-		(1024 * 1024),
-		8,
-		{
-			(8 | 4 | 2 | 1),  /* Array - Index Size Bytes */ 
-			1,                /* Min Value Size - Bytes */
-			1024,              /* Max Value Size - Bytes */
-			TS_STAT_DT_FIXED_WIDTH
-		}
-
-	},
-	{
-		AM_TYPE_ASSOC_ARRAY,
-		(1024 * 1024),
-		7,
-		{
-			512,              /* Max - Key Size Bytes */ 
-			1024 * 1024,      /* Max - Data Size Bytes */
-			TS_ASSCA_KEY_FIXED_WIDTH | TS_ASSCA_KEY_VAR_WIDTH,
-			TS_ASSCA_DATA_FIXED_WIDTH | TS_ASSCA_DATA_VAR_WIDTH
-		}
-
-
-
-	}
-
-};
 #endif
 
 

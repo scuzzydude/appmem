@@ -1,7 +1,7 @@
 #ifndef _AM_TEST_OS_H
 #define _AM_TEST_OS_H
 
-#define AMLIB_DEBUG 1
+#define AMLIB_DEBUG 0
 
 
 #ifdef _WIN32
@@ -43,7 +43,7 @@
 #else
 /* This one for user space */
 # define AM_DEBUGPRINT(fmt, args...) printf(fmt, ## args)
-# endif
+#endif
 #else
 # define AM_DEBUGPRINT(fmt, args...) /* not debugging: nothing */
 #endif
