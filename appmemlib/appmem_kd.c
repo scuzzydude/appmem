@@ -28,7 +28,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************************/
 
-
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "appmemlib.h"
 #include "appmem_virtd.h"
@@ -57,16 +61,7 @@ int am_kd_close_driver(int fd)
 int am_kd_open_driver(AMLIB_ENTRY_T *pEntry)
 {
 	int fd = open(pEntry->am_name, 0);
-
     
-	
-	if(fd < 0)
-	{
-		printf("DEBUG: FD=%d Error opening %s\n", fd, pEntry->am_name);
-	}
-	
-	return fd;
-
 }
 
 AM_RETURN am_kd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count)
@@ -334,16 +329,51 @@ AM_RETURN am_kd_open(void *p1)
 	//full path
 	char full_path[64];
 	sprintf(full_path, "/dev/%s", pFunc->crResp.am_name);
-
+    char *pMMap;
+    int i;
+    
 	printf("opening %s\n", full_path);
 
-	int fd = open(full_path, 0);
-	
+	//int fd = open(full_path, 0);
+	 int fd = open(full_path, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+	 
 	if(fd > -1)
 	{
 		printf("Opened %s Handle = %d\n", full_path, fd);
 		pFunc->handle = fd;
+
+
+
+
+
+    
+	    printf("Calling MMAP\n");
+
+        pMMap = (char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0);
+	
+        if(MAP_FAILED != pMMap)
+        {
+            printf("MMAP GOOD %p\n", pMMap);
+
+         //   pMMap[0] = "A";
+         //   pMMap[1] = "B";
+
+            for(i = 0; i < 15; i++)
+            {
+                printf("%d] %c\n", i, pMMap[i]);
+            }
+                     
+
+        }
+        else
+        {
+            printf("MMAP Failed \n");
+        }
+
 		return AM_RET_GOOD;
+
+
+
 	}
 
 	return AM_RET_INVALID_HDL;

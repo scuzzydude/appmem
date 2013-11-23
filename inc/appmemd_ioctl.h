@@ -210,14 +210,20 @@ union am_func_data;
 
 
 
+typedef struct _appmedk_mmap
+{
+    void             *pMapped;
+    unsigned long     req_len;
+    unsigned long     map_len;
+    int              isMapped;
 
-
+} APPMEMK_MMAP;
 
 
 typedef struct _appmem_kdevice
 {
     struct am_mem_function_t *pFunc;
-
+    APPMEMK_MMAP           map;
     int                    minor;
     UINT32                 amType;
     dev_t                  devt;
@@ -227,7 +233,7 @@ typedef struct _appmem_kdevice
     struct _appmem_kdevice *next;
     union am_func_data     *pVdF;  
     char                   am_name[64];
-    
+      
     UINT8  pack_DataOffset; /* Offset in Dwords (i.e. Pack data structure is array of DWORDS */
     UINT8  wr_pack_size; /* Bytes - We transfer packets in multiples of 64 bits - driver checks by bytes */
     UINT8  rd_pack_size; /* Bytes - We transfer packets in multiples of 64 bits - driver check by bytes*/

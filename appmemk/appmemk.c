@@ -28,6 +28,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************************/
 
+#include <linux/mm.h>		/* everything */
+#include <linux/errno.h>	/* error codes */
+#include <asm/pgtable.h>
 
 /* Driver Includes */
 #include "appmemlib.h"
@@ -78,6 +81,110 @@ AM_RETURN am_targ_close(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
 
 
 
+void appmemd_vma_open(struct vm_area_struct *vma)
+{
+    printk(KERN_NOTICE "appmemd_vma_open\n");
+    
+}
+
+void appmemd_vma_close(struct vm_area_struct *vma)
+{
+    printk(KERN_NOTICE "appmemd_vma_close\n");
+}
+
+
+
+int appmemd_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+{
+
+    struct page *pPage = NULL; 
+    unsigned long physaddr;
+    unsigned long pageframe;
+    unsigned long len, req_len;
+    void * pMapped;
+    APPMEM_KDEVICE *pDevice;
+    
+    pDevice = vma->vm_private_data;
+    req_len = (vma->vm_end - vma->vm_start);
+    physaddr = (unsigned long)((len) + (vma->vm_pgoff << PAGE_SHIFT));
+    pageframe = physaddr >> PAGE_SHIFT; 
+
+    printk(KERN_NOTICE "appmemd_vma_fault(0) req_len=%ld  - %p : %p\n", req_len, (void *)vma->vm_end, (void *)vma->vm_start);
+    printk(KERN_NOTICE "appmemd_vma_fault(1) vmf->virtual=%p vma->vm_start=%p\n", (void *)vmf->virtual_address, (void *)vma->vm_start);
+    len = PAGE_SIZE << 1;  
+
+    printk(KERN_NOTICE "appmemd_vma_fault(2) phys_addr=0x%016lx len=%ld pageframe=%ld\n", physaddr, len, pageframe);
+    
+
+    pMapped = (void *)__get_free_pages(GFP_KERNEL, 1);
+    memset(pMapped, 0, len);
+
+    printk(KERN_NOTICE "appmemd_vma_fault(3) pMapped=%p len=%ld\n", pMapped, len);
+    printk(KERN_NOTICE "appmemd_vma_fault(4) pDevice=%p \n", pDevice);
+
+    if((NULL != pMapped) && (NULL != pDevice))
+    {
+
+        pPage = virt_to_page(pMapped);        
+        get_page(pPage);
+        printk(KERN_NOTICE "appmemd_vma_fault(5) pPage=%p \n", pPage);
+        vmf->page = pPage;
+
+
+        pDevice->map.pMapped = pMapped;
+        pDevice->map.req_len = req_len;
+        pDevice->map.map_len = len;
+        pDevice->map.isMapped = 1;
+
+       
+        strcpy((char *)pMapped, "BRANDON TEST");
+
+    }
+    else
+    {
+
+        return VM_FAULT_NOPAGE;
+    
+    }
+
+
+    return 0;
+}
+
+
+struct vm_operations_struct appmemd_vm_ops = 
+{
+	.open =     appmemd_vma_open,
+	.close =    appmemd_vma_close,
+	.fault =    appmemd_vma_fault,
+};
+
+
+int appmemd_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+	APPMEM_KDEVICE *pDevice;
+    struct inode *inode = filp->f_dentry->d_inode;
+
+    
+	/*  Find the device */
+	pDevice = container_of(inode->i_cdev, APPMEM_KDEVICE, cdev);
+
+    printk(KERN_NOTICE "appmemd_mmap(%p) am_name=%s\n", pDevice, pDevice->am_name);
+
+    if(NULL == pDevice)
+    {
+    	return -ENODEV;
+    }
+    
+	vma->vm_ops = &appmemd_vm_ops;
+	vma->vm_flags |= VM_RESERVED;
+	vma->vm_private_data = pDevice;
+	appmemd_vma_open(vma);
+	return 0;
+}
+
+
+
 struct file_operations appmemd_fops = 
 {
 	.owner =    THIS_MODULE,
@@ -87,6 +194,7 @@ struct file_operations appmemd_fops =
 	.ioctl =    appmemd_ioctl,
 	.open =     appmemd_open,
 	.release =  appmemd_release,
+	.mmap =     appmemd_mmap,
 };
 
 APPMEM_KDEVICE *pAMKDevices;
@@ -764,7 +872,7 @@ static int __init appmemd_init(void)
      
     
 //    am_k_sock_init(0xC0A801DD); //192.168.1.221
-//     am_k_sock_init(0x7F000001); //127.0.0.1 - locahost
+//    am_k_sock_init(0x7F000001); //127.0.0.1 - locahost
     
 
 
