@@ -381,23 +381,13 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 		{
 
 
-#if 0//def _APPMEMD
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = (am_cmd_fn)am_stata_release;
-
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;
-             
-            pFunc->crResp.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN;
-            pFunc->crResp.acOps[ACOP_READ] = AM_OP_CODE_READ_ALIGN;
-
-#else
-		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
+		    pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = (am_fn_op_only)am_targ_release;
 			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
 			
-			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
+			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = (am_fn_op_only)am_targ_open;
 			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
 
-			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
+			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = (am_fn_op_only)am_targ_close;
 			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
 
 			pFunc->pfnOps[AM_OP_SORT].action = am_stata_sort;
@@ -409,7 +399,6 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			 
 			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
 			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
-#endif
 
 			pFunc->crResp.pack_DataOffset = pVdF->stata.idx_size;
 			

@@ -15,7 +15,7 @@ typedef struct _amlib_assca_item
 #define ASSCA_ITER_FLAG_NEW   0x40000000
 #define ASSCA_ITER_FLAG_VALID 0x20000000  /* don't use zero iter handles */
 #define ASSCA_ITER_DONE       0x10000000  
-#define ASSCA_ITER_IDX_MASK   0x00FFFFFF
+#define ASSCA_ITER_IDX_MASK   0x00000003
 #define ASSCA_ITER_INVALID    0xF1FFFFFF
 #define GET_ITER_IDX(_x) (_x & ASSCA_ITER_IDX_MASK)
 

@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 16 
-#define DEFAULT_RANDOM_OPS 10 
+#define DEFAULT_MEM_SIZE 1024 
+#define DEFAULT_RANDOM_OPS 1000 
 
 
 #ifndef _WIN32

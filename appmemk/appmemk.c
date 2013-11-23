@@ -100,7 +100,8 @@ int appmemd_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
     struct page *pPage = NULL; 
     unsigned long physaddr;
     unsigned long pageframe;
-    unsigned long len, req_len;
+    unsigned long len = 0; 
+    unsigned long req_len = 0;
     void * pMapped;
     APPMEM_KDEVICE *pDevice;
     
@@ -744,12 +745,12 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             if(cmd_bytes >= (pDevice->wr_pack_size))
                             {
                                 
-                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
+//                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
                                 return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
                             else
                             {
-                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
+//                                printk("Invalid cmd_byte=%d : wr_pack_qword_size=%d\n", cmd_bytes, pDevice->wr_pack_size);
                                 return -ENOTTY;
             
                             }
@@ -853,9 +854,9 @@ static int __init appmemd_init(void)
                 pAMKDevices->pfnOps[i].config = NULL;     
             }
 
-            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = appmem_get_cap_count;
-            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)].config = appmem_get_capabilites;
-            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)].config = appmem_create_function;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = (am_cmd_fn)appmem_get_cap_count;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)].config = (am_cmd_fn)appmem_get_capabilites;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)].config = (am_cmd_fn)appmem_create_function;
             
             
 	    }

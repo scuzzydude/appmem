@@ -169,8 +169,6 @@ UINT32 am_assca_get_iter(AMLIB_ASSCA *pAA, UINT32 iter_handle)
 {
 	UINT32 i;
 	UINT32 local_iter = ASSCA_ITER_INVALID; 
-	AMLIB_ASSCA_ITEM *pAIter = NULL;
-	AMLIB_ASSCA_ITEM *pTmpAI = NULL;
 
 	if(iter_handle & ASSCA_ITER_FLAG_NEW)
 	{
@@ -205,7 +203,7 @@ AM_RETURN am_assca_iter(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64
 	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
 	AMLIB_ASSCA *pAA = NULL;
 	AMLIB_ASSCA_ITEM *pAI = NULL;
-	UINT32 local_iter;
+	UINT32 local_iter = 0;
 	UINT8 bHead = FALSE;
 	
 
@@ -379,31 +377,20 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			pFunc->crResp.idx_size = key_size;
 
 
-#if 0//def _APPMEMD
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config = (am_cmd_fn)am_assca_release;
-#else
-
-			pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
+			pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = (am_fn_op_only)am_targ_release;
 			pFunc->crResp.ops[AM_OP_RELEASE_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_RELEASE_FUNC;
 
-			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = am_targ_open;
+			pFunc->pfnOps[AM_OP_OPEN_FUNC].op_only  = (am_fn_op_only)am_targ_open;
 			pFunc->crResp.ops[AM_OP_OPEN_FUNC] =   (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_OPEN_FUNC;
 
-			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = am_targ_close;
+			pFunc->pfnOps[AM_OP_CLOSE_FUNC].op_only  = (am_fn_op_only)am_targ_close;
 			pFunc->crResp.ops[AM_OP_CLOSE_FUNC] = (AM_PACK_TYPE_OPCODE_ONLY << 16) | AM_OP_CLOSE_FUNC;
 
-#endif
+
 
 			if((TRUE == bFixedKey) && (TRUE == bFixedData))
 			{
 
-#if 0//def _APPMEMD
-                pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_FIX_PACKET)].align  = am_assca_read32_align;
-                pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_FIX_PACKET)].align  = am_assca_write32_align;
-
-                pFunc->crResp.acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_FIX_PACKET;
-                pFunc->crResp.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
-#else
 				pFunc->pfnOps[AM_OP_READ_ALIGN].align  = am_assca_read32_align;
 				pFunc->crResp.ops[AM_OP_READ_ALIGN] = (AM_KPACK << 16) | AM_OP_READ_ALIGN;
 
@@ -413,7 +400,6 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 				pFunc->crResp.acOps[ACOP_WRITE] = pFunc->crResp.ops[AM_OP_WRITE_ALIGN];
 				pFunc->crResp.acOps[ACOP_READ]  = pFunc->crResp.ops[AM_OP_READ_ALIGN];
-#endif
 
 				/* To Make Sure that data segment is 32 bit aligned */
 				pFunc->crResp.pack_DataOffset = pFunc->crResp.idx_size / sizeof(UINT32);
