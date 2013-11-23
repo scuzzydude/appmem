@@ -379,7 +379,7 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			pFunc->crResp.idx_size = key_size;
 
 
-#ifdef _APPMEMD
+#if 0//def _APPMEMD
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config = (am_cmd_fn)am_assca_release;
 #else
 
@@ -397,7 +397,7 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			if((TRUE == bFixedKey) && (TRUE == bFixedData))
 			{
 
-#ifdef _APPMEMD
+#if 0//def _APPMEMD
                 pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_FIX_PACKET)].align  = am_assca_read32_align;
                 pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_FIX_PACKET)].align  = am_assca_write32_align;
 
@@ -405,10 +405,10 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
                 pFunc->crResp.acOps[ACOP_READ] = AM_OP_CODE_READ_FIX_PACKET;
 #else
 				pFunc->pfnOps[AM_OP_READ_ALIGN].align  = am_assca_read32_align;
-				pFunc->crResp.ops[AM_OP_READ_ALIGN] = (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
+				pFunc->crResp.ops[AM_OP_READ_ALIGN] = (AM_KPACK << 16) | AM_OP_READ_ALIGN;
 
 				pFunc->pfnOps[AM_OP_WRITE_ALIGN].align  = am_assca_write32_align;
-				pFunc->crResp.ops[AM_OP_WRITE_ALIGN] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
+				pFunc->crResp.ops[AM_OP_WRITE_ALIGN] = (AM_KPACK << 16) | AM_OP_WRITE_ALIGN;
 
 
 				pFunc->crResp.acOps[ACOP_WRITE] = pFunc->crResp.ops[AM_OP_WRITE_ALIGN];
@@ -476,8 +476,8 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 				}
 
 				AM_DEBUGPRINT("RD PACKET SIZE QWORDS=%d\n", pFunc->crResp.rd_pack_qword_size);
-				AM_DEBUGPRINT("WT PACKET SIZE BYTES=%d\n", pDevice->wr_pack_size);
-				AM_DEBUGPRINT("RD PACKET SIZE BYTES=%d\n", pDevice->rd_pack_size);
+			//	AM_DEBUGPRINT("WT PACKET SIZE BYTES=%d\n", pDevice->wr_pack_size);
+			//	AM_DEBUGPRINT("RD PACKET SIZE BYTES=%d\n", pDevice->rd_pack_size);
 
 
 			}

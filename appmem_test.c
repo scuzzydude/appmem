@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 1024 
-#define DEFAULT_RANDOM_OPS 10000 
+#define DEFAULT_MEM_SIZE 16 
+#define DEFAULT_RANDOM_OPS 10 
 
 
 #ifndef _WIN32
@@ -432,7 +432,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 
 
 	AM_MEM_FUNCTION_T amAA;
-	AM_FUNC_CALLS_T *aCalls;
+	AM_FUNC_CALLS_T *pCalls;
 
 	pKeys = am_get_test_keys(pKeys, key_count, key_size);
 
@@ -457,13 +457,16 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 			return;
 		}
 		
-		aCalls = (AM_FUNC_CALLS_T *)AM_MALLOC( sizeof(am_fn) * aCap.functionCount);
-		amAA.fn = aCalls;
+	    pCalls = (AM_FUNC_CALLS_T *)AM_MALLOC(sizeof(AM_FUNC_CALLS_T));
+
+        memset(pCalls, 0, (sizeof(AM_FUNC_CALLS_T)));
+        
+		amAA.fn = pCalls;
 		
 		if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amAA))
 		{
 			printf("Create Function Error\n");
-			AM_FREE(aCalls);
+			AM_FREE(pCalls);
 			return;
 		}
 		
@@ -566,17 +569,19 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
         printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
 
+        if(NULL != amAA.fn->iter)
+        {
 
-		iter_handle = ASSCA_ITER_FLAG_NEW;
-		printf("BEGIN ITER %s HANDLE=%08x\n", pEntry->am_name, iter_handle);
-		count = 0;
-		while(AM_RET_GOOD == amAA.fn->iter(&amAA, &ikey[0], key_size, &ival, sizeof(UINT32), &iter_handle))
-		{
-			printf("ITER(%d) KEY=%s VAL=%d\n", count, ikey, ival);
-			count++;
+		    iter_handle = ASSCA_ITER_FLAG_NEW;
+	    	printf("BEGIN ITER %s HANDLE=%08x\n", pEntry->am_name, iter_handle);
+		    count = 0;
+		    while(AM_RET_GOOD == amAA.fn->iter(&amAA, &ikey[0], key_size, &ival, sizeof(UINT32), &iter_handle))
+		    {
+			    printf("ITER(%d) KEY=%s VAL=%d\n", count, ikey, ival);
+			    count++;
 
-		}
-
+		    }
+        }
 
 
 		if(NULL != amAA.fn->release)

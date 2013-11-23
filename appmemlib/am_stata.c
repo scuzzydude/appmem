@@ -381,7 +381,7 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 		{
 
 
-#ifdef _APPMEMD
+#if 0//def _APPMEMD
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = (am_cmd_fn)am_stata_release;
 
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;

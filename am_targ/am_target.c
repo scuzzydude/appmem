@@ -546,6 +546,7 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 			switch(pRxCmd->pRxBuf->wrap.packType)
 			{
 
+                case AM_KPACK:   /* Path is different in kernel */
 				case AM_PACK_ALIGN:
 				{
 					if(op & 1)

@@ -80,6 +80,22 @@ struct am_mem_function_t;
 
 #define AM_OP_MAX_OPS               64
 
+
+#define AM_FUNC_PACK_TYPE_FLAG_RESP    0x80
+#define AM_FUNC_PACK_TYPE_FLAG_ERR     0x40
+
+
+#define AM_NET_GET_PACKTYPE(_x) ((_x >> 16) & 0x3F)
+#define AM_SET_PACKTYPE(_x, _op) ( (    (_x & 0x3F) << 16 ) | (_op & AM_OP_CODE_MASK)     )
+
+#define AM_PACK_TYPE_OPCODE_ONLY       0x01
+#define AM_PACK_TYPE_FIVO              0x02
+#define AM_PACK_ALIGN                  0x03
+#define AM_PACK_ACTION                 0x04
+#define AM_KPACK                       0x05
+
+
+
 #define AM_OP_FLAG_OP_ONLY          0x00000000
 #define AM_OP_FLAG_COMMON           0x01000000    /* Commands That just have single data buffer and length */
 #define AM_OP_FLAG_BIDIR            0x03000000    /* Data Buffer in and buffer out */
@@ -87,8 +103,8 @@ struct am_mem_function_t;
 #define AM_OP_ALIGNED               0x80000000
 
 
-#define IS_OP_ALIGNED(x)  (x & AM_OP_ALIGNED)
-#define IS_OP_PACKET(x)   (x & AM_OP_FLAG_PACKET)
+#define IS_OP_ALIGNED(_x) (AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(_x))
+#define IS_OP_PACKET(_x)  (AM_KPACK == AM_NET_GET_PACKTYPE(_x)) 
 
 #define AM_OP_IDENTIFY                        0x1
 #define AM_OP_GET_CAP_COUNT                   0x2
@@ -103,16 +119,16 @@ struct am_mem_function_t;
 #define AM_OP_WRITE_ALIGN                    0x10
 #define AM_OP_READ_ALIGN                     0x11
 
-#define AM_OP_CODE_GETC_CAP_COUNT   (AM_OP_FLAG_COMMON  | AM_OP_GET_CAP_COUNT)
-#define AM_OP_CODE_GET_CAPS         (AM_OP_FLAG_COMMON  | AM_OP_GET_CAP)
-#define AM_OP_CODE_CREATE_FUNC      (AM_OP_FLAG_BIDIR   | AM_OP_CREATE_FUNC)
-#define AM_OP_CODE_RELEASE_FUNC     (AM_OP_FLAG_OP_ONLY | AM_OP_RELEASE_FUNC)
+#define AM_OP_CODE_GETC_CAP_COUNT   AM_SET_PACKTYPE(AM_PACK_TYPE_OPCODE_ONLY, AM_OP_GET_CAP_COUNT)
+#define AM_OP_CODE_GET_CAPS         AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_GET_CAP)
+#define AM_OP_CODE_CREATE_FUNC      AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_CREATE_FUNC)
+#define AM_OP_CODE_RELEASE_FUNC     AM_SET_PACKTYPE(AM_PACK_TYPE_OPCODE_ONLY, AM_OP_RELEASE_FUNC)
 
-#define AM_OP_CODE_WRITE_ALIGN      (AM_OP_FLAG_COMMON  | AM_OP_WRITE_ALIGN | AM_OP_ALIGNED)
-#define AM_OP_CODE_READ_ALIGN       (AM_OP_FLAG_COMMON  | AM_OP_READ_ALIGN | AM_OP_ALIGNED)
+#define AM_OP_CODE_WRITE_ALIGN      AM_SET_PACKTYPE(AM_PACK_ALIGN, AM_OP_WRITE_ALIGN) 
+#define AM_OP_CODE_READ_ALIGN       AM_SET_PACKTYPE(AM_PACK_ALIGN, AM_OP_READ_ALIGN)
 
-#define AM_OP_CODE_WRITE_FIX_PACKET     (AM_OP_FLAG_PACKET  | 0x0000020 )
-#define AM_OP_CODE_READ_FIX_PACKET      (AM_OP_FLAG_PACKET  | 0x0000021 ) 
+#define AM_OP_CODE_WRITE_FIX_PACKET AM_SET_PACKTYPE(AM_KPACK, AM_OP_WRITE_ALIGN)
+#define AM_OP_CODE_READ_FIX_PACKET  AM_SET_PACKTYPE(AM_KPACK, AM_OP_READ_ALIGN) 
 
 
 #define AM_OPCODE(x) (AM_OP_CODE_MASK & x)
