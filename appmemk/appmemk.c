@@ -220,6 +220,34 @@ APPMEM_KDEVICE * appmem_device_func_create(char *name, UINT32 amType)
 }
 
 
+AM_RETURN appmemd_release_device(APPMEM_KDEVICE *pDevice)
+{
+    AM_MEM_FUNCTION_T      *pFunc = NULL;
+
+    printk("appmemd_release_device(%p)\n", pDevice);
+
+    if(NULL != pDevice)
+    {
+        pFunc = pDevice->pFunc;
+
+        if(NULL != pFunc)
+        {
+            AM_FREE(pFunc);
+        }
+
+        if(NULL != pDevice->pfnOps)
+        {
+            kfree(pDevice->pfnOps);
+        }
+
+        kfree(pDevice);
+
+    }
+
+    return AM_RET_GOOD;
+    
+}
+
 
 AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
 {
@@ -769,8 +797,9 @@ static void __exit appmemd_exit(void)
         {
             pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config(pDevice, NULL);
         }
-        kfree(pDevice);
-        
+
+        appmemd_release_device(pDevice);
+  
 
     }
    
@@ -783,6 +812,9 @@ static void __exit appmemd_exit(void)
      printk(KERN_INFO "appmemd : cdev_del %p", pAMKDevices);
 
      cdev_del(&pAMKDevices->cdev);
+
+     appmemd_release_device(pAMKDevices);
+
   }
   if(cl)
   {

@@ -17,6 +17,20 @@ AM_RETURN am_flat_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64
 AM_RETURN am_flat_release(AM_HANDLE handle, void * p1)
 {
 
+    AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+
+    if(NULL != fd)
+    {
+	
+        if(NULL != fd->flat.data)
+        {
+            AM_VFREE(fd->flat.data);
+            fd->flat.data = NULL;
+        }
+
+    AM_FREE(fd);
+        
+    }
 	return AM_RET_GOOD;
 
 }
@@ -101,7 +115,7 @@ AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 #ifdef _APPMEMD
 
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = am_flat_release;
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = (am_cmd_fn)am_flat_release;
 
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_flat_read32_align;
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_flat_write32_align;

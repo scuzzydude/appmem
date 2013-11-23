@@ -262,7 +262,21 @@ AM_RETURN am_stata_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT6
 AM_RETURN am_stata_release(AM_HANDLE handle, void * p1)
 {
 
+    AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+
+	if(NULL != fd)
+	{
+
+        if(NULL != fd->flat.data)
+        {
+            AM_VFREE(fd->flat.data);
+            fd->flat.data = NULL;
+        }
+
+        AM_FREE(fd);
+    }
 	return AM_RET_GOOD;
+
 
 }
 
@@ -328,7 +342,7 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 		pVdF->stata.size = pVdF->stata.data_size * pCap->maxSize;
 		pVdF->stata.array_size = pCap->maxSize;
 		
-		pVdF->stata.data = AM_MALLOC((size_t)pVdF->stata.size);
+		pVdF->stata.data = AM_VALLOC((size_t)pVdF->stata.size);
         
 		pFunc->crResp.data_size = pVdF->stata.data_size;
 		pFunc->crResp.idx_size = pVdF->stata.idx_size;
@@ -339,7 +353,7 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 
 #ifdef _APPMEMD
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = am_stata_release;
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config  = (am_cmd_fn)am_stata_release;
 
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_READ_ALIGN)].align  = am_stata_read_idx32;
             pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_WRITE_ALIGN)].align  = am_stata_write_idx32;

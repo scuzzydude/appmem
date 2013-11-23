@@ -178,27 +178,26 @@ typedef struct _appmem_kam_cmd
 
 
 
-typedef AM_RETURN (*am_cmd_fn)(AM_HANDLE handle, APPMEM_KAM_CMD_T *pKCmd);
+typedef AM_RETURN (*am_cmd_fn)(AM_HANDLE handle, void *p1);
 typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
 typedef AM_RETURN (*am_fn_action) (AM_HANDLE handle, void * p1, UINT64 l1);
 typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
 typedef AM_RETURN (*am_fn_raw)(void * p1);
 typedef AM_RETURN (*am_fn_op_only)(AM_HANDLE handle, void *p1, UINT32 *ret_len);
 typedef AM_RETURN (*am_fivo) (AM_HANDLE handle, void *p1, UINT64 l1, void *p2, UINT32 *ret_len);
+typedef AM_RETURN (*am_iter)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle);
 
 
 typedef union _am_fn_u
 {
-#ifdef _APPMEMD
 	am_cmd_fn      config;
-#endif
-
 	am_fn          func;
 	am_fn_align    align;
 	am_fn_raw      raw;
 	am_fn_action   action;
 	am_fn_op_only  op_only;
 	am_fivo        fivo;	
+	am_iter        iter;
 
 } AM_FN_U;
 
@@ -209,7 +208,6 @@ typedef union _am_fn_u
 struct _appmem_kdevice;
 union am_func_data; 
 
-//typedef AM_RETURN (*am_cmd_fn)(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd);
 
 
 

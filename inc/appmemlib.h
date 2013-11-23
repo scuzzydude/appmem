@@ -102,6 +102,8 @@ typedef union _am_version_u
 #define AM_RET_INVALID_OPCODE  (15)
 #define AM_RET_TAG_NOT_FOUND   (16)
 #define AM_RET_NO_DEVICE_SLOT  (17)
+#define AM_RET_INVALID_ITER    (18)
+#define AM_RET_ITER_DONE       (19)
 
 typedef enum amTypeEnum 
 {
@@ -127,16 +129,17 @@ typedef struct am_mem_cap_t
 
 typedef struct _am_func_calls
 {
-	am_fn_raw open;
-	am_fn_raw close;
-	am_fn read;
-	am_fn write;
-	am_fn_align read_al;
-	am_fn_align write_al;
-	am_fn copy;
-	am_fn_action sort;
-	am_fn *fn;
-
+	am_fn_raw       open;
+	am_fn_raw       close;
+	am_cmd_fn       release;
+	am_fn           read;
+	am_fn           write;
+	am_fn_align     read_al;
+	am_fn_align     write_al;
+	am_fn           copy;
+	am_iter         iter;
+	am_fn_action    sort;
+	am_fn           *fn;
 
 } AM_FUNC_CALLS_T;
 

@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 #include "am_assca.h"
 #include "am_caps.h"
+#include "am_targ.h"
 
 int g_virtd_minor_count = 1;
 
@@ -113,13 +114,14 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 			pVdF->assca.cur_count = 0;
 			pVdF->flat.data = (void *)pAA;
 	
+			fn_array->release = am_assca_release;
 			fn_array->open = am_virtd_open;
 			fn_array->close = am_virtd_close;
 			fn_array->read = am_assca_read32;
 			fn_array->write = am_assca_write32;
 			fn_array->read_al = am_assca_read32_align;
 			fn_array->write_al = am_assca_write32_align;
-		
+			fn_array->iter = am_assca_iter;
 			fn_array->copy = NULL;
 	
 
@@ -184,6 +186,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 					if(fn_array)
 					{
 
+						fn_array->release = am_flat_release;
 						fn_array->open = am_virtd_open;
 						fn_array->close = am_virtd_close;
 						fn_array->read = am_flat_read32;
@@ -224,6 +227,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 
 					if(fn_array)
 					{
+						fn_array->release = am_stata_release;
 						fn_array->open = am_virtd_open;
 						fn_array->close = am_virtd_close;
 						fn_array->read = NULL;
@@ -232,6 +236,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 						fn_array->write_al = am_stata_write_idx32;
 						fn_array->copy = NULL;
 						fn_array->sort = am_stata_sort;
+						
 					}
 
 				}

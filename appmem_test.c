@@ -425,6 +425,12 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 random_ops = DEFAULT_RANDOM_OPS;
 	UINT32 idx;
 	UINT32 val;
+	UINT32 iter_handle;
+	char ikey[32];
+	UINT32 ival;
+	int count;
+
+
 	AM_MEM_FUNCTION_T amAA;
 	AM_FUNC_CALLS_T *aCalls;
 
@@ -560,6 +566,24 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
         printf("DELTA = %f PERCENT\n",  100 * ((elap1 - elap2) / elap1));	
 
 
+
+		iter_handle = ASSCA_ITER_FLAG_NEW;
+		printf("BEGIN ITER %s HANDLE=%08x\n", pEntry->am_name, iter_handle);
+		count = 0;
+		while(AM_RET_GOOD == amAA.fn->iter(&amAA, &ikey[0], key_size, &ival, sizeof(UINT32), &iter_handle))
+		{
+			printf("ITER(%d) KEY=%s VAL=%d\n", count, ikey, ival);
+			count++;
+
+		}
+
+
+
+		if(NULL != amAA.fn->release)
+		{
+			amAA.fn->release(&amAA, NULL);
+			
+		}
 
 
 

@@ -7,6 +7,7 @@
 AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFixedKey, UINT8 bFixedData, UINT16 flags)
 {
 	AMLIB_ASSCA *pAA = NULL;
+	UINT32 i;
 
 	pAA = (AMLIB_ASSCA *)AM_MALLOC(sizeof(AMLIB_ASSCA));
 
@@ -17,6 +18,11 @@ AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFix
 		pAA->data_len = data_length;
 		pAA->bFixedData = bFixedData;
 		pAA->head = NULL;
+
+		for(i = 0; i < MAX_ASSCA_ITERS; i++)
+		{
+			pAA->pIterArray[i] = NULL;
+		}
 
 	}
 
@@ -34,9 +40,7 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
     if(pAI)
 	{
-//		memcpy(pData, pAI->data, pAA->data_len);		
         COPY_TO_USER(pData, pAI->data, pAA->data_len);
-        
 		
 		return AM_RET_GOOD;
 	}
@@ -55,20 +59,13 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 	AM_ASSERT(pAA->bFixedData == TRUE);
 	AM_ASSERT(pKey);
 	AM_ASSERT(pData);
-	pAI = (AMLIB_ASSCA_ITEM *) AM_MALLOC( sizeof(AMLIB_ASSCA_ITEM) + pAA->key_len + pAA->data_len );
+	pAI = (AMLIB_ASSCA_ITEM *) AM_VALLOC( sizeof(AMLIB_ASSCA_ITEM) + pAA->key_len + pAA->data_len );
 
 	if(pAI)
 	{
-		pAI->data = AM_MALLOC(pAA->data_len);
-		pAI->key = AM_MALLOC(pAA->key_len);
-
 		
-
 		pAI->key = (UINT8 *)pAI + sizeof(AMLIB_ASSCA_ITEM);
 		pAI->data = (UINT8 *)pAI->key + pAA->key_len;
-
-		//COPY_FROM_USER(pAI->data, pData, pAA->data_len);
-		//COPY_FROM_USER(pAI->key, pKey, pAA->key_len);
 
         memcpy(pAI->data, pData, pAA->data_len);
 		memcpy(pAI->key, pKey, pAA->key_len);
@@ -78,8 +75,6 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 	}
 
-	
-	
 	return AM_RET_GOOD;
 
 }
@@ -100,8 +95,153 @@ AM_RETURN am_assca_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT6
 
 AM_RETURN am_assca_release(AM_HANDLE handle, void * p1)
 {
+
+	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AMLIB_ASSCA *pAA = NULL;
+	AMLIB_ASSCA_ITEM *pAI = NULL;
+	AMLIB_ASSCA_ITEM *pTmpAI = NULL;
+    UINT32 count = 0;
+    
+    if(fd)
+    {
+        pAA = (AMLIB_ASSCA *) fd->assca.data;
+		
+        if(pAA)
+        {
+
+            HASH_ITER(hh, pAA->head, pAI, pTmpAI) 
+            {
+                if(pAI)
+                {
+                    AM_DEBUGPRINT("AI(iter=%d) %s %d\n", count, (char *)pAI->key, *(UINT32 *)pAI->data); 
+                    count++;
+
+                    HASH_DEL(pAA->head, pAI);  /* delete; users advances to next */
+
+                    AM_VFREE(pAI);
+
+                }
+
+                
+
+            }
+
+        }
+
+
+        AM_FREE(fd);
+        
+
+    }
 	return AM_RET_GOOD;
 }
+
+UINT32 am_assca_get_iter(AMLIB_ASSCA *pAA, UINT32 iter_handle)
+{
+	UINT32 i;
+	UINT32 local_iter = ASSCA_ITER_INVALID; 
+	AMLIB_ASSCA_ITEM *pAIter = NULL;
+	AMLIB_ASSCA_ITEM *pTmpAI = NULL;
+
+	if(iter_handle & ASSCA_ITER_FLAG_NEW)
+	{
+		for(i = 0; i < MAX_ASSCA_ITERS; i++)
+		{
+			if(pAA->pIterArray[i] == NULL)
+			{
+				local_iter = (ASSCA_ITER_FLAG_VALID | i);
+				break;
+			}
+		}
+
+	}
+	else if((iter_handle & ASSCA_ITER_FLAG_RESET) && ((iter_handle & ASSCA_ITER_IDX_MASK) < MAX_ASSCA_ITERS))
+	{
+		/* TODO: use the same handle but start it over */
+
+	}
+	else if((iter_handle & ASSCA_ITER_FLAG_VALID) && (iter_handle & ASSCA_ITER_IDX_MASK) < MAX_ASSCA_ITERS)
+	{
+		local_iter = iter_handle;
+	}
+
+	return local_iter;
+}
+
+
+
+AM_RETURN am_assca_iter(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle)
+{
+	
+	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AMLIB_ASSCA *pAA = NULL;
+	AMLIB_ASSCA_ITEM *pAI = NULL;
+	UINT32 local_iter;
+	UINT8 bHead = FALSE;
+	
+
+	if(fd)
+	{
+		pAA = (AMLIB_ASSCA *)fd->assca.data;
+
+		if(*iter_handle & (ASSCA_ITER_FLAG_RESET | ASSCA_ITER_FLAG_NEW))
+		{
+			bHead = TRUE;
+		}
+		
+		if(pAA)
+		{
+			local_iter = am_assca_get_iter(pAA, *iter_handle);
+		}
+		
+		if(local_iter != ASSCA_ITER_INVALID)
+		{
+			if(local_iter != *iter_handle)
+			{
+				*iter_handle = local_iter;
+			}
+			
+			
+			if(bHead)
+			{
+				pAI = pAA->head;	
+			}
+			else
+			{
+				pAI = pAA->pIterArray[GET_ITER_IDX(local_iter)];
+			}
+
+
+			if(NULL != pAI)
+			{
+
+				pAA->pIterArray[GET_ITER_IDX(local_iter)] = (AMLIB_ASSCA_ITEM *)pAI->hh.next;
+
+				COPY_TO_USER(p1, pAI->key, (UINT32)l1);
+				COPY_TO_USER(p2, pAI->data, (UINT32)l2);
+			}
+			else
+			{
+				return AM_RET_ITER_DONE;
+			}
+		
+		}
+		else
+		{
+			*iter_handle = GET_ITER_IDX(local_iter) | ASSCA_ITER_DONE;  
+			pAA->pIterArray[GET_ITER_IDX(local_iter)] = NULL;
+			return AM_RET_INVALID_ITER;
+		}
+	
+	
+	}
+		
+
+
+
+	return AM_RET_GOOD;
+}
+
 
 
 /* 32 bit */
@@ -211,7 +351,7 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 
 #ifdef _APPMEMD
-            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config = am_assca_release;
+            pFunc->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config = (am_cmd_fn)am_assca_release;
 #else
 
 			pFunc->pfnOps[AM_OP_RELEASE_FUNC].op_only  = am_targ_release;
@@ -307,10 +447,8 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 				}
 
 				AM_DEBUGPRINT("RD PACKET SIZE QWORDS=%d\n", pFunc->crResp.rd_pack_qword_size);
-
-
-				//printk("WT PACKET SIZE BYTES=%d\n", pDevice->wr_pack_size);
-				//printk("RD PACKET SIZE BYTES=%d\n", pDevice->rd_pack_size);
+				AM_DEBUGPRINT("WT PACKET SIZE BYTES=%d\n", pDevice->wr_pack_size);
+				AM_DEBUGPRINT("RD PACKET SIZE BYTES=%d\n", pDevice->rd_pack_size);
 
 
 			}
