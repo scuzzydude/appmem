@@ -227,8 +227,8 @@ typedef struct am_net_pack_transaction
 
 typedef struct _am_pack_accessor
 {
-	AM_RETURN                 (*send_and_wait)(struct amlib_entry_ *pEntry, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs);
-	AM_NET_PACK_TRANSACTION * (*get_free_iop)(void);
+	AM_RETURN                 (*send_and_wait)(struct am_mem_function_t *pFunc, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs);
+	AM_NET_PACK_TRANSACTION * (*get_free_iop)(struct am_mem_function_t *pFunc);
 
 } AM_PACKAC;
 

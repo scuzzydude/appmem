@@ -40,7 +40,7 @@ AM_PACK_ALL_U gTxPacket;
 AM_PACK_RESP_U gRxPacket[16];
 
 AM_NET_PACK_TRANSACTION gTransaction;
-AM_NET_PACK_TRANSACTION *am_net_get_free_req(void)
+AM_NET_PACK_TRANSACTION *am_net_get_free_req(AM_MEM_FUNCTION_T *pFunc)
 {
 	gTransaction.done = 0;
 	gTransaction.tag = 1;
@@ -235,11 +235,11 @@ AM_RETURN am_net_entry_close(AMLIB_ENTRY_T *pEntry)
 
 
 
-AM_RETURN am_net_send_and_wait(AMLIB_ENTRY_T *pEntry, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs)
+AM_RETURN am_net_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs)
 {
 	AM_RETURN error;
 
-	error = am_int_send_msg(pEntry->pTransport, pIop->pTx, tx_size);
+	error = am_int_send_msg(pFunc->pEntry->pTransport, pIop->pTx, tx_size);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -272,14 +272,17 @@ UINT32 am_net_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 	AM_RETURN error = AM_RET_GOOD;
  	UINT32 tx_size = sizeof(AM_PACK_GET_CAP_COUNT);
 	UINT32 cap_count = 0;
+	AM_MEM_FUNCTION_T aFunc;
+	aFunc.pEntry = pEntry;
 
-	pIop = am_net_get_free_req();
+
+	pIop = am_net_get_free_req(&aFunc);
 	pIop->pTx->cap_count.wrap.func_id = AM_PACK_FUNC_ID_BASEAPPMEM;
 	pIop->pTx->cap_count.wrap.packType = AM_PACK_TYPE_OPCODE_ONLY; 
 	pIop->pTx->cap_count.wrap.size = tx_size;
 	pIop->pTx->cap_count.wrap.op = AM_OP_GET_CAP_COUNT;
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = am_net_send_and_wait(&aFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -298,8 +301,10 @@ AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, 
 	AM_RETURN error = AM_RET_GOOD;
  	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT);
 	int cap_bytes;
+	AM_MEM_FUNCTION_T aFunc;
+	aFunc.pEntry = pEntry;
 
-	pIop = am_net_get_free_req();
+	pIop = am_net_get_free_req(&aFunc);
 
 	pIop->pTx->fivo.wrap.func_id = AM_PACK_FUNC_ID_BASEAPPMEM;
 	pIop->pTx->fivo.wrap.packType = AM_PACK_TYPE_FIVO; 
@@ -308,7 +313,7 @@ AM_RETURN am_net_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, 
 	pIop->pTx->fivo.l1 = sizeof(UINT32);
 	*(UINT32 *) &pIop->pTx->fivo.data_in[0] = count;
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = am_net_send_and_wait(&aFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -361,8 +366,10 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 	AM_RETURN error = AM_RET_GOOD;
 	UINT32 tx_size = sizeof(AM_PACK_FIXED_IN_VAR_OUT) + sizeof(AM_MEM_CAP_T) - sizeof(UINT32); /* Fivo defines 1 DWORD of data */
 	APPMEM_RESP_CR_FUNC_T *pCrResp;
+	AM_MEM_FUNCTION_T aFunc;
+	aFunc.pEntry = pEntry;
 
-	pIop = am_net_get_free_req();
+	pIop = am_net_get_free_req(&aFunc);
 
 
 	pIop->pTx->fivo.wrap.func_id = AM_PACK_FUNC_ID_BASEAPPMEM;
@@ -373,7 +380,7 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 
 	memcpy(&pIop->pTx->fivo.data_in[0], pCap, tx_size);
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = am_net_send_and_wait(&aFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{

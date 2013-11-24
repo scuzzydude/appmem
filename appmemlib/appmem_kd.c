@@ -277,7 +277,9 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 
 		
 			pFunc->handle = -1; //closed
-		
+			
+			pFunc->pEntry = pEntry;
+
 			fn_array = pFunc->fn;
 
 			if(fn_array)

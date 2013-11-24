@@ -48,7 +48,7 @@ AM_RETURN am_pack_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT3
 	AM_ASSERT(pFunc->pkAc.get_free_iop);
 	AM_ASSERT(pFunc->pkAc.send_and_wait);
 
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 	
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
@@ -56,7 +56,7 @@ AM_RETURN am_pack_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT3
 	pIop->pTx->op.wrap.size = tx_size;
 	pIop->pTx->op.wrap.op = op;
 
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -100,7 +100,7 @@ AM_RETURN am_pack_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	tx_size  = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.idx_size;
 
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -109,7 +109,7 @@ AM_RETURN am_pack_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	memcpy(&pIop->pTx->write_al.data_bytes[0], p1, pFunc->crResp.idx_size);
 
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -139,7 +139,7 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc->pkAc.get_free_iop);
 	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -148,7 +148,7 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -179,7 +179,7 @@ AM_RETURN am_pack_write_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc->pkAc.get_free_iop);
 	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -190,7 +190,7 @@ AM_RETURN am_pack_write_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	memcpy(&pIop->pTx->write_al.data_bytes[pFunc->crResp.idx_size], p2, pFunc->crResp.data_size);
 	
 	
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 	return error;
 
 }
@@ -210,7 +210,7 @@ AM_RETURN am_pack_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc->pkAc.get_free_iop);
 	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -219,7 +219,7 @@ AM_RETURN am_pack_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[4] = *(UINT32 *)p2;
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 	return error;
 
 }
@@ -238,7 +238,7 @@ AM_RETURN am_pack_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
 	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
 
-	pIop = pFunc->pkAc.get_free_iop();
+	pIop = pFunc->pkAc.get_free_iop(pFunc);
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ACTION; 
@@ -247,7 +247,7 @@ AM_RETURN am_pack_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
 
 	memcpy(&pIop->pTx->action.data_in[0], p1,(UINT32)l1); 
 	
-	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
 	return error;
 
 }
