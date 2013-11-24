@@ -251,3 +251,53 @@ AM_RETURN am_pack_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
 	return error;
 
 }
+
+AM_RETURN am_set_pack_access(AM_MEM_FUNCTION_T *pFunc)
+{
+
+
+	if((AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE])) ||
+		(AM_KPACK == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE])))
+	{
+		if((sizeof(UINT32) == pFunc->crResp.data_size) && (sizeof(UINT32) == pFunc->crResp.idx_size))
+		{
+			pFunc->fn->write_al = am_pack_write32_align;
+		}
+		else /* TODO - we should have alignment function for 64/64 or 32/64 and other common cobmos but always fall back to this one */
+		{
+			pFunc->fn->write_al = am_pack_write_align;
+		}
+	}
+	else ///if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
+	{
+		//printf("write_al = am_kd_fixed_write_packet\n");
+		//fn_array->write_al = am_kd_fixed_write_packet;
+		//TODO - 
+	}
+
+	if((AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_READ])) ||
+		(AM_KPACK == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_READ])))
+	{
+
+		if((sizeof(UINT32) == pFunc->crResp.data_size) && (sizeof(UINT32) == pFunc->crResp.idx_size))
+		{
+			pFunc->fn->read_al = am_pack_read32_align;
+		}
+		else
+		{
+			pFunc->fn->read_al = am_pack_read_align;
+		}
+
+	}
+	else
+	{
+		//TODO: 
+	}
+	//am_net_print_txrx_buffer(pIop,TRUE);
+
+	return AM_RET_GOOD;
+
+}
+
+
+

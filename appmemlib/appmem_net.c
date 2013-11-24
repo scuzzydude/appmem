@@ -413,6 +413,10 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 			pFunc->fn->sort = am_pack_sort;
 		}
 
+		am_set_pack_access(pFunc);
+
+
+#if 0
 		if((AM_PACK_ALIGN == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE])) ||
 			(AM_KPACK == AM_NET_GET_PACKTYPE(pFunc->crResp.acOps[ACOP_WRITE])))
 		{
@@ -451,6 +455,10 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 			//TODO: 
 		}
 		//am_net_print_txrx_buffer(pIop,TRUE);
+#endif
+
+
+
 	}
 	else
 	{

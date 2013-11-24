@@ -481,6 +481,98 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 }
 
 
+AM_RETURN am_pack_process_cmd(AM_MEM_FUNCTION_T *pFunc, AM_PACK_ALL_U *pRxBuf,AM_PACK_RESP_U *pResp, UINT32 *pTxBytes)
+{
+    AM_RETURN error = AM_RET_GOOD;
+	AM_FN_U *opFn;
+	UINT32 op;
+    UINT32 tx_bytes;
+
+	if(NULL != pFunc)
+	{
+
+		opFn = pFunc->pfnOps;	
+		op = pRxBuf->wrap.op;
+
+		AM_ASSERT(opFn);
+
+		if(NULL != opFn[op].raw)
+		{
+			switch(pRxBuf->wrap.packType)
+			{
+
+                case AM_KPACK:   /* Path is different in kernel ioctl mode */
+				case AM_PACK_ALIGN:
+				{
+					if(op & 1)
+					{
+						/* Read Align */	
+						error = opFn[op].align(pFunc, &pRxBuf->write_al.data_bytes[0], &pResp->align_resp.resp_bytes[0]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.data_size; /* If there is error, it will tx_bytes will be overridden below */
+
+					}
+					else
+					{
+						/* Write Align */
+						error = opFn[op].align(pFunc, &pRxBuf->write_al.data_bytes[0], &pRxBuf->write_al.data_bytes[pFunc->crResp.idx_size]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T); /* If there is error, it will tx_bytes will be overridden below */
+					}
+				}
+				break;
+
+			
+				case AM_PACK_TYPE_OPCODE_ONLY:
+				{
+					error = opFn[op].op_only(pFunc, pResp, &tx_bytes);			
+				}
+				break;
+
+				
+				case AM_PACK_TYPE_FIVO:
+				{
+				
+					error = opFn[op].fivo(pFunc, 
+											&pRxBuf->fivo.data_in[0], 
+											pRxBuf->fivo.l1,
+											&pResp->align_resp.resp_bytes[0],
+											&tx_bytes);
+
+				
+				}
+				break;
+
+				case AM_PACK_ACTION:
+				{
+					tx_bytes = sizeof(AM_PACK_WRAPPER_T);
+					error = opFn[op].action(pFunc, &pRxBuf->action.data_in[0], (pRxBuf->action.wrap.size - sizeof(AM_PACK_WRAPPER_T)));
+				}
+				break;
+
+
+
+				default:
+				error = AM_RET_INVALID_PACK_OP;
+				break;
+
+			}
+		}
+		else
+		{
+			error = AM_RET_INVALID_OPCODE;
+		}
+
+
+	}
+	else
+	{
+		error = AM_RET_INVALID_FUNC;
+	}
+
+    *pTxBytes = tx_bytes;
+
+    return error;
+
+}
 
 
 
@@ -531,8 +623,9 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 	pFunc = am_validate_function_id(pRxCmd->pRxBuf->wrap.func_id);
 
 	AM_DEBUGPRINT("process_cmd : pFunc =%p PackType=0x%04x\n", pFunc,  pRxCmd->pRxBuf->wrap.packType);
-
-
+#if 1
+    error = am_pack_process_cmd(pFunc, pRxCmd->pRxBuf, pResp, &tx_bytes);
+#else
 	if(NULL != pFunc)
 	{
 
@@ -612,6 +705,8 @@ AM_RETURN am_targ_process_cmd(AM_REC_CMD_T *pRxCmd, AM_TARGET_T *pTarget)
 	{
 		error = AM_RET_INVALID_FUNC;
 	}
+
+#endif
 
 
 	if(AM_RET_GOOD != error)

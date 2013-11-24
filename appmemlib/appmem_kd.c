@@ -292,32 +292,31 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
                     printf("Function supports MMAP\n");
                     pFunc->fmap.map_flags = pCap->access_flags;
                 }
-                else
+
+                if(AM_OP_CODE_WRITE_ALIGN == pFunc->crResp.acOps[ACOP_WRITE])
                 {
-                    if(AM_OP_CODE_WRITE_ALIGN == pFunc->crResp.acOps[ACOP_WRITE])
-                    {
                         AM_DEBUGPRINT("acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN\n");
                         /* TODO - depending on address size might be different pointers */
     				    fn_array->write_al = am_kd_write32_align;
-                    }
-                    else if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
-                    {
+                }
+                else if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
+                {
                         printf("write_al = am_kd_fixed_write_packet\n");
                         fn_array->write_al = am_kd_fixed_write_packet;
 
-                    }
+                }
                 
 
-                    if(AM_OP_CODE_READ_ALIGN == pFunc->crResp.acOps[ACOP_READ])
-                    {
+                if(AM_OP_CODE_READ_ALIGN == pFunc->crResp.acOps[ACOP_READ])
+                {
                         /* TODO - depending on address size might be different pointers */
 			            fn_array->read_al = am_kd_read32_align;
-                    }
-                    else if(AM_OP_CODE_READ_FIX_PACKET == pFunc->crResp.acOps[ACOP_READ])
-                    {
+                }
+                else if(AM_OP_CODE_READ_FIX_PACKET == pFunc->crResp.acOps[ACOP_READ])
+                {
                         fn_array->read_al = am_kd_fixed_read_packet;
-                    }   
-                 }   
+                }   
+                
 
 			}
 		
@@ -333,6 +332,67 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 
 }
 
+
+AM_NET_PACK_TRANSACTION *am_kpack_get_free_req(AM_MEM_FUNCTION_T *pFunc)
+{
+    DEVICE_MMAP *pMapDevice;
+    AM_NET_PACK_TRANSACTION *pIop = NULL;
+    
+    AM_ASSERT(pFunc);
+    AM_ASSERT(pFunc->fmap.pMMap);
+
+    /* TODO - There should be a lock on the Appmem Device Function between this function call */
+    /* And send_and_wait */
+    /* Lock can be maintained in the Iop */
+
+    pMapDevice = pFunc->fmap.pMMap;
+
+    while(pMapDevice->mapCi != pFunc->fmap.uPI)
+    {
+        /* TODO: Timeout/sleep -- shouldn't happen in our simple model (unless we cache writes)*/
+        printf("Waiting on App Mem Device --- %08x : %08x\n", pMapDevice->mapCi, pFunc->fmap.uPI);
+        
+        /* Return from here after timetout */
+    }
+    
+    pIop = &pFunc->fmap.Iop;
+
+
+	return pIop;
+
+
+}
+
+AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs)
+{
+    int wait_count = 0;
+    DEVICE_MMAP *pMapDevice;
+
+    AM_ASSERT(pFunc);
+    AM_ASSERT(pFunc->fmap.pMMap);
+
+    pMapDevice = pFunc->fmap.pMMap;
+
+    printf("am_kpack_send_and_wait tx_size=%d\n", tx_size);
+
+    /* Increment the PI */
+    pFunc->fmap.uPI++;
+    
+    /* Write the PI */
+    pMapDevice->mapPi = pFunc->fmap.uPI;
+
+    while(pMapDevice->mapCi != pFunc->fmap.uPI)
+    {
+        wait_count++;
+            
+        printf("am_kpack_send_and_wait(%d) %08x:%08x\n", pMapDevice->mapCi, pFunc->fmap.uPI);
+        AM_SLEEP(1);
+    }
+
+	return AM_RET_GOOD;
+}
+
+
 AM_RETURN am_kd_open(void *p1)
 {
 	AM_MEM_FUNCTION_T *pFunc = p1;
@@ -341,7 +401,9 @@ AM_RETURN am_kd_open(void *p1)
 	sprintf(full_path, "/dev/%s", pFunc->crResp.am_name);
     char *pMMap;
     int i;
+    int sync_retry = 15;
     DEVICE_MMAP *pMapDevice;
+    
     
 	printf("opening %s\n", full_path);
 
@@ -360,7 +422,6 @@ AM_RETURN am_kd_open(void *p1)
         if(pFunc->fmap.map_flags & AM_CAP_AC_FLAG_PACK_MMAP)
         {        
 
-    
 	        printf("Calling MMAP\n");
 
             pMMap = (char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0);
@@ -369,13 +430,59 @@ AM_RETURN am_kd_open(void *p1)
             {
                 printf("MMAP GOOD %p\n", pMMap);
 
-         
-                for(i = 0; i < 15; i++)
+                pFunc->fmap.pMMap = pMMap;
+                pFunc->fmap.map_size = 4096;
+                pMapDevice = (DEVICE_MMAP *)pMMap;
+                memset(&pFunc->fmap.Iop, 0, sizeof(AM_NET_PACK_TRANSACTION));
+                pFunc->fmap.Iop.pTx = &pMapDevice->mapTx;
+                pFunc->fmap.Iop.pRx = &pMapDevice->mapRx;
+//                pFunc->fmap.pCI = &pMapDevice->mapCi;
+                
+                printf("MMAP pTx=%p pRx=%p pCI=%p \n", pFunc->fmap.Iop.pTx, pFunc->fmap.Iop.pRx, pMapDevice->mapCi);
+#if 1
+                         
+                for(i = 0; i < sync_retry; i++)
                 {
-                    printf("%d] %c\n", i, pMMap[i]);
+                    if((AM_K_MAP_PI_START == pMapDevice->mapPi) &&
+                    (AM_K_MAP_CI_START == pMapDevice->mapCi))
+                    {
+                        printf("%d ] MMAP Synced - %08x : %08x\n", i, pMapDevice->mapPi, pMapDevice->mapCi); 
+                        break;
+                    }
+                    else
+                    {
+                        printf("%d ] MMAP NOT Synced - %08x : %08x\n", i, pMapDevice->mapPi, pMapDevice->mapCi); 
+                        AM_SLEEP(1);
+                    }
+                
                 }
-                     
 
+                if(i < sync_retry)
+                {
+
+                    printf("%d] Signaling Function Sync\n", i);
+                    pMapDevice->mapPi = pMapDevice->mapCi;
+                   
+                    while(pMapDevice->mapState != AM_MAP_STATE_SYNCED)
+                    {
+                        printf("Waiting Appmem Device Sync = %08x\n", pMapDevice->mapState); 
+                        AM_SLEEP(1);
+                    }
+
+                
+                    pFunc->fmap.uPI = pMapDevice->mapCi;
+
+                    am_set_pack_access(pFunc);
+                    pFunc->pkAc.send_and_wait = am_kpack_send_and_wait;
+		            pFunc->pkAc.get_free_iop = am_kpack_get_free_req;
+
+                    
+
+                    
+                }
+
+                
+#endif
             }
             else
             {

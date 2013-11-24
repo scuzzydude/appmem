@@ -235,9 +235,9 @@ typedef struct _am_pack_accessor
 typedef struct _am_mmap
 {
     void                      *pMMap;
-    AM_NET_PACK_TRANSACTION   *pIop;
-    UINT32                    *pPI;
-    UINT32                    *pCI;
+    AM_NET_PACK_TRANSACTION   Iop;
+    UINT32                    uPI;     /* Local - Client is the Produce */
+//    UINT32                    *pCI;    /* Device - it is consumer */
     UINT32                    map_size;
 	UINT32                    map_flags;
 
@@ -471,12 +471,15 @@ typedef struct _am_pack_queue
 } AM_PACK_QUEUE_T;
 
 
-
+#define AM_MAP_STATE_NOT_SYNC    0x00000000 
+#define AM_MAP_STATE_SYNCED      0xBABAD000 
 
 typedef struct _appmem_device_mmap
 {   
-    UINT32                  mapPi;
-    UINT32                  mapCi;
+    volatile UINT32         mapPi;
+    volatile UINT32         mapCi;
+    volatile UINT32         mapState;
+    volatile UINT32         mapControl;
     union _am_pack_all_u    mapTx;
 	union _am_pack_resp_u   mapRx;
 	

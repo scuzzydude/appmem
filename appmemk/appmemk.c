@@ -31,6 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <linux/mm.h>		/* everything */
 #include <linux/errno.h>	/* error codes */
 #include <asm/pgtable.h>
+#include <linux/kthread.h>  // for threads
+#include <linux/sched.h>  // for task_struct
+#include <linux/time.h>   // for using jiffies  
+#include <linux/timer.h>
 
 /* Driver Includes */
 #include "appmemlib.h"
@@ -92,7 +96,87 @@ void appmemd_vma_close(struct vm_area_struct *vma)
     printk(KERN_NOTICE "appmemd_vma_close\n");
 }
 
+int appmemd_map_thread(void *pvDevice)
+{
+    int count = 0;
+    APPMEM_KDEVICE *pDevice = pvDevice;
+    unsigned long j0,j1;
+    int delay = 1*HZ;
+    DEVICE_MMAP *pMapDevice;
+    
 
+    if(NULL == pDevice)
+    {
+        printk("appmemd_map_thread pDevice=NULL\n");
+        return -1;
+    }
+
+    if(NULL == pDevice->map.pMapped)
+    {
+        printk("appmemd_map_thread pMapped=NULL\n");
+        return -1;
+    }
+
+    if(0 == pDevice->map.isMapped)
+    {
+        printk("appmemd_map_thread isMapped=0\n");
+        return -1;
+    }
+    
+    pMapDevice = pDevice->map.pMapped;
+
+    /* Synchronize with client */
+
+
+    pMapDevice->mapPi = AM_K_MAP_PI_START;
+    pMapDevice->mapCi = AM_K_MAP_CI_START;
+
+    while((pDevice->map.isMapped) && (pMapDevice->mapPi != pMapDevice->mapCi))
+    {
+        j0 = jiffies; 
+        j1 = j0 + delay; 
+        while (time_before(jiffies, j1))
+        {
+            schedule();
+        }
+
+        printk("appmemd_map_thread(%d) WAIT for Client SYNC pi=%08x ci=%08x\n", count, pMapDevice->mapPi, pMapDevice->mapCi);
+        count++;
+    }
+
+    printk("appmemd_map_thread(%d) SYNCED  pi=%08x ci=%08x\n", count, pMapDevice->mapPi, pMapDevice->mapCi);
+ 
+    pMapDevice->mapState = AM_MAP_STATE_SYNCED;
+
+    while(pDevice->map.isMapped)
+    {
+        count++;
+        if(pMapDevice->mapPi == pMapDevice->mapCi)
+        {
+            if(0 == (count % 10000))
+            {
+                printk("appmemd_map_thread %s = %d NO CHANGE\n", pDevice->am_name, count);
+            }
+            schedule();
+            
+        }
+        else
+        {
+            printk("appmemd_map_thread COMMAND RCV %s = PI=0x%08x\n", pDevice->am_name, pMapDevice->mapPi);
+
+            break;//temp
+        }
+
+    }
+
+
+    printk("appmemd_map_thread EXIT(%d)\n", count);
+    
+
+    return 0;
+
+
+}
 
 int appmemd_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -139,6 +223,19 @@ int appmemd_vma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 
        
         strcpy((char *)pMapped, "BRANDON TEST");
+
+        pDevice->map.pMapThread = kthread_create(appmemd_map_thread, pDevice, "am_map_thr_%s", pDevice->am_name);
+
+        if(NULL != pDevice->map.pMapThread)
+        {
+            printk(KERN_NOTICE "Map Thread Created =%p\n", pDevice->map.pMapThread);
+            wake_up_process(pDevice->map.pMapThread);    
+        }
+        else
+        {
+            printk(KERN_NOTICE "Map Thread Create Error =%p\n", pDevice->map.pMapThread);
+
+        }
 
     }
     else
@@ -900,7 +997,17 @@ static void __exit appmemd_exit(void)
         pFunctionDevicesHead = pDevice->next;
 
         AM_DEBUGPRINT("exit pDevice = %p : amType=%d, dev=%d\n", pDevice, pDevice->amType, pDevice->devt );
-   
+
+        if(pDevice->map.isMapped)
+        {
+            pDevice->map.isMapped = 0;
+
+            if(pDevice->map.pMapThread)
+            {
+                kthread_stop(pDevice->map.pMapThread);
+            }    
+            
+        }
 
         cdev_del(&pDevice->cdev);
 
@@ -916,7 +1023,7 @@ static void __exit appmemd_exit(void)
         }
 
         appmemd_release_device(pDevice);
-  
+          
 
     }
    

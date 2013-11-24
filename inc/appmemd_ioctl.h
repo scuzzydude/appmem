@@ -74,6 +74,9 @@ struct am_mem_function_t;
 
 #endif
 
+#define AM_K_MAP_PI_START 0xAA3EBB11
+#define AM_K_MAP_CI_START 0x74000001
+
 
 #define AM_OP_CODE_MASK             0x000000FF
 
@@ -229,10 +232,12 @@ union am_func_data;
 
 typedef struct _appmedk_mmap
 {
-    void             *pMapped;
-    unsigned long     req_len;
-    unsigned long     map_len;
-    int              isMapped;
+    void                 *pMapped;
+    unsigned long         req_len;
+    unsigned long         map_len;
+    int                   isMapped;
+    struct task_struct   *pMapThread;
+    
 
 } APPMEMK_MMAP;
 
