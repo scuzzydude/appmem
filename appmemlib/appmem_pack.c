@@ -34,8 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 #include "appmem_pack.h"
 
-AM_RETURN am_net_send_and_wait(AMLIB_ENTRY_T *pEntry, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs);
-AM_NET_PACK_TRANSACTION *am_net_get_free_req(void);
 
 AM_RETURN am_pack_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT32 resp_len)
 {
@@ -47,15 +45,18 @@ AM_RETURN am_pack_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT3
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
+
+	pIop = pFunc->pkAc.get_free_iop();
 	
-	pIop = am_net_get_free_req();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_TYPE_OPCODE_ONLY; 
 	pIop->pTx->op.wrap.size = tx_size;
 	pIop->pTx->op.wrap.op = op;
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -94,10 +95,12 @@ AM_RETURN am_pack_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
 	tx_size  = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.idx_size;
 
-	pIop = am_net_get_free_req();
+	pIop = pFunc->pkAc.get_free_iop();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -106,7 +109,7 @@ AM_RETURN am_pack_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	memcpy(&pIop->pTx->write_al.data_bytes[0], p1, pFunc->crResp.idx_size);
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -133,8 +136,10 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = am_net_get_free_req();
+	pIop = pFunc->pkAc.get_free_iop();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -143,7 +148,7 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 
 	if(AM_RET_GOOD == error)
 	{
@@ -171,8 +176,10 @@ AM_RETURN am_pack_write_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = am_net_get_free_req();
+	pIop = pFunc->pkAc.get_free_iop();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -183,7 +190,7 @@ AM_RETURN am_pack_write_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	memcpy(&pIop->pTx->write_al.data_bytes[pFunc->crResp.idx_size], p2, pFunc->crResp.data_size);
 	
 	
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 	return error;
 
 }
@@ -200,8 +207,10 @@ AM_RETURN am_pack_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
-	pIop = am_net_get_free_req();
+	pIop = pFunc->pkAc.get_free_iop();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
@@ -210,7 +219,7 @@ AM_RETURN am_pack_write32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[4] = *(UINT32 *)p2;
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 	return error;
 
 }
@@ -225,9 +234,11 @@ AM_RETURN am_pack_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
 	AM_ASSERT(pFunc);
 	pEntry = pFunc->pEntry;
 	AM_ASSERT(pEntry);
+	AM_ASSERT(pFunc->pkAc.get_free_iop);
+	AM_ASSERT(pFunc->pkAc.send_and_wait);
 	
 
-	pIop = am_net_get_free_req();
+	pIop = pFunc->pkAc.get_free_iop();
 
 	pIop->pTx->op.wrap.func_id = (UINT16)pFunc->handle;
 	pIop->pTx->op.wrap.packType = AM_PACK_ACTION; 
@@ -235,13 +246,8 @@ AM_RETURN am_pack_sort(AM_MEM_FUNCTION_T *pFunc, void * p1, UINT64 l1)
 	pIop->pTx->op.wrap.op = AM_OP_SORT;
 
 	memcpy(&pIop->pTx->action.data_in[0], p1,(UINT32)l1); 
-
-
 	
-	error = am_net_send_and_wait(pEntry, pIop, tx_size, 5000);
-
-
-
+	error = pFunc->pkAc.send_and_wait(pEntry, pIop, tx_size, 5000);
 	return error;
 
 }

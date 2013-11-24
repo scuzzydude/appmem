@@ -388,6 +388,9 @@ AM_RETURN am_net_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_M
 		pFunc->pEntry = pEntry;
 		pFunc->handle = pCrResp->devt;
 
+		pFunc->pkAc.send_and_wait = am_net_send_and_wait;
+		pFunc->pkAc.get_free_iop = am_net_get_free_req;
+
 		if(pCrResp->ops[AM_OP_OPEN_FUNC])
 		{
 			pFunc->fn->open = am_net_open;

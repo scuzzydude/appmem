@@ -213,16 +213,36 @@ typedef union am_sort_param
 
 
 
+typedef struct am_net_pack_transaction
+{
+	union _am_pack_all_u    *pTx;
+	union _am_pack_resp_u   *pRx;
+	UINT16					 tag;
+	UINT16                   flag;
+	UINT32                   done;        //TODO: semaphore
+	UINT32					 start_time;  //TODO: timeouts 
+	UINT32					 resp_bytes;
+
+} AM_NET_PACK_TRANSACTION;
+
+typedef struct _am_pack_accessor
+{
+	AM_RETURN                 (*send_and_wait)(struct amlib_entry_ *pEntry, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs);
+	AM_NET_PACK_TRANSACTION * (*get_free_iop)(void);
+
+} AM_PACKAC;
+
+
 typedef struct am_mem_function_t
 {
-	UINT32 handle;
-	AM_MEM_CAP_T amCap;
-	APPMEM_RESP_CR_FUNC_T crResp;
+	UINT32                 handle;
+	AM_MEM_CAP_T           amCap;
+	APPMEM_RESP_CR_FUNC_T  crResp;
 	AM_FUNC_CALLS_T       *fn;
 	AM_FUNC_DATA_U        *pVdF;
     AM_FN_U               *pfnOps;     
 	struct amlib_entry_   *pEntry;
-
+	AM_PACKAC             pkAc;
 } AM_MEM_FUNCTION_T;
 
 
