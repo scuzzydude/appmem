@@ -812,6 +812,14 @@ static int __init appmemd_init(void)
     printk(KERN_INFO "appmemd: Linux Version Code(%08x)", LINUX_VERSION_CODE);
 
 
+    for(i = 0; i < sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T); i++)
+    {
+        if(i)
+        {
+            /* Advertise that we can access through MMAP */
+            virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
+        }
+    }
 
     result = alloc_chrdev_region(&base_AMdev, appmemd_minor, appmemd_base_dev_count,
 				"appmem");

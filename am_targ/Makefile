@@ -8,6 +8,7 @@ all: am_targ
 am_targ:	am_target.o \
    ../appmemlib/am_linux_net.o \
    ../appmemlib/appmem_net.o \
+   ../appmemlib/appmem_pack.o \
    ../appmemlib/am_stata.o \
    ../appmemlib/am_flat.o \
    ../appmemlib/am_assca.o 

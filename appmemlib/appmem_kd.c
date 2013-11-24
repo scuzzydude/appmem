@@ -28,12 +28,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************************/
 
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-
 #include "appmemlib.h"
 #include "appmem_virtd.h"
 #include "appmemd_ioctl.h"
@@ -52,6 +46,13 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 
 
 #else
+
+
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 int am_kd_close_driver(int fd)
 {
@@ -273,6 +274,7 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 		{
 			printf("CREATE FUNCTION GOOD = %d\n", 0);
 			printf("CR RESP name=%s devt=%d\n", pFunc->crResp.am_name, pFunc->crResp.devt);
+
 		
 			pFunc->handle = -1; //closed
 		
@@ -283,31 +285,39 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 				fn_array->open = am_kd_open;
 				fn_array->close = am_kd_close;
 
-                
-                if(AM_OP_CODE_WRITE_ALIGN == pFunc->crResp.acOps[ACOP_WRITE])
+                if(pCap->access_flags & AM_CAP_AC_FLAG_PACK_MMAP)
                 {
-                    AM_DEBUGPRINT("acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN\n");
-                    /* TODO - depending on address size might be different pointers */
-    				fn_array->write_al = am_kd_write32_align;
-                }
-                else if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
-                {
-                    printf("write_al = am_kd_fixed_write_packet\n");
-                    fn_array->write_al = am_kd_fixed_write_packet;
+                    printf("Function supports MMAP\n");
+
+
 
                 }
+                else
+                {
+                    if(AM_OP_CODE_WRITE_ALIGN == pFunc->crResp.acOps[ACOP_WRITE])
+                    {
+                        AM_DEBUGPRINT("acOps[ACOP_WRITE] = AM_OP_CODE_WRITE_ALIGN\n");
+                        /* TODO - depending on address size might be different pointers */
+    				    fn_array->write_al = am_kd_write32_align;
+                    }
+                    else if(AM_OP_CODE_WRITE_FIX_PACKET == pFunc->crResp.acOps[ACOP_WRITE])
+                    {
+                        printf("write_al = am_kd_fixed_write_packet\n");
+                        fn_array->write_al = am_kd_fixed_write_packet;
+
+                    }
                 
 
-                if(AM_OP_CODE_READ_ALIGN == pFunc->crResp.acOps[ACOP_READ])
-                {
-                    /* TODO - depending on address size might be different pointers */
-			        fn_array->read_al = am_kd_read32_align;
-                }
-                else if(AM_OP_CODE_READ_FIX_PACKET == pFunc->crResp.acOps[ACOP_READ])
-                {
-                    fn_array->read_al = am_kd_fixed_read_packet;
-                }   
-                    
+                    if(AM_OP_CODE_READ_ALIGN == pFunc->crResp.acOps[ACOP_READ])
+                    {
+                        /* TODO - depending on address size might be different pointers */
+			            fn_array->read_al = am_kd_read32_align;
+                    }
+                    else if(AM_OP_CODE_READ_FIX_PACKET == pFunc->crResp.acOps[ACOP_READ])
+                    {
+                        fn_array->read_al = am_kd_fixed_read_packet;
+                    }   
+                 }   
 
 			}
 		

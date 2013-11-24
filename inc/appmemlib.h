@@ -115,12 +115,14 @@ typedef enum amTypeEnum
 } AM_TYPE_ENUM;
 
 
+#define AM_CAP_AC_FLAG_PACK_MMAP     0x00000001
 
 typedef struct am_mem_cap_t
 {
 	AM_TYPE_ENUM amType;
 	UINT64 maxSize;
 	UINT32 functionCount;
+	UINT32 access_flags;
 	UINT32 typeSpecific[32];	
 	UINT32 acOps[2];
 
