@@ -290,9 +290,7 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
                 if(pCap->access_flags & AM_CAP_AC_FLAG_PACK_MMAP)
                 {
                     printf("Function supports MMAP\n");
-
-
-
+                    pFunc->fmap.map_flags = pCap->access_flags;
                 }
                 else
                 {
@@ -343,6 +341,7 @@ AM_RETURN am_kd_open(void *p1)
 	sprintf(full_path, "/dev/%s", pFunc->crResp.am_name);
     char *pMMap;
     int i;
+    DEVICE_MMAP *pMapDevice;
     
 	printf("opening %s\n", full_path);
 
@@ -357,31 +356,32 @@ AM_RETURN am_kd_open(void *p1)
 
 
 
+        
+        if(pFunc->fmap.map_flags & AM_CAP_AC_FLAG_PACK_MMAP)
+        {        
 
     
-	    printf("Calling MMAP\n");
+	        printf("Calling MMAP\n");
 
-        pMMap = (char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0);
+            pMMap = (char*)mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0);
 	
-        if(MAP_FAILED != pMMap)
-        {
-            printf("MMAP GOOD %p\n", pMMap);
-
-         //   pMMap[0] = "A";
-         //   pMMap[1] = "B";
-
-            for(i = 0; i < 15; i++)
+            if(MAP_FAILED != pMMap)
             {
-                printf("%d] %c\n", i, pMMap[i]);
-            }
+                printf("MMAP GOOD %p\n", pMMap);
+
+         
+                for(i = 0; i < 15; i++)
+                {
+                    printf("%d] %c\n", i, pMMap[i]);
+                }
                      
 
+            }
+            else
+            {
+                printf("MMAP Failed \n");
+            }
         }
-        else
-        {
-            printf("MMAP Failed \n");
-        }
-
 		return AM_RET_GOOD;
 
 

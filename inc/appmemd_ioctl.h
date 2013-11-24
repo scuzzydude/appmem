@@ -134,6 +134,7 @@ struct am_mem_function_t;
 #define AM_OPCODE(x) (AM_OP_CODE_MASK & x)
 
 
+
 typedef struct _appmem_cmd_common_t
 {
 	UINT32 op;

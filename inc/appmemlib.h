@@ -232,6 +232,16 @@ typedef struct _am_pack_accessor
 
 } AM_PACKAC;
 
+typedef struct _am_mmap
+{
+    void                      *pMMap;
+    AM_NET_PACK_TRANSACTION   *pIop;
+    UINT32                    *pPI;
+    UINT32                    *pCI;
+    UINT32                    map_size;
+	UINT32                    map_flags;
+
+} AM_MMAP;
 
 typedef struct am_mem_function_t
 {
@@ -243,6 +253,8 @@ typedef struct am_mem_function_t
     AM_FN_U               *pfnOps;     
 	struct amlib_entry_   *pEntry;
 	AM_PACKAC             pkAc;
+	AM_MMAP               fmap;
+
 } AM_MEM_FUNCTION_T;
 
 
@@ -457,6 +469,19 @@ typedef struct _am_pack_queue
     
 
 } AM_PACK_QUEUE_T;
+
+
+
+
+typedef struct _appmem_device_mmap
+{   
+    UINT32                  mapPi;
+    UINT32                  mapCi;
+    union _am_pack_all_u    mapTx;
+	union _am_pack_resp_u   mapRx;
+	
+
+} DEVICE_MMAP;
 
 
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
