@@ -33,20 +33,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_flat.h"
 #include "am_targ.h"
 
-AM_RETURN am_flat_open(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2) 
+AM_RETURN am_flat_open(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2) 
 {
 	return AM_RET_GOOD;
 
 }
-AM_RETURN am_flat_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_flat_close(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_flat_release(AM_HANDLE handle, void * p1)
+AM_RETURN am_flat_release(AM_FUNC *pFunc, void * p1)
 {
 
-    AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+    AM_FUNC_DATA_U * fd = pFunc->pVdF;
 
     if(NULL != fd)
     {
@@ -66,19 +66,19 @@ AM_RETURN am_flat_release(AM_HANDLE handle, void * p1)
 
 
 /* 32 bit */
-AM_RETURN am_flat_read32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_flat_read32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_IO_ERR;
 
 }
-AM_RETURN am_flat_write32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_flat_write32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_IO_ERR;
 }
 
-AM_RETURN am_flat_read32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_flat_read32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	UINT32 offset = *(UINT32 *) p1;
 
 	PUT32_TO_USER(((UINT64)fd->flat.data + (UINT64)offset), p2);
@@ -88,10 +88,10 @@ AM_RETURN am_flat_read32_align(AM_HANDLE handle, void * p1, void *p2)
 }
 
 
-AM_RETURN am_flat_write32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_flat_write32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
 	
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	UINT32 offset = *(UINT32 *) p1;
 	UINT32 *ptr = (UINT32 *)((UINT64)fd->flat.data + (UINT64)offset);
 

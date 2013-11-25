@@ -55,11 +55,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #endif
+
+struct am_mem_function_t;
+
+#define AM_FUNC struct am_mem_function_t
+
 #ifdef _APPMEMD
 struct _appmem_kdevice;
-//#define AM_HANDLE struct _appmem_kdevice *
-struct am_mem_function_t;
-#define AM_HANDLE struct am_mem_function_t *
 
 #define GET32_FROM_USER(_locaddr, _uaddr) __get_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
 #define PUT32_TO_USER(_locaddr, _uaddr) __put_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
@@ -67,9 +69,6 @@ struct am_mem_function_t;
 #define COPY_TO_USER(_uaddr, _locaddr, _len) if(copy_to_user(_uaddr, _locaddr, _len)) 
 
 #else
-struct am_mem_function_t;
-
-#define AM_HANDLE struct am_mem_function_t *
 #define GET32_FROM_USER(_locaddr, _uaddr) 	*(UINT32 *) _locaddr = *(UINT32 *)_uaddr
 #define PUT32_TO_USER(_locaddr, _uaddr) *(UINT32 *)_uaddr = *(UINT32 *)_locaddr
 #define COPY_FROM_USER(_locaddr, _uaddr, _len) memcpy(_locaddr, _uaddr, _len)
@@ -201,14 +200,14 @@ typedef struct _appmem_kam_cmd
 
 
 
-typedef AM_RETURN (*am_cmd_fn)(AM_HANDLE handle, void *p1);
-typedef AM_RETURN (*am_fn)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2);
-typedef AM_RETURN (*am_fn_action) (AM_HANDLE handle, void * p1, UINT64 l1);
-typedef AM_RETURN (*am_fn_align)(AM_HANDLE handle, void * p1, void *p2);
+typedef AM_RETURN (*am_cmd_fn)(AM_FUNC *pFunc, void *p1);
+typedef AM_RETURN (*am_fn)(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2);
+typedef AM_RETURN (*am_fn_action) (AM_FUNC *pFunc, void * p1, UINT64 l1);
+typedef AM_RETURN (*am_fn_align)(AM_FUNC *pFunc, void * p1, void *p2);
 typedef AM_RETURN (*am_fn_raw)(void * p1);
-typedef AM_RETURN (*am_fn_op_only)(AM_HANDLE handle, void *p1, UINT32 *ret_len);
-typedef AM_RETURN (*am_fivo) (AM_HANDLE handle, void *p1, UINT64 l1, void *p2, UINT32 *ret_len);
-typedef AM_RETURN (*am_iter)(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle);
+typedef AM_RETURN (*am_fn_op_only)(AM_FUNC *pFunc, void *p1, UINT32 *ret_len);
+typedef AM_RETURN (*am_fivo) (AM_FUNC *pFunc, void *p1, UINT64 l1, void *p2, UINT32 *ret_len);
+typedef AM_RETURN (*am_iter)(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle);
 
 
 typedef union _am_fn_u
@@ -266,10 +265,6 @@ typedef struct _appmem_kdevice
 } APPMEM_KDEVICE;
 
 
-//#define AM_HANDLE_TO_FUNCDATA(_handle) ((APPMEM_KDEVICE *)(_handle))->pFunc->pVdF
-#define AM_HANDLE_TO_FUNCDATA(_handle) ((struct am_mem_function_t *)(_handle))->pVdF
-#else
-#define AM_HANDLE_TO_FUNCDATA(_handle) ((struct am_mem_function_t *)(_handle))->pVdF
 #endif
 
 typedef enum amAccessOps

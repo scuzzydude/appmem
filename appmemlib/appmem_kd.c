@@ -136,10 +136,9 @@ UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry)
 
 }
 
-AM_RETURN am_kd_write32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_kd_write32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
 	APPMEM_CMD_ALIGNED_T cmd;
-    AM_MEM_FUNCTION_T *pFunc = handle;
     int c;
 
     AM_ASSERT(pFunc);
@@ -162,10 +161,9 @@ AM_RETURN am_kd_write32_align(AM_HANDLE handle, void * p1, void *p2)
 
 }
 
-AM_RETURN am_kd_read32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_kd_read32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
 	APPMEM_CMD_ALIGNED_T cmd;
-    AM_MEM_FUNCTION_T *pFunc = handle;
  	int c;
 
     AM_ASSERT(pFunc);
@@ -184,9 +182,8 @@ AM_RETURN am_kd_read32_align(AM_HANDLE handle, void * p1, void *p2)
 
 }
 
-AM_RETURN am_kd_fixed_write_packet(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_kd_fixed_write_packet(AM_FUNC *pFunc, void * p1, void *p2)
 {
-    AM_MEM_FUNCTION_T *pFunc = handle;
 	APPMEM_CMD_FIXED_PACKET_T cmd;
 	int c = -1;
 	cmd.op = AM_OP_CODE_WRITE_FIX_PACKET;
@@ -214,9 +211,8 @@ AM_RETURN am_kd_fixed_write_packet(AM_HANDLE handle, void * p1, void *p2)
 }
 
 
-AM_RETURN am_kd_fixed_read_packet(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_kd_fixed_read_packet(AM_FUNC *pFunc, void * p1, void *p2)
 {
-    AM_MEM_FUNCTION_T *pFunc = handle;
 	APPMEM_CMD_FIXED_PACKET_T cmd;
 	int c = -1;
 	cmd.op = AM_OP_CODE_READ_FIX_PACKET;

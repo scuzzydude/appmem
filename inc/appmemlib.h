@@ -258,7 +258,6 @@ typedef struct am_mem_function_t
     
 } AM_MEM_FUNCTION_T;
 
-#define AM_FUNC AM_MEM_FUNCTION_T
 
 typedef struct _am_command
 {
@@ -490,7 +489,6 @@ typedef struct _appmem_device_mmap
 
 
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
-AM_FUNC_DATA_U * am_handle_to_funcdata(UINT32 handle);
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
 AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 

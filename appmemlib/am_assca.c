@@ -112,20 +112,20 @@ AM_RETURN amlib_assca_add_key_fixfix(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
 
 
-AM_RETURN am_assca_open(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_assca_open(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_assca_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_assca_close(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_assca_release(AM_HANDLE handle, void * p1)
+AM_RETURN am_assca_release(AM_FUNC *pFunc, void * p1)
 {
 
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	AMLIB_ASSCA *pAA = NULL;
 	AMLIB_ASSCA_ITEM *pAI = NULL;
 	AMLIB_ASSCA_ITEM *pTmpAI = NULL;
@@ -197,10 +197,10 @@ UINT32 am_assca_get_iter(AMLIB_ASSCA *pAA, UINT32 iter_handle)
 
 
 
-AM_RETURN am_assca_iter(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle)
+AM_RETURN am_assca_iter(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2, UINT32 *iter_handle)
 {
 	
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	AMLIB_ASSCA *pAA = NULL;
 	AMLIB_ASSCA_ITEM *pAI = NULL;
 	UINT32 local_iter = 0;
@@ -272,20 +272,20 @@ AM_RETURN am_assca_iter(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64
 
 
 /* 32 bit */
-AM_RETURN am_assca_read32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_assca_read32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 }
 
-AM_RETURN am_assca_write32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_assca_write32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 }
 
 
-AM_RETURN am_assca_read32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_assca_read32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	AMLIB_ASSCA *pAA = NULL;
 	if(fd)
 	{
@@ -301,9 +301,9 @@ AM_RETURN am_assca_read32_align(AM_HANDLE handle, void * p1, void *p2)
 	return AM_RET_INVALID_HDL;
 }
 
-AM_RETURN am_assca_write32_align(AM_HANDLE handle, void * p1, void *p2)
+AM_RETURN am_assca_write32_align(AM_FUNC *pFunc, void * p1, void *p2)
 {
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	AMLIB_ASSCA *pAA = NULL;
 
 //    printk("assca_write32_align p1=%p p2=%p\n", p1, p2);

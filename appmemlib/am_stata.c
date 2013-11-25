@@ -184,9 +184,9 @@ AM_RETURN am_stata_merge_sort_begin(void *start_ptr, void *end_ptr, int data_siz
 
 }
 
-AM_RETURN am_stata_sort(AM_HANDLE handle, void * p1, UINT64 l1)
+AM_RETURN am_stata_sort(AM_FUNC *pFunc, void * p1, UINT64 l1)
 {
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	AM_SORT_PARAM_U *pSort = p1;
 	void *start_ptr;
 	void *end_ptr;
@@ -277,21 +277,21 @@ AM_RETURN am_stata_sort(AM_HANDLE handle, void * p1, UINT64 l1)
 }
 
 
-AM_RETURN am_stata_open(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_stata_open(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 
 }
-AM_RETURN am_stata_close(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_stata_close(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 
 }
 
-AM_RETURN am_stata_release(AM_HANDLE handle, void * p1)
+AM_RETURN am_stata_release(AM_FUNC *pFunc, void * p1)
 {
 
-    AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+    AM_FUNC_DATA_U * fd = pFunc->pVdF;
 
 	if(NULL != fd)
 	{
@@ -312,21 +312,21 @@ AM_RETURN am_stata_release(AM_HANDLE handle, void * p1)
 
 
 /* 32 bit */
-AM_RETURN am_stata_read_multi_idx32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_stata_read_multi_idx32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 
 }
-AM_RETURN am_stata_write_multi_idx32(AM_HANDLE handle, void * p1, UINT64 l1, void *p2, UINT64 l2)
+AM_RETURN am_stata_write_multi_idx32(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l2)
 {
 	return AM_RET_GOOD;
 
 }
 
-AM_RETURN am_stata_read_idx32(AM_HANDLE handle, void *p1, void *p2)
+AM_RETURN am_stata_read_idx32(AM_FUNC *pFunc, void *p1, void *p2)
 {
 	UINT32 idx = *(UINT32 *)p1;
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
     UINT32 *ptr = &((UINT32 *)fd->stata.data)[idx];    
 
 
@@ -336,10 +336,10 @@ AM_RETURN am_stata_read_idx32(AM_HANDLE handle, void *p1, void *p2)
 	return AM_RET_GOOD;
 
 }
-AM_RETURN am_stata_write_idx32(AM_HANDLE handle, void *p1, void *p2)
+AM_RETURN am_stata_write_idx32(AM_FUNC *pFunc, void *p1, void *p2)
 {
 	UINT32 idx = *(UINT32 *)p1;
-	AM_FUNC_DATA_U * fd = AM_HANDLE_TO_FUNCDATA(handle);
+	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	UINT32 *ptr = &((UINT32 *)fd->stata.data)[idx];
 
 	GET32_FROM_USER(ptr, p2);
