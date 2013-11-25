@@ -252,11 +252,13 @@ typedef struct am_mem_function_t
 	AM_FUNC_DATA_U        *pVdF;
     AM_FN_U               *pfnOps;     
 	struct amlib_entry_   *pEntry;
-	AM_PACKAC             pkAc;
-	AM_MMAP               fmap;
-
+	AM_PACKAC              pkAc;
+	AM_MMAP                fmap;
+    UINT32                 amType;
+    
 } AM_MEM_FUNCTION_T;
 
+#define AM_FUNC AM_MEM_FUNCTION_T
 
 typedef struct _am_command
 {

@@ -42,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_k.h"
 #include "am_k_sock.h"
 #include "am_caps.h"
+#include "appmem_pack.h"
 
 
 int appmemd_open(struct inode *inode, struct file *filp);
@@ -50,8 +51,8 @@ ssize_t appmemd_read(struct file *filp, char __user *buf, size_t count,loff_t *f
 ssize_t appmemd_write(struct file *filp, const char __user *buf, size_t count,loff_t *f_pos);
 int appmemd_ioctl(struct inode *inode, struct file *filp,unsigned int cmd, unsigned long arg);
 int appmemd_release(struct inode *inode, struct file *filp);
-int appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd);
-int appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd);
+int appmem_get_cap_count(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd);
+int appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd);
 
 
 
@@ -100,9 +101,11 @@ int appmemd_map_thread(void *pvDevice)
 {
     int count = 0;
     APPMEM_KDEVICE *pDevice = pvDevice;
+    AM_MEM_FUNCTION_T *pFunc;
     unsigned long j0,j1;
     int delay = 1*HZ;
     DEVICE_MMAP *pMapDevice;
+    UINT32 tx_bytes;
     
 
     if(NULL == pDevice)
@@ -111,6 +114,15 @@ int appmemd_map_thread(void *pvDevice)
         return -1;
     }
 
+    pFunc = pDevice->pFunc;
+
+    if(NULL == pDevice)
+    {
+        printk("appmemd_map_thread pFunc=NULL\n");
+        return -1;
+        
+    }
+    
     if(NULL == pDevice->map.pMapped)
     {
         printk("appmemd_map_thread pMapped=NULL\n");
@@ -163,6 +175,11 @@ int appmemd_map_thread(void *pvDevice)
         else
         {
             printk("appmemd_map_thread COMMAND RCV %s = PI=0x%08x\n", pDevice->am_name, pMapDevice->mapPi);
+
+
+//            am_pack_process_cmd(pFunc, &pMapDevice->mapTx, &pMapDevice->mapRx, &tx_bytes);
+
+
 
             break;//temp
         }
@@ -455,17 +472,17 @@ AM_RETURN appmemd_release_device(APPMEM_KDEVICE *pDevice)
 }
 
 
-AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+AM_RETURN appmem_create_function(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 {
    int error = 0;
-   APPMEM_CMD_BIDIR_T *pBDCmd = (APPMEM_CMD_BIDIR_T *)&pKCmd->cmd;
+   APPMEM_CMD_BIDIR_T     *pBDCmd = (APPMEM_CMD_BIDIR_T *)&pKCmd->cmd;
    AM_MEM_CAP_T           aCap;
    APPMEM_KDEVICE         *pNewDevice = NULL;
    AM_MEM_FUNCTION_T      *pFunc = NULL;
     
    AM_DEBUGPRINT("appmem_create_function = data_in=%p  len_in=%d\n", (void *)pBDCmd->data_in, pBDCmd->len_in);
 
-   if(AM_TYPE_BASE_APPMEM != pDevice->amType)
+   if(AM_TYPE_BASE_APPMEM != pBaseFunc->amType)
    {
         return -ENOTTY;
    }
@@ -613,7 +630,8 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 
         strncpy((char *)&pFunc->crResp.am_name[0], (char *)pNewDevice->am_name, 32);
         pFunc->crResp.devt = pNewDevice->devt;
-
+        pFunc->amType = pNewDevice->amType;
+        
         AM_DEBUGPRINT("create_function copy crResp = %s devt = %d\n", pFunc->crResp.am_name, pFunc->crResp.devt );
 
         if(copy_to_user ((void *)pBDCmd->data_out, &pFunc->crResp, sizeof(APPMEM_RESP_CR_FUNC_T)))
@@ -639,7 +657,7 @@ AM_RETURN appmem_create_function(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 
 
 
-AM_RETURN appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+AM_RETURN appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 {
     
     void *pData;
@@ -651,7 +669,7 @@ AM_RETURN appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 
     pData = (void *)pKCmd->cmd.common.data;
 
-    if(AM_TYPE_BASE_APPMEM == pDevice->amType)
+    if(AM_TYPE_BASE_APPMEM == pBaseFunc->amType)
     {
         /* Don't over write the buffer / truncate to the nearest CAP */
         cap_count = pKCmd->cmd.common.len / sizeof(AM_MEM_CAP_T);        
@@ -685,7 +703,9 @@ AM_RETURN appmem_get_capabilites(APPMEM_KDEVICE *pDevice, APPMEM_KAM_CMD_T *pKCm
 }
 
 
-AM_RETURN appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+//AM_RETURN appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T *pKCmd)
+AM_RETURN appmem_get_cap_count(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
+
 {
     UINT32 *pData;
     UINT32 cap_count = 0;
@@ -695,7 +715,7 @@ AM_RETURN appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T
     pData = (void *)pKCmd->cmd.common.data;
             
     
-    if(AM_TYPE_BASE_APPMEM == pDevice->amType)
+    if(AM_TYPE_BASE_APPMEM == pBaseFunc->amType)
     {
         cap_count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
         printk("Appmemd : cap_count BASE_APPMEM = %d\n", cap_count);
@@ -704,7 +724,7 @@ AM_RETURN appmem_get_cap_count(struct _appmem_kdevice *pDevice, APPMEM_KAM_CMD_T
     else
     {
         cap_count = 1;
-        printk("Appmemd : cap_count Device Type %d = %d\n", pDevice->amType, cap_count);
+        printk("Appmemd : cap_count Device Type %d = %d\n", pBaseFunc->amType, cap_count);
     }
 
     if(put_user(cap_count, pData))
@@ -728,6 +748,8 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
     APPMEM_KAM_CMD_T *pKCmd;
     UINT32 cmd_bytes;
     APPMEM_KDEVICE *pDevice;
+    AM_FUNC *pFunc;
+    
     void *rdptr;
     
 
@@ -760,6 +782,11 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
         if(pDevice)
         {
             AM_DEBUGPRINT("Appmemd : minor=%d pDevice=%p\n", pDevice->minor, pDevice);
+            pFunc = pDevice->pFunc;
+            if(NULL == pFunc)
+            {
+                return -ENOTTY; 
+            }
         }    
         else
         {
@@ -797,12 +824,12 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                         if(0x1 & pKCmd->cmd.common.op)
                         {
                         
-                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, (void *)pKCmd->cmd.aligned.data);
+                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pFunc, &pKCmd->cmd.aligned.offset, (void *)pKCmd->cmd.aligned.data);
                         }
                         else
                         {
 
-                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.aligned.offset, &pKCmd->cmd.aligned.data);
+                            return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pFunc, &pKCmd->cmd.aligned.offset, &pKCmd->cmd.aligned.data);
                         }
 
                     }
@@ -816,7 +843,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
 
                             if(cmd_bytes >= (pDevice->rd_pack_size))
                             {
-                                rdptr = (void *)(*(UINT64 *)&pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
+                                rdptr = (void *)(*(UINT64 *)&pKCmd->cmd.packet.data[pFunc->crResp.pack_DataOffset]);
 #if 0
                                 
                                 AM_DEBUGPRINT("Valid PACKET READ cmd_bytes=%d rd_pack_size =%d RDPTR=%p Rp0=0x%08x Rp1=0x%08x\n", 
@@ -824,7 +851,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset],
                                 pKCmd->cmd.packet.data[pDevice->pack_DataOffset + 1]);
 #endif
-                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], rdptr);
+                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pFunc, &pKCmd->cmd.packet.data[0], rdptr);
                             }
                             else
                             {
@@ -843,7 +870,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                             {
                                 
 //                                printk("Valid PACKET WRITE cmd_bytes=%d wr_pack_size =%d\n", cmd_bytes , pDevice->wr_pack_size);
-                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pDevice, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
+                                return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].align(pFunc, &pKCmd->cmd.packet.data[0], &pKCmd->cmd.packet.data[pDevice->pack_DataOffset]);
                             }
                             else
                             {
@@ -861,7 +888,7 @@ int appmemd_ioctl(struct inode *inode, struct file *filp,
                     {
                         printk("Appmemd : config\n");
 
-                        return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config(pDevice, pKCmd);
+                        return pDevice->pfnOps[AM_OPCODE(pKCmd->cmd.common.op)].config(pFunc, pKCmd);
                     }
                 }
                 else
@@ -914,7 +941,7 @@ static int __init appmemd_init(void)
         if(i)
         {
             /* Advertise that we can access through MMAP */
-            virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
+//            virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
         }
     }
 
@@ -953,6 +980,10 @@ static int __init appmemd_init(void)
 
             pAMKDevices->pfnOps = kmalloc((sizeof(am_cmd_fn) * AM_OP_MAX_OPS), GFP_KERNEL);
 
+            pAMKDevices->pFunc = kmalloc(sizeof(AM_FUNC), GFP_KERNEL);
+
+            pAMKDevices->pFunc->amType = AM_TYPE_BASE_APPMEM;
+            
             for(i = 0; i < AM_OP_MAX_OPS; i++)
             {
 
@@ -963,7 +994,7 @@ static int __init appmemd_init(void)
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)].config = (am_cmd_fn)appmem_get_capabilites;
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)].config = (am_cmd_fn)appmem_create_function;
             
-            
+            pAMKDevices->pFunc->pfnOps = pAMKDevices->pfnOps; 
 	    }
         else
         {
@@ -1019,7 +1050,7 @@ static void __exit appmemd_exit(void)
 
         if(NULL != pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config)
         {
-            pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config(pDevice, NULL);
+            pDevice->pfnOps[AM_OPCODE(AM_OP_CODE_RELEASE_FUNC)].config(pDevice->pFunc, NULL);
         }
 
         appmemd_release_device(pDevice);
@@ -1036,6 +1067,8 @@ static void __exit appmemd_exit(void)
      printk(KERN_INFO "appmemd : cdev_del %p", pAMKDevices);
 
      cdev_del(&pAMKDevices->cdev);
+
+     
 
      appmemd_release_device(pAMKDevices);
 

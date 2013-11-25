@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 
 
+AM_RETURN am_pack_process_cmd(AM_MEM_FUNCTION_T *pFunc, AM_PACK_ALL_U *pRxBuf,AM_PACK_RESP_U *pResp, UINT32 *pTxBytes);
+
 
 AM_RETURN am_set_pack_access(AM_MEM_FUNCTION_T *pFunc);
 

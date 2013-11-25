@@ -105,8 +105,8 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		return;
 	}
 
-	
 
+	
 
 	local_buf = (UINT32 *)AM_MALLOC(mem_size);
 

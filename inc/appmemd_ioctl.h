@@ -57,7 +57,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #ifdef _APPMEMD
 struct _appmem_kdevice;
-#define AM_HANDLE struct _appmem_kdevice * 
+//#define AM_HANDLE struct _appmem_kdevice *
+struct am_mem_function_t;
+#define AM_HANDLE struct am_mem_function_t *
+
 #define GET32_FROM_USER(_locaddr, _uaddr) __get_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
 #define PUT32_TO_USER(_locaddr, _uaddr) __put_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
 #define COPY_FROM_USER(_locaddr, _uaddr, _len) copy_from_user(_locaddr, _uaddr, _len)
@@ -253,7 +256,7 @@ typedef struct _appmem_kdevice
 
     AM_FN_U                *pfnOps;     
     struct _appmem_kdevice *next;
-    union am_func_data     *pVdF;  
+//    union am_func_data     *pVdF;  
     char                   am_name[64];
       
     UINT8  pack_DataOffset; /* Offset in Dwords (i.e. Pack data structure is array of DWORDS */
@@ -263,7 +266,8 @@ typedef struct _appmem_kdevice
 } APPMEM_KDEVICE;
 
 
-#define AM_HANDLE_TO_FUNCDATA(_handle) ((APPMEM_KDEVICE *)(_handle))->pFunc->pVdF
+//#define AM_HANDLE_TO_FUNCDATA(_handle) ((APPMEM_KDEVICE *)(_handle))->pFunc->pVdF
+#define AM_HANDLE_TO_FUNCDATA(_handle) ((struct am_mem_function_t *)(_handle))->pVdF
 #else
 #define AM_HANDLE_TO_FUNCDATA(_handle) ((struct am_mem_function_t *)(_handle))->pVdF
 #endif

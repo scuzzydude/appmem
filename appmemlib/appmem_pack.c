@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_stata.h"
 #include "appmem_pack.h"
 
+#ifndef _APPMEMD
 
 AM_RETURN am_pack_op_only(AM_MEM_FUNCTION_T *pFunc, UINT8 op, void *pResp, UINT32 resp_len)
 {
@@ -299,5 +300,127 @@ AM_RETURN am_set_pack_access(AM_MEM_FUNCTION_T *pFunc)
 
 }
 
+#endif
+
+
+AM_RETURN am_pack_process_cmd(AM_MEM_FUNCTION_T *pFunc, AM_PACK_ALL_U *pRxBuf,AM_PACK_RESP_U *pResp, UINT32 *pTxBytes)
+{
+    AM_RETURN error = AM_RET_GOOD;
+	AM_FN_U *opFn;
+	UINT32 op;
+    UINT32 tx_bytes;
+
+    AM_ASSERT(pRxBuf);
+    AM_ASSERT(pResp);
+    AM_ASSERT(pTxBytes);
+
+	/* Copy the wrapper to the response */
+	memcpy(&pResp->wrap, &pRxBuf->wrap, sizeof(AM_PACK_WRAPPER_T));
+
+	pResp->wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_RESP;
+
+
+	if(NULL != pFunc)
+	{
+
+		opFn = pFunc->pfnOps;	
+		op = pRxBuf->wrap.op;
+
+		AM_ASSERT(opFn);
+
+		if(NULL != opFn[op].raw)
+		{
+			switch(pRxBuf->wrap.packType)
+			{
+
+                case AM_KPACK:   /* Path is different in kernel ioctl mode */
+				case AM_PACK_ALIGN:
+				{
+					if(op & 1)
+					{
+						/* Read Align */	
+						error = opFn[op].align(pFunc, &pRxBuf->write_al.data_bytes[0], &pResp->align_resp.resp_bytes[0]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T) + pFunc->crResp.data_size; /* If there is error, it will tx_bytes will be overridden below */
+
+					}
+					else
+					{
+						/* Write Align */
+						error = opFn[op].align(pFunc, &pRxBuf->write_al.data_bytes[0], &pRxBuf->write_al.data_bytes[pFunc->crResp.idx_size]);  
+						tx_bytes = sizeof(AM_PACK_WRAPPER_T); /* If there is error, it will tx_bytes will be overridden below */
+					}
+				}
+				break;
+
+			
+				case AM_PACK_TYPE_OPCODE_ONLY:
+				{
+					error = opFn[op].op_only(pFunc, pResp, &tx_bytes);			
+				}
+				break;
+
+				
+				case AM_PACK_TYPE_FIVO:
+				{
+				
+					error = opFn[op].fivo(pFunc, 
+											&pRxBuf->fivo.data_in[0], 
+											pRxBuf->fivo.l1,
+											&pResp->align_resp.resp_bytes[0],
+											&tx_bytes);
+
+				
+				}
+				break;
+
+				case AM_PACK_ACTION:
+				{
+					tx_bytes = sizeof(AM_PACK_WRAPPER_T);
+					error = opFn[op].action(pFunc, &pRxBuf->action.data_in[0], (pRxBuf->action.wrap.size - sizeof(AM_PACK_WRAPPER_T)));
+				}
+				break;
+
+
+
+				default:
+				error = AM_RET_INVALID_PACK_OP;
+				break;
+
+			}
+		}
+		else
+		{
+			error = AM_RET_INVALID_OPCODE;
+		}
+
+
+	}
+	else
+	{
+		error = AM_RET_INVALID_FUNC;
+	}
+
+
+	if(AM_RET_GOOD != error)
+	{
+		pResp->error.wrap.packType |= AM_FUNC_PACK_TYPE_FLAG_ERR;
+		pResp->error.status = error;
+		pResp->error.wrap.size = sizeof(AM_PACK_RESP_ERR);
+		tx_bytes = sizeof(AM_PACK_RESP_ERR);
+		AM_DEBUGPRINT("am_pack_process_cmd : pack_type=%04x size = %d\n", pResp->error.wrap.packType, pResp->error.wrap.size); 
+
+
+	}
+	else
+	{
+		pResp->wrap.size = tx_bytes;
+	}
+
+
+    *pTxBytes = tx_bytes;
+
+    return error;
+
+}
 
 
