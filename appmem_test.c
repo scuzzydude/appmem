@@ -33,8 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE 1024 
-#define DEFAULT_RANDOM_OPS 1000 
+#define DEFAULT_MEM_SIZE (1024 * 1024) 
+#define DEFAULT_RANDOM_OPS (100 * 100)
+#define APPMEMCPP_ONLY	
 
 //#define DEFAULT_MEM_SIZE 16 
 //#define DEFAULT_RANDOM_OPS 10
@@ -577,7 +578,7 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		    count = 0;
 		    while(AM_RET_GOOD == amAA.fn->iter(&amAA, &ikey[0], key_size, &ival, sizeof(UINT32), &iter_handle))
 		    {
-			    printf("ITER(%d) KEY=%s VAL=%d\n", count, ikey, ival);
+//			    printf("ITER(%d) KEY=%s VAL=%d\n", count, ikey, ival);
 			    count++;
 
 		    }
@@ -745,7 +746,7 @@ int main(int argc, char **argv)
 
 	amEntry.close(&amEntry);
 #endif
-//	am_cpp_test(driver_name, test);
+	am_cpp_test(driver_name, test);
 
 	return 0;
 }

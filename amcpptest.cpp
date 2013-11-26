@@ -12,14 +12,16 @@ char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size);
 double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2);
 
 }
-#define USE_OPERATORS 1
+#define USE_OPERATORS 0
 
 
 int am_cpp_flat_mem_test(char *am_name)
 {
-	UINT32 random_ops = 10000000;
+//	UINT32 random_ops = 10000000;
+	UINT32 random_ops = 10;
 	UINT32 i;
-	UINT32 mem_size = 1024 * 1024;
+//	UINT32 mem_size = 1024 * 1024;
+	UINT32 mem_size = 16;
 	INIT_OS_HR_TIMER(0);
 	UINT32 *ptr32;
 	UINT32 *pBase;
@@ -271,7 +273,7 @@ int am_cpp_assca_test(char *am_name)
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 10000000;
+	UINT32 random_ops = 1000;
 	UINT32 idx;
 	UINT32 val;
 	
@@ -342,6 +344,31 @@ int am_cpp_assca_test(char *am_name)
 	printf("(APPMEMCPP) Local Assc Array Read %d ops ELAP = %f\n", random_ops, elap1);
 
 
+	OS_HR_TIMER_START();
+	for(i = 0; i < random_ops; i++)
+	{
+		idx = rand() % key_count;		
+		pK = pKeys[idx];
+
+		if(AM_RET_GOOD == amAssca.get(pK, (void *)&val))
+		{
+			if(val != idx)
+			{
+				printf("ERROR Key VAL MISMATCH  %d=%d\n", val, idx);
+				break;
+			
+			}
+		}
+		else
+		{
+			printf("ERROR Key not found =%s\n", pK);
+			break;
+		}
+
+	}
+	OS_HR_TIMER_STOP();
+	elap2 = OS_HR_TIMER_GET_ELAP();
+	printf("(APPMEMCPP) %s Assc Array Read %d ops ELAP = %f\n", amAssca.driverName(), random_ops, elap2);
 
 
 

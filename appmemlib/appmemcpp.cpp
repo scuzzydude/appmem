@@ -138,7 +138,12 @@ void CAppMem::initBase(char *am_name, UINT32 amType)
 								{
 									if(AM_RET_GOOD == amEntry.create_function(&amEntry, &configCap, &amFunc))
 									{
-										bReady = true;
+										if(AM_RET_GOOD == amFunc.fn->open(&amFunc))
+										{
+
+											bReady = true;
+										}
+	
 									}
 								}
 							
@@ -202,6 +207,8 @@ AM_RETURN CAppMemFlat::configCaps(AM_MEM_CAP_T *pCap)
 
 AM_RETURN CAppMemFlat::write32(UINT32 offset, UINT32 val)
 {
+	AM_DEBUGPRINT("CAppMemFlat::write32 address_size =%d\n", address_size);
+	
 	if(sizeof(UINT32) == address_size)
 	{
 		return pCalls->write_al(&amFunc, &offset, &val); 
@@ -216,6 +223,8 @@ AM_RETURN CAppMemFlat::write32(UINT32 offset, UINT32 val)
 
 AM_RETURN CAppMemFlat::read32(UINT32 offset, UINT32 *pVal)
 {
+	AM_DEBUGPRINT("CAppMemFlat::read32 address_size =%d\n", address_size);
+	
 	if(sizeof(UINT32) == address_size)
 	{
 		return pCalls->read_al(&amFunc, &offset, pVal);	
@@ -229,13 +238,16 @@ AM_RETURN CAppMemFlat::read32(UINT32 offset, UINT32 *pVal)
 }
 
 /*
-A big challenging to directly use the [] = X mutator 
+A bit challenging to directly use the [] = X mutator 
 We'd have to provide caller scratch are to write the value to as well as cache 
 The index/key.   Then on any read/write operation, we'd have to flush out the scratch to appmem */
+/* In MMAP case it could work */
 /* This would be additional checks on the every read/write to see if scratch has valid data */
 /* And would require locks on client */
 /* TODO: Review later, for now [] operator are lookup only */
+
 /*
+
 UINT32& CAppMemFlat::operator[] (unsigned int idx) const
 {
 
@@ -401,7 +413,19 @@ AM_RETURN CAppMemAsscArray::insert(void *pKey, void *pVal)
 	}
 
 }
+
 AM_RETURN CAppMemAsscArray::get(void *pKey, void *pVal)
 {
-	return AM_RET_GOOD;
+	if(bFixedKey && bFixedData)
+	{
+		return pCalls->read_al(&amFunc, pKey, pVal);
+	}
+	else
+	{
+		/* TODO -- handlers for non fixed */
+		/* Actually, better ways to handle than to check config everytime */
+		/* Inherit different insert()/get() based on constructor */
+		
+		return AM_RET_PARAM_ERR;
+	}
 }

@@ -364,6 +364,7 @@ AM_NET_PACK_TRANSACTION *am_kpack_get_free_req(AM_MEM_FUNCTION_T *pFunc)
 
 AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTION *pIop, UINT32 tx_size, UINT32 timeOutMs)
 {
+    AM_RETURN error = AM_RET_GOOD;
     int wait_count = 0;
     DEVICE_MMAP *pMapDevice;
 
@@ -372,7 +373,7 @@ AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTI
 
     pMapDevice = pFunc->fmap.pMMap;
 
-    AM_DEBUGPRINT("am_kpack_send_and_wait tx_size=%d\n", tx_size);
+    AM_DEBUGPRINT("am_kpack_send_and_wait tx_size=%d op=0x%04x\n", tx_size, pIop->pTx->wrap.op);
 
     /* Increment the PI */
     pFunc->fmap.uPI++;
@@ -387,11 +388,17 @@ AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTI
         AM_DEBUGPRINT("am_kpack_send_and_wait(%d) %08x:%08x\n", pMapDevice->mapCi, pFunc->fmap.uPI);
     //    AM_SLEEP(1);
     }
-    //TODO: Check ERROR flag and return status if set 
+
+	if(AM_FUNC_PACK_TYPE_FLAG_ERR & pIop->pRx->error.wrap.packType) 
+	{
+	    error = pIop->pRx->error.status;
+        printf("am_kpack_send_and_wait ERROR=%d\n", error);
+
+	}
 
     pIop->resp_bytes = pMapDevice->mapRx.wrap.size;
 
-	return AM_RET_GOOD;
+	return error;
 }
 
 
