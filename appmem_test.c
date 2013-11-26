@@ -33,9 +33,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_test_os.h"
 #include "am_assca.h"
 
-#define DEFAULT_MEM_SIZE (1024 * 1024) 
-#define DEFAULT_RANDOM_OPS (100 * 100)
 #define APPMEMCPP_ONLY	
+
+UINT32 gTestMemSize = 1024;
+UINT32 gTestRandomOps = 1000;
+
 
 //#define DEFAULT_MEM_SIZE 16 
 //#define DEFAULT_RANDOM_OPS 10
@@ -68,14 +70,14 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	AM_MEM_CAP_T aCap;
 	void *func_buf;
 	AM_MEM_FUNCTION_T amFmf;
-	UINT32 mem_size = DEFAULT_MEM_SIZE;
+	UINT32 mem_size = gTestMemSize;
 	UINT32 i;
 	UINT32 val;
 	UINT32 *ptr32;
 	UINT32 *local_buf;
 	double elap1, elap2;
 	INIT_OS_HR_TIMER(0);
-	UINT32 random_ops = DEFAULT_RANDOM_OPS;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 rval;
 	UINT32 addr;
 	
@@ -219,7 +221,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
-	UINT32 array_size = DEFAULT_MEM_SIZE;
+	UINT32 array_size = gTestMemSize;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -228,7 +230,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = DEFAULT_RANDOM_OPS;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
 	AM_SORT_PARAM_U sortP;
@@ -416,14 +418,14 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
 	char **pKeys = NULL;
-	UINT32 key_count = DEFAULT_MEM_SIZE;
+	UINT32 key_count = gTestMemSize;
 	UINT32 key_size = 32;
 	char *pK;
 	UINT32 i;
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = DEFAULT_RANDOM_OPS;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 idx;
 	UINT32 val;
 	UINT32 iter_handle;
