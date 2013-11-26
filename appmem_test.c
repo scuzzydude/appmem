@@ -666,13 +666,28 @@ int main(int argc, char **argv)
 	char pbuff[256];
 	AMLIB_ENTRY_T	amEntry;
 
-	printf("SIZEOF UINT64 = %d\n", sizeof(UINT64));
-	printf("SIZEOF UINT32 = %d\n", sizeof(UINT32));
-	printf("SIZEOF UINT16 = %d\n", sizeof(UINT16));
-	printf("SIZEOF UINT8 = %d\n", sizeof(UINT8));
-	printf("SIZEOF size_t = %d\n", sizeof(size_t));
-	printf("SIZEOF void * = %d\n", sizeof(void *));
-	printf("ARGC = %d\n", argc);
+
+
+	if(argc <= 1)
+	{
+		printf("appmemtest <appmemdevice> <amType> <test elements> <random ops> <C/C++/Both>\n");
+		printf("\n");
+		
+		printf("<appmemdevice>\n"); 
+		printf("virtd             - Userspace Library Emulation\n");
+		printf("/dev/appmem       - Kernel Driver Emulation\n");
+		printf("xxx.xxx.xxx.xxx   - IP of an am_targ\n");
+		printf("\n");
+		
+		printf("<amType>\n");
+		printf("1                 - Flat Memory\n");
+		printf("2                 - Static Array\n");
+		printf("3                 - Associative Array [DEFAULT]\n");
+		printf("\n");
+
+		
+		return 0;
+	}
 
 	if(argc > 1)
 	{
@@ -683,14 +698,21 @@ int main(int argc, char **argv)
             driver_name = NULL;
         }
 	}
-
 	if(argc > 2)
 	{
 		test = strtol(argv[2], NULL, 10);
 	}
 	printf("App Mem Test Type %d\n", test);
 
-	
+
+	AM_DEBUGPRINT("SIZEOF UINT64 = %d\n", sizeof(UINT64));
+	AM_DEBUGPRINT("SIZEOF UINT32 = %d\n", sizeof(UINT32));
+	AM_DEBUGPRINT("SIZEOF UINT16 = %d\n", sizeof(UINT16));
+	AM_DEBUGPRINT("SIZEOF UINT8 = %d\n", sizeof(UINT8));
+	AM_DEBUGPRINT("SIZEOF size_t = %d\n", sizeof(size_t));
+	AM_DEBUGPRINT("SIZEOF void * = %d\n", sizeof(void *));
+	AM_DEBUGPRINT("ARGC = %d\n", argc);
+
 	if(driver_name)
 	{
 		printf("APP_MEM DRIVER = %s\n", driver_name);
