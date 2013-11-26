@@ -330,7 +330,7 @@ AM_RETURN am_stata_read_idx32(AM_FUNC *pFunc, void *p1, void *p2)
     UINT32 *ptr = &((UINT32 *)fd->stata.data)[idx];    
 
 
-	PUT32_TO_USER(ptr, p2);
+	PUT32_TO_USER(fd, ptr, p2);
     
 
 	return AM_RET_GOOD;
@@ -342,7 +342,7 @@ AM_RETURN am_stata_write_idx32(AM_FUNC *pFunc, void *p1, void *p2)
 	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	UINT32 *ptr = &((UINT32 *)fd->stata.data)[idx];
 
-	GET32_FROM_USER(ptr, p2);
+	GET32_FROM_USER(fd, ptr, p2);
 
 
 	return AM_RET_GOOD;

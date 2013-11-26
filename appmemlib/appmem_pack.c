@@ -107,6 +107,8 @@ AM_RETURN am_pack_read_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	pIop->pTx->op.wrap.packType = AM_PACK_ALIGN; 
 	pIop->pTx->op.wrap.size = tx_size;
 	pIop->pTx->op.wrap.op = AM_OP_READ_ALIGN;
+
+    AM_DEBUGPRINT("PACK_READ align offset = 0x%08x\n", *(UINT32 *)p1);
 	
 	memcpy(&pIop->pTx->write_al.data_bytes[0], p1, pFunc->crResp.idx_size);
 
@@ -147,6 +149,9 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 	pIop->pTx->op.wrap.size = tx_size;
 	pIop->pTx->op.wrap.op = AM_OP_READ_ALIGN;
 	
+
+    AM_DEBUGPRINT("PACK_READ32 align offset = 0x%08x\n", *(UINT32 *)p1);
+    
 	*(UINT32 *)&pIop->pTx->write_al.data_bytes[0] = *(UINT32 *)p1;
 
 	error = pFunc->pkAc.send_and_wait(pFunc, pIop, tx_size, 5000);
@@ -156,8 +161,19 @@ AM_RETURN am_pack_read32_align(AM_MEM_FUNCTION_T *pFunc, void * p1, void *p2)
 		if((NULL != pIop->pRx) && (pIop->resp_bytes >= (tx_size))) /* tx_size and resp size same on 32bit aligned */
 		{
 			*(UINT32 *)p2 = *(UINT32 *) &pIop->pRx->align_resp.resp_bytes[0];
+            AM_DEBUGPRINT("PACK_READ32 DATA =%08x \n", *(UINT32 *)&pIop->pRx->align_resp.resp_bytes[0]);
+		}
+		else
+		{
+		    error = AM_RET_IO_UNDERRUN;
+            AM_DEBUGPRINT("PACK_READ32 error = %d pRx=%p resp_bytes=%d tx_size=%d\n", error, pIop->pRx, pIop->resp_bytes, tx_size);
 		}
 	
+	}
+	else
+	{
+        AM_DEBUGPRINT("PACK_READ32 error = 0x%08x\n", error);
+    
 	}
 
 

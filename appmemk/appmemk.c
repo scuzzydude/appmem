@@ -159,7 +159,9 @@ int appmemd_map_thread(void *pvDevice)
     printk("appmemd_map_thread(%d) SYNCED  pi=%08x ci=%08x\n", count, pMapDevice->mapPi, pMapDevice->mapCi);
  
     pMapDevice->mapState = AM_MAP_STATE_SYNCED;
-
+    pFunc->pVdF->common.flags |= AM_FUNC_DATA_FLAG_MMAPPED;
+    
+                                                   
     while(pDevice->map.isMapped)
     {
         count++;
@@ -167,21 +169,26 @@ int appmemd_map_thread(void *pvDevice)
         {
             if(0 == (count % 10000))
             {
-                printk("appmemd_map_thread %s = %d NO CHANGE\n", pDevice->am_name, count);
+                AM_DEBUGPRINT("appmemd_map_thread %s = %d NO CHANGE\n", pDevice->am_name, count);
+                schedule();
             }
-            schedule();
             
         }
         else
         {
-            printk("appmemd_map_thread COMMAND RCV %s = PI=0x%08x\n", pDevice->am_name, pMapDevice->mapPi);
+            AM_DEBUGPRINT("appmemd_map_thread COMMAND RCV %s = PI=0x%08x\n", pDevice->am_name, pMapDevice->mapPi);
 
 
-//            am_pack_process_cmd(pFunc, &pMapDevice->mapTx, &pMapDevice->mapRx, &tx_bytes);
+            am_pack_process_cmd(pFunc, &pMapDevice->mapTx, &pMapDevice->mapRx, &tx_bytes);
+
+            AM_DEBUGPRINT("appmemd_map_thread COMMAND RESP data[4]=%08x TX_BYTES=%d\n", *(UINT32 *)&pMapDevice->mapRx.align_resp.resp_bytes[0], tx_bytes);
 
 
+            /* Set the CI - Client is waiting */
+            pMapDevice->mapCi = pMapDevice->mapPi;
+            count = 0;
 
-            break;//temp
+
         }
 
     }
@@ -940,8 +947,8 @@ static int __init appmemd_init(void)
     {
         if(i)
         {
-            /* Advertise that we can access through MMAP */
-//            virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
+          /* Advertise that we can access through MMAP */
+           virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
         }
     }
 

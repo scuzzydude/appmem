@@ -271,6 +271,9 @@ AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_ME
 			printf("CREATE FUNCTION GOOD = %d\n", 0);
 			printf("CR RESP name=%s devt=%d\n", pFunc->crResp.am_name, pFunc->crResp.devt);
 
+
+            printf("CR_RESP DATA_SIZE=%d IDX_SIZE=%d\n", pFunc->crResp.data_size,pFunc->crResp.idx_size);
+		
 		
 			pFunc->handle = -1; //closed
 			
@@ -369,11 +372,11 @@ AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTI
 
     pMapDevice = pFunc->fmap.pMMap;
 
-    printf("am_kpack_send_and_wait tx_size=%d\n", tx_size);
+    AM_DEBUGPRINT("am_kpack_send_and_wait tx_size=%d\n", tx_size);
 
     /* Increment the PI */
     pFunc->fmap.uPI++;
-    
+   
     /* Write the PI */
     pMapDevice->mapPi = pFunc->fmap.uPI;
 
@@ -381,9 +384,12 @@ AM_RETURN am_kpack_send_and_wait(AM_MEM_FUNCTION_T *pFunc, AM_NET_PACK_TRANSACTI
     {
         wait_count++;
             
-        printf("am_kpack_send_and_wait(%d) %08x:%08x\n", pMapDevice->mapCi, pFunc->fmap.uPI);
-        AM_SLEEP(1);
+        AM_DEBUGPRINT("am_kpack_send_and_wait(%d) %08x:%08x\n", pMapDevice->mapCi, pFunc->fmap.uPI);
+    //    AM_SLEEP(1);
     }
+    //TODO: Check ERROR flag and return status if set 
+
+    pIop->resp_bytes = pMapDevice->mapRx.wrap.size;
 
 	return AM_RET_GOOD;
 }

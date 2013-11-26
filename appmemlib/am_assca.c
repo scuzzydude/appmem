@@ -69,7 +69,7 @@ AM_RETURN amlib_assca_get_key_val(AMLIB_ASSCA *pAA, void *pKey, void *pData)
 
     if(pAI)
 	{
-        COPY_TO_USER(pData, pAI->data, pAA->data_len);
+        COPY_TO_USER(pAA->fd, pData, pAI->data, pAA->data_len);
 		
 		return AM_RET_GOOD;
 	}
@@ -244,8 +244,8 @@ AM_RETURN am_assca_iter(AM_FUNC *pFunc, void * p1, UINT64 l1, void *p2, UINT64 l
 
 				pAA->pIterArray[GET_ITER_IDX(local_iter)] = (AMLIB_ASSCA_ITEM *)pAI->hh.next;
 
-				COPY_TO_USER(p1, pAI->key, (UINT32)l1);
-				COPY_TO_USER(p2, pAI->data, (UINT32)l2);
+				COPY_TO_USER(fd, p1, pAI->key, (UINT32)l1);
+				COPY_TO_USER(fd, p2, pAI->data, (UINT32)l2);
 			}
 			else
 			{
@@ -371,6 +371,8 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			pVdF->assca.size = pCap->maxSize;
 			pVdF->assca.cur_count = 0;
 			pVdF->assca.data = (void *)pAA;
+            pAA->fd = pVdF;
+            
 			AM_DEBUGPRINT( "am_create_assca_device: pAA=%p\n", pAA);
 
 			pFunc->crResp.data_size = data_size;

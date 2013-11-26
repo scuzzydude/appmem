@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEFAULT_MEM_SIZE 1024 
 #define DEFAULT_RANDOM_OPS 1000 
 
+//#define DEFAULT_MEM_SIZE 16 
+//#define DEFAULT_RANDOM_OPS 10
 
 #ifndef _WIN32
 double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2)
@@ -187,7 +189,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 		
 		if(val != addr)
 		{
-			printf("Miscompare address %p val=0x%08x base=%p offset=0x%08x\n", ptr32, val, local_buf, addr);
+			printf("(appmem) Miscompare address %p val=0x%08x base=%p offset=0x%08x\n", ptr32, val, local_buf, addr);
 			break;
 
 		}
@@ -216,9 +218,7 @@ void am_test_flat_mem(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 {
 	AM_MEM_CAP_T aCap;
-//	UINT32 array_size = 1024 * 1024;
-	UINT32 array_size = 1024;
-//	UINT32 array_size = 128;
+	UINT32 array_size = DEFAULT_MEM_SIZE;
 	UINT32 data_size = 4;
 	AM_MEM_FUNCTION_T amFa;
 	AM_FUNC_CALLS_T *aCalls;
@@ -227,7 +227,7 @@ void am_test_static_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	UINT32 temp;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 1000;
+	UINT32 random_ops = DEFAULT_RANDOM_OPS;
 	UINT32 rval, val, idx;
 	UINT32 running_val = 0;
 	AM_SORT_PARAM_U sortP;

@@ -27,7 +27,7 @@ typedef struct _amlib_assca
 	UINT8  bFixedKey;
 	UINT8  bFixedData;
 	AMLIB_ASSCA_ITEM *pIterArray[MAX_ASSCA_ITERS];
-
+    AM_FUNC_DATA_U * fd;
 	AMLIB_ASSCA_ITEM *head;
 } AMLIB_ASSCA;
 

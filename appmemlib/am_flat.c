@@ -81,8 +81,10 @@ AM_RETURN am_flat_read32_align(AM_FUNC *pFunc, void * p1, void *p2)
 	AM_FUNC_DATA_U * fd = pFunc->pVdF;
 	UINT32 offset = *(UINT32 *) p1;
 
-	PUT32_TO_USER(((UINT64)fd->flat.data + (UINT64)offset), p2);
-
+	PUT32_TO_USER(fd, ((UINT64)fd->flat.data + (UINT64)offset), p2);
+#ifdef _APPMEMD
+    printk("Type=%08x Read32 offset = 0x%08x data 0x%08x\n", fd->common.flags, offset, *(UINT32 *)((UINT64)fd->flat.data + (UINT64)offset));
+#endif
 	return AM_RET_GOOD;
 
 }
@@ -95,7 +97,11 @@ AM_RETURN am_flat_write32_align(AM_FUNC *pFunc, void * p1, void *p2)
 	UINT32 offset = *(UINT32 *) p1;
 	UINT32 *ptr = (UINT32 *)((UINT64)fd->flat.data + (UINT64)offset);
 
-	GET32_FROM_USER(ptr, p2);
+	GET32_FROM_USER(fd, ptr, p2);
+
+#ifdef _APPMEMD
+    printk("Type=%08x Write32 offset = 0x%08x data 0x%08x\n", fd->common.flags, offset, *(UINT32 *)p2);
+#endif
 
 	return AM_RET_GOOD;
 }
@@ -172,7 +178,7 @@ AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 			pFunc->crResp.acOps[ACOP_WRITE] = (AM_PACK_ALIGN << 16) | AM_OP_WRITE_ALIGN;
 			pFunc->crResp.acOps[ACOP_READ] =  (AM_PACK_ALIGN << 16) | AM_OP_READ_ALIGN;
 #endif
-
+            pFunc->crResp.idx_size = pVdF->flat.add_size;
 			pFunc->crResp.data_size = pVdF->flat.add_size;
 			pFunc->crResp.pack_DataOffset = pVdF->flat.add_size;
 			

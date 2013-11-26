@@ -18,7 +18,7 @@ ifneq ($(KERNELRELEASE),)
 
 obj-m += appmem.o
 appmem-objs := appmemk.o ../appmemlib/am_flat.o ../appmemlib/am_stata.o ../appmemlib/am_assca.o  am_k_sock.o \
-#   ../appmemlib/appmem_pack.o
+   ../appmemlib/appmem_pack.o
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build

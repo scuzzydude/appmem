@@ -146,26 +146,33 @@ typedef struct _am_func_calls
 } AM_FUNC_CALLS_T;
 
 
+
+#define AM_FUNC_DATA_FLAG_MMAPPED 0x00000001
+
 /* PRIVATE */
 typedef union am_func_data
 {
 	struct
 	{
 		void *data;
-		UINT64 size;
+        UINT32 flags;
+		UINT32 size;
+        
 	} common;
 	struct
 	{
 		void *data;
-		UINT64 size;
+        UINT32 flags;
+		UINT32 size;
 		UINT32 add_size;
 
 	} flat;
 	struct
 	{
 		void *data;
-		UINT64 size;
-		UINT64 array_size;
+        UINT32 flags;
+		UINT32 size;
+		UINT32 array_size;
 	    UINT32 idx_size;
 		UINT32 data_size;
 
@@ -173,8 +180,9 @@ typedef union am_func_data
 	struct
 	{
 		void *data;
-		UINT64 size;
-		UINT64 cur_count;
+        UINT32 flags;
+		UINT32 size;
+		UINT32 cur_count;
 	} assca;
 
 

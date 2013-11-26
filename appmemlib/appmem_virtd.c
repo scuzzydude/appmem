@@ -108,12 +108,15 @@ AM_RETURN am_virtd_init_assca(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_
 
 		pAA = amlib_assca_init(key_size, data_size, bFixedKey, bFixedData, flags);
 
-		if(pAA)
+        if(pAA)
 		{
 			pVdF->assca.size = pCap->maxSize;
 			pVdF->assca.cur_count = 0;
 			pVdF->flat.data = (void *)pAA;
-	
+	        pAA->fd = pVdF;    
+
+		    AM_ASSERT(pVdF);
+		    
 			fn_array->release = am_assca_release;
 			fn_array->open = am_virtd_open;
 			fn_array->close = am_virtd_close;

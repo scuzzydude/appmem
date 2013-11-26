@@ -63,16 +63,51 @@ struct am_mem_function_t;
 #ifdef _APPMEMD
 struct _appmem_kdevice;
 
-#define GET32_FROM_USER(_locaddr, _uaddr) __get_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
-#define PUT32_TO_USER(_locaddr, _uaddr) __put_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr)
-#define COPY_FROM_USER(_locaddr, _uaddr, _len) copy_from_user(_locaddr, _uaddr, _len)
-#define COPY_TO_USER(_uaddr, _locaddr, _len) if(copy_to_user(_uaddr, _locaddr, _len)) 
+#define GET32_FROM_USER(_fd, _locaddr, _uaddr) do { \
+                                               if(((AM_FUNC_DATA_U *)_fd)->common.flags & AM_FUNC_DATA_FLAG_MMAPPED) \
+                                               { \
+                                                    *(UINT32 *) _locaddr = *(UINT32 *)_uaddr; \
+                                               } \
+                                               else \
+                                               { \
+                                                    __get_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr); \
+                                               }} while(0)
 
+#define PUT32_TO_USER(_fd, _locaddr, _uaddr) do { \
+                                               if(((AM_FUNC_DATA_U *)_fd)->common.flags & AM_FUNC_DATA_FLAG_MMAPPED) \
+                                               { \
+                                                    *(UINT32 *)_uaddr = *(UINT32 *)_locaddr; \
+                                               } \
+                                               else \
+                                               { \
+                                                    __put_user(*(UINT32 *)_locaddr, (UINT32 *)_uaddr); \
+                                               }} while(0)
+
+
+#define COPY_FROM_USER(_fd, _locaddr, _uaddr, _len) do { \
+                                               if(((AM_FUNC_DATA_U *)_fd)->common.flags & AM_FUNC_DATA_FLAG_MMAPPED) \
+                                               { \
+                                                    memcpy(_locaddr, _uaddr, _len);\
+                                               } \
+                                               else \
+                                               { \
+                                                    copy_from_user(_locaddr, _uaddr, _len);\
+                                               }} while(0)
+
+#define COPY_TO_USER(_fd, _uaddr, _locaddr, _len) do { \
+                                               if(((AM_FUNC_DATA_U *)_fd)->common.flags & AM_FUNC_DATA_FLAG_MMAPPED) \
+                                               { \
+                                                    memcpy(_uaddr, _locaddr, _len);\
+                                               } \
+                                               else \
+                                               { \
+                                                    if(copy_from_user(_locaddr, _uaddr, _len)){};\
+                                               }} while(0)
 #else
-#define GET32_FROM_USER(_locaddr, _uaddr) 	*(UINT32 *) _locaddr = *(UINT32 *)_uaddr
-#define PUT32_TO_USER(_locaddr, _uaddr) *(UINT32 *)_uaddr = *(UINT32 *)_locaddr
-#define COPY_FROM_USER(_locaddr, _uaddr, _len) memcpy(_locaddr, _uaddr, _len)
-#define COPY_TO_USER(_uaddr, _locaddr, _len) memcpy(_uaddr, _locaddr, _len)
+#define GET32_FROM_USER(_fd, _locaddr, _uaddr) 	*(UINT32 *) _locaddr = *(UINT32 *)_uaddr
+#define PUT32_TO_USER(_fd, _locaddr, _uaddr) *(UINT32 *)_uaddr = *(UINT32 *)_locaddr
+#define COPY_FROM_USER(_fd, _locaddr, _uaddr, _len) memcpy(_locaddr, _uaddr, _len)
+#define COPY_TO_USER(_fd, _uaddr, _locaddr, _len) memcpy(_uaddr, _locaddr, _len)
 
 #endif
 
