@@ -34,9 +34,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_assca.h"
 
 #define APPMEMCPP_ONLY	
+#define TEST_LANG_C      0x1
+#define TEST_LANG_CPP    0x2
+
 
 UINT32 gTestMemSize = 1024;
 UINT32 gTestRandomOps = 1000;
+UINT32 gTestLang = TEST_LANG_C | TEST_LANG_CPP;
 
 
 //#define DEFAULT_MEM_SIZE 16 
@@ -685,7 +689,28 @@ int main(int argc, char **argv)
 		printf("3                 - Associative Array [DEFAULT]\n");
 		printf("\n");
 
-		
+		printf("<test elements>\n");
+		printf("1 - xxxxx(32bit)  - Number of elements to test\n");
+		printf("                  - actual meaing is amType specific\n");
+		printf("                  - For example, in Flat Memory, this in number of bytes\n");
+		printf("                  - Static Array, this in number of elements\n");
+		printf("1024 [DEFAULT]    - Associative Array, this in number of keys\n");
+		printf("\n");
+
+		printf("<random ops>\n");
+		printf("1 - xxxxx(32bit)  - Number of randon read operations\n");
+		printf("1000 [DEFAULT]    -\n");
+
+
+		printf("<C/C++/Both>\n");
+		printf("1                 - C Tests Only\n");
+		printf("2                 - C++ Tests Only\n");
+		printf("3                 - Both tests [DEFAULT]\n");
+		printf("\n");
+
+
+
+
 		return 0;
 	}
 
@@ -703,6 +728,41 @@ int main(int argc, char **argv)
 		test = strtol(argv[2], NULL, 10);
 	}
 	printf("App Mem Test Type %d\n", test);
+	if(argc > 3)
+	{
+		gTestMemSize = strtol(argv[3], NULL, 10);
+	}
+	printf("Test Elements = %d\n", gTestMemSize);
+
+	if(argc > 4)
+	{
+		gTestRandomOps = strtol(argv[4], NULL, 10);
+	}
+
+
+	printf("Random Operations = %d\n", gTestRandomOps);
+	if(argc > 5)
+	{
+		gTestLang = strtol(argv[5], NULL, 10);
+
+		if(gTestLang > (TEST_LANG_C | TEST_LANG_CPP))
+		{
+			gTestLang = (TEST_LANG_C | TEST_LANG_CPP);
+		}
+	
+	}
+	if(TEST_LANG_C == gTestLang)
+	{
+		printf("Test Lang : C\n");
+	}
+	else if(TEST_LANG_CPP == gTestLang)
+	{
+		printf("Test Lang : C++\n");
+	}
+	else
+	{
+		printf("Test Lang : C and C++\n");
+	}
 
 
 	AM_DEBUGPRINT("SIZEOF UINT64 = %d\n", sizeof(UINT64));
@@ -721,7 +781,11 @@ int main(int argc, char **argv)
 	{
 		printf("APP_MEM DRIVER = VIRTD\n");
 	}
-#ifndef APPMEMCPP_ONLY	
+
+#define TEST_LANG_C      0x1
+#define TEST_LANG_CPP    0x2
+	if(gTestLang & TEST_LANG_C)
+	{
 	if(am_get_entry_point(driver_name, &amEntry))
 	{
 		printf("Invalid Entry Point %s\n", driver_name);
@@ -769,8 +833,13 @@ int main(int argc, char **argv)
 	}
 
 	amEntry.close(&amEntry);
-#endif
-	am_cpp_test(driver_name, test);
+	}
 
+
+	
+	if(TEST_LANG_CPP & gTestLang)
+	{
+		am_cpp_test(driver_name, test);	
+	}
 	return 0;
 }

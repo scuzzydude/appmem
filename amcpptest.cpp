@@ -5,11 +5,14 @@
 
 #include "am_test_os.h"
 
+
 extern "C" 
 {
 #include "am_assca.h"
 char ** am_get_test_keys(char **pKeys, UINT32 key_count, UINT32 key_size);
 double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2);
+extern UINT32 gTestMemSize;
+extern UINT32 gTestRandomOps;
 
 }
 #define USE_OPERATORS 0
@@ -17,11 +20,9 @@ double get_linux_ts_elap(struct timespec *pTs1, struct timespec *pTs2);
 
 int am_cpp_flat_mem_test(char *am_name)
 {
-//	UINT32 random_ops = 10000000;
-	UINT32 random_ops = 10;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 i;
-//	UINT32 mem_size = 1024 * 1024;
-	UINT32 mem_size = 16;
+	UINT32 mem_size = gTestMemSize;
 	INIT_OS_HR_TIMER(0);
 	UINT32 *ptr32;
 	UINT32 *pBase;
@@ -139,10 +140,9 @@ int am_cpp_flat_mem_test(char *am_name)
 
 int am_cpp_stata_test(char *am_name)
 {
-	UINT32 random_ops = 1000;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 i;
-//	UINT32 elem_count = 1024 * 1024;
-	UINT32 elem_count = 1024;
+	UINT32 elem_count = gTestMemSize;
 
 	INIT_OS_HR_TIMER(0);
 //	UINT32 *ptr32;
@@ -266,14 +266,14 @@ int am_cpp_stata_test(char *am_name)
 int am_cpp_assca_test(char *am_name)
 {
 	char **pKeys = NULL;
-	UINT32 key_count = 1000;
+	UINT32 key_count = gTestMemSize;
 	UINT32 key_size = 32;
 	char *pK;
 	UINT32 i;
 	AMLIB_ASSCA *pAA;
 	INIT_OS_HR_TIMER(0);
 	double elap1, elap2;
-	UINT32 random_ops = 1000;
+	UINT32 random_ops = gTestRandomOps;
 	UINT32 idx;
 	UINT32 val;
 	
