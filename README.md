@@ -80,23 +80,30 @@ xxx.xxx.xxx.xxx   - IP of an am_targ
 *  am_targ
 This will start the am_tart net client.   It will listen and respond on UDP port 4950.  On Linux, you can run appmemtest on the same machine at 127.0.0.1.
 There is no valuable output from this program unless you enable AM_DEBUGPRINT.  <CTRL-C> To exit. 
+
 ````
 >>> cd am_targ
 >>> ./am_targ
 ````
+
 *  appmemk 
 This will install the kernel emulation of Appmem device at /dev/appmem.   THis parameter can be used to test the kernel interface with appmemtest.
 You need to be root have su rights to install the kernel module.
+
 ````
 >>> cd appmemk
 >>> su
 >>> insmod appmem.ko
 ````
+
 You can check installation and debug messages (if enabled) by using dmesg.
+
 ````
 >>> dmesg
 ````
+
 To remove the module
+
 ````
 >>> rmmod appmem
 ````
