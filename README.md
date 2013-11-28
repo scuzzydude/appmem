@@ -21,6 +21,30 @@ I’ve tested the user mode code (everything but appmemk) on
    - CentOS release 6.4 (Linux 2.6.32-358.el6.x86_64 x86_64)
    - appmem.ko doesn’t build on Raspbian yet, need to work out some makefile/kernel header stuff, I don’t believe there is any fundamental reason this won’t work.
 
+### Populate Source Tree
+````
+git clone https://github.com/scuzzydude/appmem.git
+````
+### Build
+You should have gcc and kernel mode build set up.  If not, that's beyond the scope of this README.  You can figure it out.
+````
+>>> cd appmem
+>>> make
+>>> cd am_targ
+>>> make
+>>> cd ..
+````
+That's all thats required for the User Mode.
+the appmemk kernel driver shares the appmemlib, but there are some compile time difference (malloc/kmalloc, etc..).  So right now, you have to clean to get the build right.  I'm sure this can be worked out with different kernel/user OBJ directories, but I'm a makefile idiot.   If there is a makefile wizard out there who wants to help, please do.
+
+To build the appmem.ko driver
+````
+>>> cd appmemk
+>>> make clean
+>>> make
+````
+
+
 ### Usage
 •	appmemtest
 ````
