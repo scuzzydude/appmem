@@ -9,15 +9,15 @@ The project consists of the following modules.
 *	Am_targ – very basic networked target
 
  ###  Environment.
-I’ve tested the user mode code (everything but appmemk) on :
-*x86         
--CentOS release 6.4
--Windows7  (am_net/appmemtest network localhost loopback doesn’t work)
+I’ve tested the user mode code (everything but appmemk) on 
+* x86         
+   CentOS release 6.4
+   Windows7  (am_net/appmemtest network localhost loopback doesn’t work)
 
 *ARMv61 
-- Raspbian GNU/Linux 7 (wheezy)
+   Raspbian GNU/Linux 7 (wheezy)
 
 *I’ve tested appmemk on 
--CentOS release 6.4 (Linux 2.6.32-358.el6.x86_64 x86_64)
-appmem.ko doesn’t build on Raspbian yet, need to work out some makefile/kernel header stuff, I don’t believe there is any fundamental reason this won’t work.
+   CentOS release 6.4 (Linux 2.6.32-358.el6.x86_64 x86_64)
+   appmem.ko doesn’t build on Raspbian yet, need to work out some makefile/kernel header stuff, I don’t believe there is any fundamental reason this won’t work.
 
