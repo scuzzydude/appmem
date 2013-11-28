@@ -87,8 +87,8 @@ There is no valuable output from this program unless you enable AM_DEBUGPRINT.  
 ````
 
 *  appmemk 
-This will install the kernel emulation of Appmem device at /dev/appmem.   THis parameter can be used to test the kernel interface with appmemtest.
-You need to be root have su rights to install the kernel module.
+This will install the kernel emulation of Appmem device at /dev/appmem.   This device can be used to test the kernel interface with appmemtest.
+You need to be root or have su rights to install the kernel module.
 
 ````
 >>> cd appmemk
@@ -107,3 +107,27 @@ To remove the module
 ````
 >>> rmmod appmem
 ````
+
+### What the test does
+Currently, 3 amTypes are supported: Flat Memory, Static Array, and Associative Array.
+
+The test will perform a series of Writes/Random Reads to the desired first in "native" (raw) mode - i.e. directly. 
+
+Then the test will use the selected device (virtd, /dev/appmem, or am_targ) and perform the same test.
+
+It compares the elapsed times.
+
+Depending on option choosen, it will perform the tests using the C interface and the C++ Class interface.
+ 
+It will also perform offload algorithms like array sort or Iterate an associative array.
+
+At this point, none of the options are very optimized and this is purely a test of the code concept.  
+
+THe idea is that this will be a benchmark test in the future with real devices.
+
+
+  
+
+
+
+
