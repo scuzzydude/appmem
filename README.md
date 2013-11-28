@@ -121,7 +121,7 @@ Depending on option choosen, it will perform the tests using the C interface and
  
 It will also perform offload algorithms like array sort or Iterate an associative array.
 
-At this point, none of the options are very optimized and this is purely a test of the code concept.  
+At this point, none of the options are optimized and this is purely a test of the code concept.  
 
 The idea is that this will be a benchmark test in the future with real devices.
 
@@ -146,7 +146,12 @@ Must start am_targ on the remote machine
 >>> ./appmemtest 192.168.1.221 1 100 200 1
 ````
 
-  
+### Reference
+
+
+### Author
+
+Brandon Awbrey - scuzzydude@hotmail.com   
 
 
 
