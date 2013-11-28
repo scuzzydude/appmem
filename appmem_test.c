@@ -691,14 +691,14 @@ int main(int argc, char **argv)
 
 		printf("<test elements>\n");
 		printf("1 - xxxxx(32bit)  - Number of elements to test\n");
-		printf("                  - actual meaing is amType specific\n");
+		printf("                  - actual meaning is amType specific\n");
 		printf("                  - For example, in Flat Memory, this in number of bytes\n");
 		printf("                  - Static Array, this in number of elements\n");
 		printf("1024 [DEFAULT]    - Associative Array, this in number of keys\n");
 		printf("\n");
 
 		printf("<random ops>\n");
-		printf("1 - xxxxx(32bit)  - Number of randon read operations\n");
+		printf("1 - xxxxx(32bit)  - Number of random read operations\n");
 		printf("1000 [DEFAULT]    -\n");
 
 

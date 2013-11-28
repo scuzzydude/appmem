@@ -39,16 +39,21 @@ xxx.xxx.xxx.xxx   - IP of an am_targ
 
 <test elements>
 1 - xxxxx(32bit)  - Number of elements to test
-                  - actual meaing is amType specific
+                  - actual meaning is amType specific
                   - For example, in Flat Memory, this in number of bytes
                   - Static Array, this in number of elements
 1024 [DEFAULT]    - Associative Array, this in number of keys
 
 <random ops>
-1 - xxxxx(32bit)  - Number of randon read operations
+1 - xxxxx(32bit)  - Number of random read operations
 1000 [DEFAULT]    -
 <C/C++/Both>
 1                 - C Tests Only
 2                 - C++ Tests Only
 3                 - Both tests [DEFAULT]
+````
+*  am_targ
+This will start the am_tart net client.   It will listen and respond on UDP port 4950.  On Linux, you can run appmemtest on the same machine at 127.0.0.1.
+````
+>>> am_targ
 ````
