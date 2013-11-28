@@ -123,8 +123,28 @@ It will also perform offload algorithms like array sort or Iterate an associativ
 
 At this point, none of the options are very optimized and this is purely a test of the code concept.  
 
-THe idea is that this will be a benchmark test in the future with real devices.
+The idea is that this will be a benchmark test in the future with real devices.
 
+### Examples
+
+Run The appmem Static Array virtd target 100000 writes and 5000 reads using C++ interface
+
+````
+>>> ./appmemtest virtd 2 10000 5000 2 
+````
+
+Run the Appmem Associative Array appmemk target 1000 writes and 200 reads using C interface
+
+````
+>>> ./appmemtest /dev/appmem 3 1000 200 1
+````
+
+Run the Appmem Flat Mem function on remote am_targ at IP Address 192.168.1.221,  100 writes, 200 reads using C.
+Must start am_targ on the remote machine
+ 
+```` 
+>>> ./appmemtest 192.168.1.221 1 100 200 1
+````
 
   
 
