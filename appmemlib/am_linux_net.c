@@ -208,7 +208,7 @@ AM_RETURN am_net_recv_unsol_msg(void *pTransport, void *pMsg, UINT32 len, UINT32
 	
 	if(error < 0)
 	{
-		printf("Error receiving data =%d.\n", error);
+		AM_DEBUGPRINT("No Packet Received =%d.\n", error);
 		return AM_RET_IO_ERR;
 	}
 	else

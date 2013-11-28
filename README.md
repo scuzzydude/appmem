@@ -34,8 +34,8 @@ You should have gcc and kernel mode build set up.  If not, that's beyond the sco
 >>> make
 >>> cd ..
 ````
-That's all thats required for the User Mode.
-the appmemk kernel driver shares the appmemlib, but there are some compile time difference (malloc/kmalloc, etc..).  So right now, you have to clean to get the build right.  I'm sure this can be worked out with different kernel/user OBJ directories, but I'm a makefile idiot.   If there is a makefile wizard out there who wants to help, please do.
+That's all thats required for the User Mode items.
+The appmemk kernel driver shares the appmemlib, but there are some compile time difference (malloc/kmalloc, etc..).  So right now, you have to clean to get the build right.  I'm sure this can be worked out with different kernel/user OBJ directories, but I'm a makefile idiot.   If there is a makefile wizard out there who wants to help, please do.
 
 To build the appmem.ko driver
 ````
@@ -47,8 +47,9 @@ To build the appmem.ko driver
 
 ### Usage
 •	appmemtest
+This will bring up the command line help.  (See Examples)
 ````
->>> appmemtest
+>>> ./appmemtest
 appmemtest <appmemdevice> <amType> <test elements> <random ops> <C/C++/Both>
 
 <appmemdevice>
@@ -78,7 +79,24 @@ xxx.xxx.xxx.xxx   - IP of an am_targ
 ````
 *  am_targ
 This will start the am_tart net client.   It will listen and respond on UDP port 4950.  On Linux, you can run appmemtest on the same machine at 127.0.0.1.
-
+There is no valuable output from this program unless you enable AM_DEBUGPRINT.  <CTRL-C> To exit. 
 ````
->>> am_targ
+>>> cd am_targ
+>>> ./am_targ
+````
+*  appmemk 
+This will install the kernel emulation of Appmem device at /dev/appmem.   THis parameter can be used to test the kernel interface with appmemtest.
+You need to be root have su rights to install the kernel module.
+````
+>>> cd appmemk
+>>> su
+>>> insmod appmem.ko
+````
+You can check installation and debug messages (if enabled) by using dmesg.
+````
+>>> dmesg
+````
+To remove the module
+````
+>>> rmmod appmem
 ````
