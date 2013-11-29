@@ -97,6 +97,7 @@ int main(void)
  
 
 * Driver API
+
 This is where the fun begins.   One of my contentions is that to make this work, the interconnect is irrelevant.   What is important is that the data structures and algorithms behave the same on both in both the client emulation using System RAM, and on an actual device.   This way, big data programmers can define how the device hardware should work without actually worrying about the hardware design.
 
 The reason I say interconnect is irrelevant is if we make interconnect important then the hardware designer will drive the design.  But this is APPLICATION Memory.   Big Data Application coders know what they need, not hardware designers.
