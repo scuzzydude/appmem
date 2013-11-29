@@ -29,6 +29,7 @@ For complex multi system applications, the possibilities are even more profound.
 ### Hardware design driven by programmers
 
 I’ve been pretty vague about what these devices look like – intentionally.     In the old world of hardware design, you’d have to be very specific.   Vendors would fight for years over a standard specification, and then when devices were released, additional years of engineering effort would be required to make them work with each other.    In the new world (OCP and “software defined hardware”), I think vagueness is the way to make this work, especially in the data center.
+
 1.	Appmem Memory may or may not be persistent
 The Device may be a server with a file system, or an embedded device with flash, or the client may be able to pull the data and save it.   It’s RAM – persistence may not be important.  Persistence is value add, but not core to the device’s function.
 2.	 Appmem Devices may or may not be shared.   The model we’re using is data structures application programmers use.   In the current model, these aren’t usually shared with other systems directly.   This is a value add feature.
