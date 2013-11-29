@@ -26,7 +26,7 @@ I’ve tested the user mode code (everything but appmemk) on
 git clone https://github.com/scuzzydude/appmem.git
 ````
 ### Build
-You should have gcc and kernel mode build set up.  If not, that's beyond the scope of this README.  You can figure it out.
+You should have gcc and kernel headers set up.  If not, that's beyond the scope of this README.  You can figure it out.
 ````
 >>> cd appmem
 >>> make
@@ -147,8 +147,9 @@ Must start am_targ on the remote machine
 ````
 
 ### Reference
+[Appmem Overview]
 
-[API And Implementation Notes](https://github.com/scuzzydude/appmem/blob/master/doc/API_Implementation_notes.md)
+[API and Implementation Notes](https://github.com/scuzzydude/appmem/blob/master/doc/API_Implementation_notes.md)
 
 
 ### Author

@@ -28,7 +28,7 @@ For complex multi system applications, the possibilities are even more profound.
 
 ### Hardware design driven by programmers
 
-I’ve been pretty vague about what these devices look like – intentionally.     In the old world of hardware design, you’d have to be very specific.   Vendors would fight for years over a standard specification, and then when devices were released, additional years of engineering effort would be required to make them work with each other.    In the new world (OCP and “software defined hardware”), I think vagueness is the way to make this work, especially in the data center.
+I’ve been pretty vague about what these devices look like – intentionally.     In the old world of hardware design, you’d have to be very specific.   Vendors would fight for years over a standard specification, and then when devices were released, additional years of engineering effort would be required to make them work with each other.    In the new world ([OCP](http://www.opencompute.org/) and “software defined hardware”), I think vagueness is the way to make this work, especially in the data center.
 
 1.	Appmem Memory may or may not be persistent
 The Device may be a server with a file system, or an embedded device with flash, or the client may be able to pull the data and save it.   It’s RAM – persistence may not be important.  Persistence is value add, but not core to the device’s function.
@@ -42,6 +42,6 @@ The Device may be a server with a file system, or an embedded device with flash,
 
 The key to making this work is the API.   I’ve made a first attempt at this, with my project appmemlib.   It’s a simple C/C++ interface, test program, virtual client, kernel virtual client driver, and target device.   For now, it supports Flat Memory, Static Arrays, and Associative Arrays.  I plan to add a few more basic data structures.  
 
-I’m a firmware/driver guy.  I’m not an applications programmer, and certainly not a big-data programmer.  I certainly never needed more than a few MB of RAM for anything I’ve done in user space.   So figuring out HOW to use this conceptually is the next step.   I’m looking for help from the community for this.      I’m looking for test cases and use cases that might help prove out and demo the idea.    The basic use case is applications that use large chunks of RAM temporarily, and perform operations (sorting/searching) on them that could be offloaded. 
+I’m a firmware/driver guy.  I’m not an applications programmer, and certainly not a big-data programmer.  I've never needed more than a few MB of RAM for anything I’ve done in user space.   So figuring out HOW to use this conceptually is the next step.   I’m looking for help from the community for this.      I’m looking for test cases and use cases that might help prove out and demo the idea.    The basic use case is applications that use large chunks of RAM temporarily, and perform operations (sorting/searching) on them that could be offloaded. 
 
 Just from this early work, I’ve uncovered a number of Architectural considerations.   So far nothing that is a fundamental roadblock.    RAM disaggregation requires rethinking how we use it in the system.
