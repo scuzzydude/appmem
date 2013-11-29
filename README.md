@@ -46,7 +46,7 @@ To build the appmem.ko driver
 
 
 ### Usage
-•	appmemtest
+*	appmemtest
 This will bring up the command line help.  (See Examples)
 ````
 >>> ./appmemtest

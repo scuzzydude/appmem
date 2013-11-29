@@ -156,14 +156,14 @@ typedef union am_func_data
 	{
 		void *data;
         UINT32 flags;
-		UINT32 size;
+		UINT64 size;
         
 	} common;
 	struct
 	{
 		void *data;
         UINT32 flags;
-		UINT32 size;
+		UINT64 size;
 		UINT32 add_size;
 
 	} flat;
@@ -171,8 +171,8 @@ typedef union am_func_data
 	{
 		void *data;
         UINT32 flags;
-		UINT32 size;
-		UINT32 array_size;
+		UINT64 size;
+		UINT64 array_size;
 	    UINT32 idx_size;
 		UINT32 data_size;
 
@@ -181,7 +181,7 @@ typedef union am_func_data
 	{
 		void *data;
         UINT32 flags;
-		UINT32 size;
+		UINT64 size;
 		UINT32 cur_count;
 	} assca;
 

@@ -656,13 +656,10 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 
 int main(int argc, char **argv)
 {
-//	UINT32 test = AM_TYPE_ARRAY;
 	UINT32 test = AM_TYPE_ASSOC_ARRAY;
-//	UINT32 test = AM_TYPE_FLAT_MEM;
-
 	char *driver_name = NULL;
-//	char *driver_name = "127.0.0.1";
-//	char *driver_name = "192.168.1.221";
+	//	char *driver_name = "127.0.0.1";
+	//	char *driver_name = "192.168.1.221";
 
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
@@ -676,13 +673,13 @@ int main(int argc, char **argv)
 	{
 		printf("appmemtest <appmemdevice> <amType> <test elements> <random ops> <C/C++/Both>\n");
 		printf("\n");
-		
+
 		printf("<appmemdevice>\n"); 
 		printf("virtd             - Userspace Library Emulation\n");
 		printf("/dev/appmem       - Kernel Driver Emulation\n");
 		printf("xxx.xxx.xxx.xxx   - IP of an am_targ\n");
 		printf("\n");
-		
+
 		printf("<amType>\n");
 		printf("1                 - Flat Memory\n");
 		printf("2                 - Static Array\n");
@@ -718,10 +715,10 @@ int main(int argc, char **argv)
 	{
 		driver_name = argv[1];	
 
-        if(0 == strcmp(argv[1], "virtd"))
-        {
-            driver_name = NULL;
-        }
+		if(0 == strcmp(argv[1], "virtd"))
+		{
+			driver_name = NULL;
+		}
 	}
 	if(argc > 2)
 	{
@@ -749,7 +746,7 @@ int main(int argc, char **argv)
 		{
 			gTestLang = (TEST_LANG_C | TEST_LANG_CPP);
 		}
-	
+
 	}
 	if(TEST_LANG_C == gTestLang)
 	{
@@ -782,61 +779,59 @@ int main(int argc, char **argv)
 		printf("APP_MEM DRIVER = VIRTD\n");
 	}
 
-#define TEST_LANG_C      0x1
-#define TEST_LANG_CPP    0x2
 	if(gTestLang & TEST_LANG_C)
 	{
-	if(am_get_entry_point(driver_name, &amEntry))
-	{
-		printf("Invalid Entry Point %s\n", driver_name);
-		return 0;
-	}
-
-
-	/* TEMP */
-//	driver_name = NULL;
-
-	cap_count = amEntry.get_cap_count(&amEntry);
-	
-	printf("CAP COUNT = %d \n", cap_count);
-
-	if(cap_count)
-	{
-		pAmCaps = (AM_MEM_CAP_T *)AM_MALLOC(sizeof(AM_MEM_CAP_T) * cap_count);
-
-		printf("SIZEOF CAP_BUFF ALLOC(%d) = %d\n", cap_count, sizeof(AM_MEM_CAP_T) * cap_count);
-
-		if(NULL != pAmCaps)
+		if(am_get_entry_point(driver_name, &amEntry))
 		{
-			if(AM_RET_GOOD == amEntry.get_capabilities(&amEntry, pAmCaps, cap_count))
-			{
-				//cap_count--; //TEMP
+			printf("Invalid Entry Point %s\n", driver_name);
+			return 0;
+		}
 
-				for(i = 0; i < cap_count; i++)
-				{
-					printf("---- CAP #%d\n", i);
-					am_sprintf_capability( &pAmCaps[i], (char *)pbuff, sizeof(pbuff));
-					printf("CAP #%d\n%s\n", i, pbuff);
-					
-				}
-			
-				am_test(pAmCaps, cap_count, test, &amEntry);
-			
-			}
-			else
+
+		/* TEMP */
+		//	driver_name = NULL;
+
+		cap_count = amEntry.get_cap_count(&amEntry);
+
+		printf("CAP COUNT = %d \n", cap_count);
+
+		if(cap_count)
+		{
+			pAmCaps = (AM_MEM_CAP_T *)AM_MALLOC(sizeof(AM_MEM_CAP_T) * cap_count);
+
+			printf("SIZEOF CAP_BUFF ALLOC(%d) = %d\n", cap_count, sizeof(AM_MEM_CAP_T) * cap_count);
+
+			if(NULL != pAmCaps)
 			{
-				printf("GET CAPS ERROR\n");
+				if(AM_RET_GOOD == amEntry.get_capabilities(&amEntry, pAmCaps, cap_count))
+				{
+					//cap_count--; //TEMP
+
+					for(i = 0; i < cap_count; i++)
+					{
+						printf("---- CAP #%d\n", i);
+						am_sprintf_capability( &pAmCaps[i], (char *)pbuff, sizeof(pbuff));
+						printf("CAP #%d\n%s\n", i, pbuff);
+
+					}
+
+					am_test(pAmCaps, cap_count, test, &amEntry);
+
+				}
+				else
+				{
+					printf("GET CAPS ERROR\n");
+				}
+
 			}
 
 		}
 
+		amEntry.close(&amEntry);
 	}
 
-	amEntry.close(&amEntry);
-	}
 
 
-	
 	if(TEST_LANG_CPP & gTestLang)
 	{
 		am_cpp_test(driver_name, test);	
