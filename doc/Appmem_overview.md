@@ -1,4 +1,4 @@
-<title>Appmem devices – Disaggregating RAM in the data center.</title>
+### <title>Appmem devices – Disaggregating RAM in the data center.</title>
 
 I was thinking about disaggregation in the data center a few years from now; with all the server components connected through a common fast interconnect such as Intel’s SiPho and the cool possibilities.  And then come to the realization that two of the most expensive components – CPUs and System Memory, can’t be easily disaggregated.
 ### Latency
