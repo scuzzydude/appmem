@@ -13,4 +13,8 @@ API and Implementation Notes
   - am_flat.c        : Flat Memory implementation.
   - am_stata.c       : Static Array implementation.
   - am_linux_net.c   : Linux Socket interface (and threading)
-  -  
+  - appmemlib.c      : Main generic interface to devices.
+  - appmem_kd.c      : Interface to the appmemk emulation (ioctl).
+  - appmem_net.c     : Network target interface.
+  - appmem_pack.c    : Packet interface (net and MMIO appmemk packet)
+  
