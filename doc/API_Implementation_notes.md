@@ -29,7 +29,8 @@ API and Implementation Notes
   - am_k_sock.c - Kernel mode socket driver (incomplete).
 * /inc
   - headers (need better organization here, work in progress and subject to change).
-  /inc/ut-hash
+  
+* /inc/ut-hash
   - ut-hash from http://troydhanson.github.com/uthash/, thanks to Troy Hanson for easy to use and simple hash implementation.  This by am_assca.c, and modified slightly from original to work in kernel.
   
 * /win 
