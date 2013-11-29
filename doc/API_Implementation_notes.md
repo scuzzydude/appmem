@@ -38,5 +38,13 @@ API and Implementation Notes
    
    
    
-   
+### API 
+
+* Applicaton API 
+
+It's early and subject to change.  I'm not real happy with the terminology.
+Rather than a detailed description, I'll just refer you to appmemtest.c and give a short walk through of the C++ process, which abstracts much of the complexity of the C code.
+A note on the C++ interface - I'm a firmware/driver guy, and haven't done any serious C++ coding since 1999.  So what I have might be lame.  I need to work with some real "big data" applications coders to refine this.
+ 
+  
   
