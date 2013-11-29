@@ -12,16 +12,22 @@ Appmem Devices take this a step further.   Rather than just key-value stores, Ap
 2.	Appmem Memory may or may not be shared.
 3.	Interconnect is irrelevant.
 4.	They are categorized by latency --- at the application.   Leveraging CPU cache convention: 
-•	A0 has 0-10ns latency 
-•	A1 100ns 
-•	A2 1us 
-•	A3 100us.
+   -A0 has 0-10ns latency 
+   -A1 100ns 
+   -A2 1us 
+   -A3 100us.
 5.	They share a common API and algorithm library – the same code can run on System RAM.
+
 ### Offload
+
 Appmem Devices have another benefit.  Complex routines that normally run on the CPU can be offloaded to the Appmem devices.   Inserting into an Appmem Device Tree should have the same approximate CPU cost as a memory write.   A sort of a 4GB Array that would take seconds of CPU time can be offloaded and the CPU can use those cycles for something useful.
+
 ### Interprocess and intersystem sharing
+
 For complex multi system applications, the possibilities are even more profound.   Rather than saving a 10GB Tree data structure to a file, and then handing the file to another system for further processing, the Application can just hand off the handle to the Tree, and the 2nd system can immediately begin processing.  No file or disk I/O.
+
 ### Hardware design driven by programmers
+
 I’ve been pretty vague about what these devices look like – intentionally.     In the old world of hardware design, you’d have to be very specific.   Vendors would fight for years over a standard specification, and then when devices were released, additional years of engineering effort would be required to make them work with each other.    In the new world (OCP and “software defined hardware”), I think vagueness is the way to make this work, especially in the data center.
 1.	Appmem Memory may or may not be persistent
 The Device may be a server with a file system, or an embedded device with flash, or the client may be able to pull the data and save it.   It’s RAM – persistence may not be important.  Persistence is value add, but not core to the device’s function.
