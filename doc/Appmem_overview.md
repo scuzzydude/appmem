@@ -12,10 +12,10 @@ Appmem Devices take this a step further.   Rather than just key-value stores, Ap
 2.	Appmem Memory may or may not be shared.
 3.	Interconnect is irrelevant.
 4.	They are categorized by latency --- at the application.   Leveraging CPU cache convention: 
-   -A0 has 0-10ns latency 
-   -A1 100ns 
-   -A2 1us 
-   -A3 100us.
+  - A0 has 0-10ns latency 
+  - A1 100ns 
+  - A2 1us 
+  - A3 100us.
 5.	They share a common API and algorithm library – the same code can run on System RAM.
 
 ### Offload
