@@ -17,4 +17,25 @@ API and Implementation Notes
   - appmem_kd.c      : Interface to the appmemk emulation (ioctl).
   - appmem_net.c     : Network target interface.
   - appmem_pack.c    : Packet interface (net and MMIO appmemk packet)
+  - appmem_virtd.c   : Virtual Device (user mode emulation) interface.
+  
+* /am_targ
+ Target Client software.
+  - am_target.c      : Target implementation.   Ideally, this should be a good template for any type target, but for now, it UPD packet based.
+
+* /appmemk
+ Appmem.ko Kernel Emulation Device implementation.
+  - appmemk.c - Driver entry point and command handler.  
+  - am_k_sock.c - Kernel mode socket driver (incomplete).
+* /inc
+  - headers (need better organization here, work in progress and subject to change).
+  /inc/ut-hash
+  - ut-hash from http://troydhanson.github.com/uthash/, thanks to Troy Hanson for easy to use and simple hash implementation.  This by am_assca.c, and modified slightly from original to work in kernel.
+  
+* /win 
+   helper code for Windows build.   I'm not distributing any makefiles or project files for windows, it only works with the user mode stuff, and since my primary target device will require a kernel driver, I may stop testing this at any time.  However, if anybody is interested I can tell you how I build it.
+   
+   
+   
+   
   
