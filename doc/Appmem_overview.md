@@ -40,7 +40,9 @@ The Device may be a server with a file system, or an embedded device with flash,
   - Programmers that develop new data structures should be able to hand over their code to Device vendors for direct customization.
   - Alternately, Vendors may have SDK where customers can integrate their custom data structures.   If the devices are Linux based, this may be as simple as compiling the library on the device itself.  
 
-The key to making this work is the API.   I’ve made a first attempt at this, with my project appmemlib.   It’s a simple C/C++ interface, test program, virtual client, kernel virtual client driver, and target device.   For now, it supports Flat Memory, Static Arrays, and Associative Arrays.  I plan to add a few more basic data structures.  
+### [Appmemlib](https://github.com/scuzzydude/appmem)
+
+The key to making this work is the API.   I’ve made a first attempt at this, with my project [Appmemlib](https://github.com/scuzzydude/appmem).   It’s a simple C/C++ interface, test program, virtual client, kernel virtual client driver, and target device.   For now, it supports Flat Memory, Static Arrays, and Associative Arrays.  I plan to add a few more basic data structures.  
 
 I’m a firmware/driver guy.  I’m not an applications programmer, and certainly not a big-data programmer.  I've never needed more than a few MB of RAM for anything I’ve done in user space.   So figuring out HOW to use this conceptually is the next step.   I’m looking for help from the community for this.      I’m looking for test cases and use cases that might help prove out and demo the idea.    The basic use case is applications that use large chunks of RAM temporarily, and perform operations (sorting/searching) on them that could be offloaded. 
 
