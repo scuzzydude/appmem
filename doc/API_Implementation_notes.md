@@ -98,7 +98,7 @@ int main(void)
 
 * Driver API
 
-This is where the fun begins.   One of my contentions is that to make this work, the interconnect is irrelevant.   What is important is that the data structures and algorithms behave the same on both in both the client emulation using System RAM, and on an actual device.   This way, big data programmers can define how the device hardware should work without actually worrying about the hardware design.
+This is where the fun begins.   One of my contentions is that to make this work, the interconnect is irrelevant.   What is important is that the data structures and algorithms behave the same in both the client emulation using System RAM and on an actual device.   This way, big data programmers can define how the device hardware should work without actually worrying about the hardware design.
 
 The reason I say interconnect is irrelevant is if we make interconnect important then the hardware designer will drive the design.  But this is APPLICATION Memory.   Big Data Application coders know what they need, not hardware designers.
 
@@ -109,6 +109,7 @@ Two methods exist in today’s code.
 -	Ioctl based (user mode pointers passed to kernel driver).
 I’m looking at some other methods and welcome discussion.  Right now the library supports only fixed size keys and data, and I haven’t tried larger data sizes, though much of the code anticipates it.  One I start looking at that, it may drive some change.
 The other issue is DMA and hardware interrupts.  Everything is emulated or network based.   I’ll need to find a suitable hardware test platform before committing to any methods.    It’s a good discussion to have, as a heavy driver burden can negate much of the benefit of device offload.
+
 
  
   
