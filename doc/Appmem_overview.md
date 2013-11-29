@@ -1,4 +1,5 @@
-Appmem devices – Disaggregating RAM in the data center.
+<b>Appmem devices – Disaggregating RAM in the data center.</b>
+
 I was thinking about disaggregation in the data center a few years from now; with all the server components connected through a common fast interconnect such as Intel’s SiPho and the cool possibilities.  And then come to the realization that two of the most expensive components – CPUs and System Memory, can’t be easily disaggregated.
 ### Latency
 The reason why is latency.   While interconnect bandwidth will continue to rise, and optical-on-chip will make high bandwidth systems easier to design, there are several factors that prevent memory latency from improving at the same rate.   Some of these are business, some are technical, but the fundamental reasons are physical.  Distance == latency on a nanosecond scale.   When we’re talking about flash with microsecond latency, adding tens of nanoseconds for the sake of system disaggregation is no big deal.   When we’re talking about System RAM (~15-20 ns of theoretical latency) every nanosecond counts.   On cache misses for code or kernel data, a multi-core CPU can stall completely.   This results in a cascade of delays. 
