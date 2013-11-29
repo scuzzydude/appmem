@@ -147,7 +147,9 @@ Must start am_targ on the remote machine
 ````
 
 ### Reference
-[Appmem Overview]
+[Appmem Overview - Slides](http://scuzzydude.github.io/appmem/Appmem_overview_slides.pdf)
+
+[Appmem Overview](https://github.com/scuzzydude/appmem/blob/master/doc/Appmem_overview.md)
 
 [API and Implementation Notes](https://github.com/scuzzydude/appmem/blob/master/doc/API_Implementation_notes.md)
 
