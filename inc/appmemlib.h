@@ -63,8 +63,8 @@ typedef unsigned char UINT8;
 
 #define AM_VER_MAJOR  0
 #define AM_VER_MINOR  1
-#define AM_VER_BUILD  1
-#define AM_VER_BUGFIX 0
+#define AM_VER_PATCH  1
+#define AM_VER_BUILD  0
 
 typedef union _am_version_u
 {
@@ -73,8 +73,8 @@ typedef union _am_version_u
 	{
 		UINT8 major;
 		UINT8 minor;
+		UINT8 patch;
 		UINT8 build;
-		UINT8 bugfix;
 
 	} version;
 

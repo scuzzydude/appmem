@@ -942,6 +942,8 @@ static int __init appmemd_init(void)
     printk(KERN_INFO "appmemd: registered");
     printk(KERN_INFO "appmemd: Linux Version Code(%08x)", LINUX_VERSION_CODE);
 
+    printk(KERN_INFO "Appmemlib Version v%d.%d.%d.%d\n", AM_VER_MAJOR, AM_VER_MINOR, AM_VER_PATCH, AM_VER_BUILD);
+
 
     for(i = 0; i < sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T); i++)
     {

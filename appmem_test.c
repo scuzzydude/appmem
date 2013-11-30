@@ -667,7 +667,8 @@ int main(int argc, char **argv)
 	char pbuff[256];
 	AMLIB_ENTRY_T	amEntry;
 
-
+    printf("Appmemlib Version v%d.%d.%d.%d\n", AM_VER_MAJOR, AM_VER_MINOR, AM_VER_PATCH, AM_VER_BUILD);
+    
 
 	if(argc <= 1)
 	{

@@ -299,8 +299,8 @@ AM_RETURN am_targ_identify_resp(AM_MEM_FUNCTION_T *pFunc, AM_PACK_RESP_U *pResp,
 	pIdResp->amType = 0xBBBB;
 	pIdResp->amVersion.version.major = AM_VER_MAJOR;
 	pIdResp->amVersion.version.minor = AM_VER_MINOR;
+	pIdResp->amVersion.version.patch = AM_VER_PATCH;
 	pIdResp->amVersion.version.build = AM_VER_BUILD;
-	pIdResp->amVersion.version.bugfix = AM_VER_BUGFIX;
 
 	*tx_bytes = sizeof(AM_PACK_RESP_IDENTIFY); 
 	
