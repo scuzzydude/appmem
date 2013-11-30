@@ -1,6 +1,6 @@
 ### Appmem 
 
-This project is a software implementation of an Appmem Device.   An appmem device is a HW device that provides applications with data structures external data structures.   See xxxx for an overview of the concept.
+This project is a software implementation of an Appmem Device.   An appmem device is a HW device that provides applications with data structures external data structures.   See [Appmem Overview](https://github.com/scuzzydude/appmem/blob/master/doc/Appmem_overview.md) or the [slides] [Appmem Overview - Slides](http://scuzzydude.github.io/appmem/Appmem_overview_slides.pdf) for an intro to the project.
  
 The project consists of the following modules.
 *  Appmemtest test utility.  Tests both C and C++ interfaces to appmemlib.
