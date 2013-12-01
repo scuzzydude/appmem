@@ -105,7 +105,7 @@ The reason I say interconnect is irrelevant is if we make interconnect important
 However, by making that contention, designing the interface to hardware is difficult.   Some devices may be packet based, some may have DMA or RDMA capability, and some may only use Memory Mapped I/O for communication.   What I’m trying to work out are methods that could interface with appmemlib , that are both abstract and lightweight.   This still needs some work.   In the end, the methods available through the exiting kernel may not be optimal.  
 
 Two methods exist in today’s code.   
--	Packet based, all data is send in packets, no pointers, no DMA (either network or through MMIO window to appmemk).
+-	Packet based, all data is sent in packets, no pointers, no DMA (either network or through MMIO window to appmemk).
 -	Ioctl based (user mode pointers passed to kernel driver).
 I’m looking at some other methods and welcome discussion.  Right now the library supports only fixed size keys and data, and I haven’t tried larger data sizes, though much of the code anticipates it.  One I start looking at that, it may drive some change.
 The other issue is DMA and hardware interrupts.  Everything is emulated or network based.   I’ll need to find a suitable hardware test platform before committing to any methods.    It’s a good discussion to have, as a heavy driver burden can negate much of the benefit of device offload.
