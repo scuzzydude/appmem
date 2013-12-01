@@ -13,8 +13,9 @@ For PCIe, we could use MMIO (Memory Mapped I/O).   This would map the Device’s i
 On the other side of the coin, we have Asynchronous I/O.   This is any file or network based I/O.   A request is made, the process goes to sleep and wakes up when the data is ready (or gets a callback).   To the programmer, this may not be apparent :  fread() will put the process to sleep and wake up when it’s done, so unless the application is multi-threaded, it might not take advantage of this.     
 
 So that’s the crux of the problem – Seems like we have two choices. 
-1.	Make Async operations look Synchronous to the application.   
-2.	Interface with synchronous data structures asynchronously. 
+
+   1.	Make Async operations look Synchronous to the application.   
+   2.	Interface with synchronous data structures asynchronously. 
   
 Of the two choices, I think #1 is the way to go.    #2 might be an option to have, but I believe the basic interface should remain synchronous.      One of the fundamental features of appmemlib is that it can use the same data structures and algorithms using either System RAM (virtd) or Device Memory.  If we make System RAM access asynchronous, we negate much of the speed of System RAM by having the overhead of context switches or callbacks, with no benefit for the application.
 
