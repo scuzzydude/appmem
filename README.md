@@ -153,6 +153,7 @@ Must start am_targ on the remote machine
 
 [API and Implementation Notes](https://github.com/scuzzydude/appmem/blob/master/doc/API_Implementation_notes.md)
 
+[Appmem Architecture Notes](https://github.com/scuzzydude/appmem/blob/master/doc/appmem_arch_notes.md)
 
 ### Author
 

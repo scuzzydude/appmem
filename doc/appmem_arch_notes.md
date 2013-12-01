@@ -1,6 +1,6 @@
 ### Appmem Architecture Notes
 
-In implementing the basic appmemlib I ran across a number of architectural considerations.  As the architecture is a work in progress, this just a free-form.
+In implementing the basic appmemlib I ran across a number of architectural considerations.  As the architecture is a work in progress, this just a free-form ramble.
 
 The idea of an Appmem Device is giving Applications a large amount of RAM through an API.   How to do this?  
 
@@ -19,7 +19,7 @@ So that’s the crux of the problem – Seems like we have two choices.
   
 Of the two choices, I think #1 is the way to go.    #2 might be an option to have, but I believe the basic interface should remain synchronous.      One of the fundamental features of appmemlib is that it can use the same data structures and algorithms using either System RAM (virtd) or Device Memory.  If we make System RAM access asynchronous, we negate much of the speed of System RAM by having the overhead of context switches or callbacks, with no benefit for the application.
 
-Disaggregating Application Memory from the CPU is an architectural change.    Forcing synchronous operation in the API will require applications to make changes to their applications that can take advantage of the asynchronous and offload properties of the devices.  For the moment, we are focused on the mega data-center – where programmers are willing to make software architectures changes for scale-out and performance advantages.    Not going spend to much time thinking about legacy software at this point. 
+Disaggregating Application Memory from the CPU is an architectural change.    Forcing synchronous operation in the API will require applications to make changes to their applications that can take advantage of the asynchronous and offload properties of the devices.  For the moment, we are focused on the mega data-center – where programmers are willing to make software architectures changes for scale-out, cost and performance advantages.    Not going spend too much time thinking about legacy software at this point. 
 
 ### C++ Containers / Appmem Devices do not return references to stored objects
 
@@ -37,10 +37,16 @@ For the user mode emulation (virtd) we can just pass pointers and key/data lengt
 
 This works for packet mode as well.  The same accessor functions take pointers to offsets in the packet.   I’ve used this method in both the network packet interface as well as the MMIO interface to kernel emulation.    This simple packet mode incurs 8 bytes of header overhead (should work up to data packets sizes of 16K, otherwise, we’ll need larger a jumbo header, but don’t have support for that yet.)
 
-In kernel mode IOCTL mode, I’ve used a similar packet model, with the user mode pointers being send in the packet.   This works find but requires user-to-kernel buffer copies before the data is processed, overhead that likely unacceptable in real world mode.  Plus, we want a native interface and not an ioctl interface.
+In kernel mode IOCTL mode, I’ve used a similar packet model, with the user mode pointers being sent in the packet.   This works find but requires user-to-kernel buffer copies before the data is processed, overhead that likely unacceptable in real world mode.  Plus, we want a native interface and not an ioctl interface.
 
 The ideal interface would pass a “packet” directly to kernel, as well as a source/target data buffer, with a callback interface for the completion back to user mode.    None of the native Linux device classes seem suitable to that.    Char/block pass an integer (offset/LBA) as key into the data in the read/write methods – we need free form “keys” into data.    Network drivers are packet based but one way – we need a method with a response that may be asynchrounous (callback).
 
 The SCSI model fits the requirement.   In SCSI, the CDB is 6-16+ bytes of “command” as well as a user data buffer that can be SGL for DMA.   There is unnecessary overhead going through the SCSI stack – and given all my kernel experience prior to this project is in the SCSI driver, seems like too easy of an answer.
 
-I think it would be relatively easy to design a new interface for the kernel that is both lightweight and can fully abstract all the possible device operations (MMIO, DMA, RDMA, interrupts, network packets).    However, users aren’t going to want to modify
+I think it would be relatively easy to design a new interface for the kernel that is both lightweight and can fully abstract all the possible device operations (MMIO, DMA, RDMA, interrupts, network packets).    However, users aren’t going to want to modify the kernel, at least until the technology is proven.
+
+This is a good discussion topic.   The first few “real” hardware devices will probably influence this decision point.
+
+### Object Storage
+
+Conceptually, Appmem Devices + Persistence is similar to Object Storage (including SCSI Object Storage (OSD)).   We don’t want to impose a standard specification what Appmem Devices can do – that power needs to remain in the hands of the application programmer.  However, it may be worth taking a look at past attempts in this area to leverage terminology and interface solutions.
