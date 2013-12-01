@@ -47,7 +47,8 @@ To build the appmem.ko driver
 
 ### Usage
 *	appmemtest
-This will bring up the command line help.  (See Examples)
+This will bring up the command line help.  (See Examples).
+
 ````
 >>> ./appmemtest
 appmemtest <appmemdevice> <amType> <test elements> <random ops> <C/C++/Both>
