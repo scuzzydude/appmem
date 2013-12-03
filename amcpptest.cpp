@@ -383,7 +383,7 @@ extern "C" int am_cpp_test(char *am_name, UINT32 test)
 	{
 		return	am_cpp_flat_mem_test(am_name);
 	}
-	else if(AM_TYPE_ARRAY == test)
+	else if(AM_TYPE_STATIC_ARRAY == test)
 	{
 		return am_cpp_stata_test(am_name);
 	}

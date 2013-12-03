@@ -59,7 +59,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 	
 	},
 	{ 
-		AM_TYPE_ARRAY,
+		AM_TYPE_STATIC_ARRAY,
 		(1024 * 1024),
 		1,                   /* subType */
 		8,

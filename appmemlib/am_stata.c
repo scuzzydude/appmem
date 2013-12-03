@@ -433,3 +433,20 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 }
 
 
+//*************************************************************************************************
+//**   Register this Device Function 
+//*************************************************************************************************
+
+static AM_FUNCTION_ENTRY stata_function_entry =
+{
+    AM_TYPE_STATIC_ARRAY,
+    am_create_stata_device
+
+};
+
+
+INITIALIZER(stata_init)
+{
+	am_register_am_function(&stata_function_entry);
+}
+

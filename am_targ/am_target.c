@@ -441,7 +441,7 @@ AM_RETURN am_targ_create_function(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1,
 	switch(pCap->amType)
 	{
 
-		case AM_TYPE_ARRAY:
+		case AM_TYPE_STATIC_ARRAY:
 		{
 			error = am_create_stata_device(pDeviceFunc, pCap);
 		}

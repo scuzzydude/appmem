@@ -504,7 +504,7 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 
 
 //*************************************************************************************************
-//**   Register this Function 
+//**   Register this Device Function 
 //*************************************************************************************************
 
 static AM_FUNCTION_ENTRY assca_function_entry =

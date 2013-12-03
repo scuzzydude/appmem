@@ -159,15 +159,24 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size)
 {
 	/* TODO : Make buff size safe */
-
 	UINT32 bytes_written = 0;
+	UINT32 sb = 0;
+	
 	if(pAmCap)
 	{
 		if(buf_size && buf)
 		{
-			bytes_written += sprintf(buf, "MEMORY TYPE = 0x%08x : %s\n", pAmCap->amType, AmCapTypeStr[pAmCap->amType]); 
-			bytes_written += sprintf(buf, "MAX_SIZE    = 0x%016llx : %d MB\n", pAmCap->maxSize, pAmCap->maxSize / (1024 * 1024));
-			bytes_written += sprintf(buf, "SUB_TYPES = = 0x%08x\n", pAmCap->subType);
+			sb  = sprintf(buf, "MEMORY TYPE = 0x%08x : %s\n", pAmCap->amType, AmCapTypeStr[pAmCap->amType]);
+			buf += sb;
+			bytes_written += sb;
+
+			sb  = sprintf(buf, "MAX_SIZE    = 0x%016llx : %d MB\n", pAmCap->maxSize, pAmCap->maxSize / (1024 * 1024));
+			buf += sb;
+			bytes_written += sb;
+
+			sb  = sprintf(buf, "SUB_TYPES = = 0x%08x\n", pAmCap->subType);
+			buf += sb;
+			bytes_written += sb;
 
 		}
 	}

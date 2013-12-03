@@ -213,4 +213,21 @@ AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 }
 
 
+//*************************************************************************************************
+//**   Register this Device Function 
+//*************************************************************************************************
+
+static AM_FUNCTION_ENTRY flat_function_entry =
+{
+    AM_TYPE_FLAT_MEM,
+    am_create_flat_device
+
+};
+
+
+INITIALIZER(flat_init)
+{
+	am_register_am_function(&flat_function_entry);
+}
+
 

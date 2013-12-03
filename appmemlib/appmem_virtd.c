@@ -233,7 +233,7 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 			}	
 			break;
 
-			case AM_TYPE_ARRAY:
+			case AM_TYPE_STATIC_ARRAY:
 			{
 	
 				sprintf(pFunc->crResp.am_name, "virtd_stata%d", g_virtd_minor_count);

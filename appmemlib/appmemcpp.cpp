@@ -295,7 +295,7 @@ CAppMemStaticArray::CAppMemStaticArray(char *am_name, UINT32 elemCount, UINT32 d
 	mem_size = dataSize * elemCount;
 
 	
-	initBase(am_name, AM_TYPE_ARRAY);
+	initBase(am_name, AM_TYPE_STATIC_ARRAY);
 
 
 }

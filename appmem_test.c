@@ -629,7 +629,7 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 				am_test_flat_mem(pTestCap, pEntry);
 			break;
 
-			case AM_TYPE_ARRAY:
+			case AM_TYPE_STATIC_ARRAY:
 				am_test_static_array(pTestCap, pEntry);
 				break;
 			case AM_TYPE_ASSOC_ARRAY:

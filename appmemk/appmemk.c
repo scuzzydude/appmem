@@ -581,9 +581,9 @@ AM_RETURN appmem_create_function(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
                     }
                     break;
 
-                    case AM_TYPE_ARRAY:
+                    case AM_TYPE_STATIC_ARRAY:
                     {
-                        pNewDevice = appmem_device_func_create("am_stata", AM_TYPE_ARRAY);
+                        pNewDevice = appmem_device_func_create("am_stata", AM_TYPE_STATIC_ARRAY);
 
                         AM_DEBUGPRINT("am_stata pNewDevice=%p\n", pNewDevice);
                         
