@@ -116,17 +116,31 @@ typedef enum amTypeEnum
 
 
 #define AM_CAP_AC_FLAG_PACK_MMAP     0x00000001
+#define AM_MAX_TYPE_SPECIFIC         32
 
 typedef struct am_mem_cap_t
 {
 	AM_TYPE_ENUM amType;
 	UINT64 maxSize;
+	UINT32 subType;
 	UINT32 functionCount;
 	UINT32 access_flags;
-	UINT32 typeSpecific[32];	
+	UINT32 typeSpecific[AM_MAX_TYPE_SPECIFIC];	
 	UINT32 acOps[2];
 
 }	AM_MEM_CAP_T;
+
+#define AM_DETAIL_DESC_LEN   64 
+typedef struct am_cap_details_t
+{
+	AM_TYPE_ENUM      amType;
+	char              amTypeSz[AM_DETAIL_DESC_LEN];
+	UINT32            subType;
+	char              subTypeSz[AM_DETAIL_DESC_LEN];
+	UINT32            typeSpecificCount;
+	char              typeSpecificSz[AM_DETAIL_DESC_LEN];
+} AM_CAP_DETAILS; 
+
 
 
 typedef struct _am_func_calls
@@ -306,6 +320,7 @@ typedef struct amlib_entry_
 	int                fh;
 	UINT32             (*get_cap_count)(struct amlib_entry_ *pEntry);
 	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
+	AM_RETURN          (*get_cap_details)(struct amlib_entry_ *pEntry, AM_CAP_DETAILS *pCapDetails);	
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
 	AM_RETURN          (*close)(struct amlib_entry_ *pEntry);	
 	void               *pTransport;
@@ -496,17 +511,29 @@ typedef struct _appmem_device_mmap
 } DEVICE_MMAP;
 
 
+typedef AM_RETURN (*am_fe_fn_create)(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap);
+
+
+typedef struct _appmem_function_entry
+{
+    UINT32                                                  amType;
+    am_fe_fn_create                                         pfnCreateFunction;
+
+} AM_FUNCTION_ENTRY;
+
+
+
+
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
 AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 
 
+/* amType Function registration - defined by the target module */
+AM_RETURN am_register_am_function(AM_FUNCTION_ENTRY *pFunctionEntry);
 
 
 
 #endif
-
-
-
 
 

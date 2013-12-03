@@ -2,6 +2,11 @@
 #define _AM_ASSCA_H
 #include "uthash.h"
 
+
+#define AM_ASSCA_SUBTYPES 1
+extern char * am_subtypes_sz[AM_ASSCA_SUBTYPES];
+
+
 typedef struct _amlib_assca_item
 {
 	void *key;

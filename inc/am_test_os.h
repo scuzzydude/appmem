@@ -5,6 +5,7 @@
 
 
 #ifdef _WIN32
+
 #pragma warning(disable : 4996) /* Warns about sprintf not safe */
 
 
@@ -30,7 +31,13 @@
 #endif
 
 
+
+
 #else
+
+#define AM_STATIC_ENTRY_FUNC  __attribute__ ((constructor))
+
+
 #ifdef _APPMEMD
 
 /* Kernel driver */
@@ -104,5 +111,34 @@
 
 
 
+
+
+
+
+/* See http://stackoverflow.com/questions/1113409/attribute-constructor-equivalent-in-vc */
+
+/* Initializer/finalizer sample for MSVC and GCC.
+   2010 Joe Lowe. Released into the public domain.
+   */
+
+
+#ifdef _MSC_VER
+
+#define CCALL __cdecl
+#pragma section(".CRT$XCU",read)
+#define INITIALIZER(f) \
+   static void __cdecl f(void); \
+   __declspec(allocate(".CRT$XCU")) void (__cdecl*f##_)(void) = f; \
+   static void __cdecl f(void)
+
+#else //defined(__GNUC__)
+#if 1
+#define CCALL
+#define INITIALIZER(f) \
+   static void f(void) __attribute__((constructor)); \
+   static void f(void)
+
+#endif
+#endif
 
 #endif

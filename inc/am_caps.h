@@ -38,6 +38,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 	{ 
 		AM_TYPE_BASE_APPMEM,
 		(1024 * 1024 * 128), /* Total Device Memory */
+		1,                   /* subType */
 		2,
 		0,
 		{
@@ -47,6 +48,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 	{ 
 		AM_TYPE_FLAT_MEM, /* Type */ 
 		(1024 * 1024),    /* maxSizeBytes */
+		1,                   /* subType */
 		7,/* maxFunction  */	
         0,
 		{
@@ -59,6 +61,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 	{ 
 		AM_TYPE_ARRAY,
 		(1024 * 1024),
+		1,                   /* subType */
 		8,
         0,
 		{
@@ -72,6 +75,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 	{
 		AM_TYPE_ASSOC_ARRAY,
 		(1024 * 1024),
+		AM_ASSCA_SUBTYPES,                   /* subType */
 		7,
         0,
 		{
@@ -87,6 +91,13 @@ static AM_MEM_CAP_T virtd_caps[] =
 
 };
 
+static char **virtd_subtype[4] =
+{
+	NULL,  /* Base */
+	NULL,  /* Flat */
+	NULL,  /* Static Array */
+	am_subtypes_sz
+};
 
 
 

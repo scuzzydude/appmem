@@ -32,6 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_assca.h"
 #include "am_targ.h"
 
+char * am_subtypes_sz[AM_ASSCA_SUBTYPES] = 
+{
+	"Associative Array - ut-hash"
+};
+
 
 AMLIB_ASSCA * amlib_assca_init(UINT32 key_length, UINT32 data_length, UINT8 bFixedKey, UINT8 bFixedData, UINT16 flags)
 {
@@ -497,3 +502,20 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 }
 
 
+
+//*************************************************************************************************
+//**   Register this Function 
+//*************************************************************************************************
+
+static AM_FUNCTION_ENTRY assca_function_entry =
+{
+    AM_TYPE_ASSOC_ARRAY,
+    am_create_assca_device
+
+};
+
+
+INITIALIZER(assca_init)
+{
+	am_register_am_function(&assca_function_entry);
+}

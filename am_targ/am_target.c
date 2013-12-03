@@ -52,6 +52,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 AM_MEM_FUNCTION_T * g_pfnFunctionTable[AM_TARGET_MAX_FUNCTIONS];
 
 
+//******************************* Module Registration ***********************************/
+#define MAX_AM_TARG_DEVICE_FUNCTIONS 100
+AM_FUNCTION_ENTRY *gAmTargDeviceFunctionEntry[MAX_AM_TARG_DEVICE_FUNCTIONS] = { 0 };
+
+AM_RETURN am_register_am_function(AM_FUNCTION_ENTRY *pFunctionEntry)
+{
+	printf("am_register_am_function amType=%d\n", pFunctionEntry->amType);
+	if(NULL != pFunctionEntry)
+	{
+
+		if(( pFunctionEntry->amType < MAX_AM_TARG_DEVICE_FUNCTIONS) && 
+		    (NULL == gAmTargDeviceFunctionEntry[pFunctionEntry->amType]))
+		{
+			gAmTargDeviceFunctionEntry[pFunctionEntry->amType] = pFunctionEntry;
+		}
+		else
+		{
+			AM_DEBUGPRINT("Device Function Already Registered\n");
+		}
+	}
+	return AM_RET_GOOD;
+}
+//******************************* Module Registration End ***********************************/
 
 
 AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count)

@@ -68,6 +68,33 @@ APPMEM_KAM_CMD_T g_temp_KCMD; /* TODO: This will be a pool */
 
 
 
+
+
+//******************************* Module Registration ***********************************/
+#define MAX_APPMEMK_DEVICE_FUNCTIONS 100
+AM_FUNCTION_ENTRY *gAppmemkDeviceFunctionEntry[MAX_APPMEMK_DEVICE_FUNCTIONS] = { 0 };
+
+AM_RETURN am_register_am_function(AM_FUNCTION_ENTRY *pFunctionEntry)
+{
+	printk("am_register_am_function amType=%d\n", pFunctionEntry->amType);
+	if(NULL != pFunctionEntry)
+    {
+		if(( pFunctionEntry->amType < MAX_APPMEMK_DEVICE_FUNCTIONS) && 
+		    (NULL == gAppmemkDeviceFunctionEntry[pFunctionEntry->amType]))
+		{
+			gAppmemkDeviceFunctionEntry[pFunctionEntry->amType] = pFunctionEntry;
+		}
+		else
+		{
+			AM_DEBUGPRINT("Device Function Already Registered\n");
+		}
+	}
+	return AM_RET_GOOD;
+}
+//******************************* Module Registration End ***********************************/
+
+
+
 /* TODO: For Target code consolidation, rectify  with virtd functions later */
 AM_RETURN am_targ_release(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
 {

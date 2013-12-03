@@ -39,6 +39,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int g_virtd_minor_count = 1;
 
+//******************************* Module Registration ***********************************/
+#define MAX_VIRTD_DEVICE_FUNCTIONS 100
+AM_FUNCTION_ENTRY *gVirtdDeviceFunctionEntry[MAX_VIRTD_DEVICE_FUNCTIONS] = { 0 };
+
+AM_RETURN am_register_am_function(AM_FUNCTION_ENTRY *pFunctionEntry)
+{
+	printf("am_register_am_function amType=%d\n", pFunctionEntry->amType);
+	if(NULL != pFunctionEntry)
+    {
+		if(( pFunctionEntry->amType < MAX_VIRTD_DEVICE_FUNCTIONS) && 
+		    (NULL == gVirtdDeviceFunctionEntry[pFunctionEntry->amType]))
+		{
+			gVirtdDeviceFunctionEntry[pFunctionEntry->amType] = pFunctionEntry;
+		}
+		else
+		{
+			AM_DEBUGPRINT("Device Function Already Registered\n");
+		}
+	}
+	return AM_RET_GOOD;
+}
+//******************************* Module Registration End ***********************************/
 
 AM_RETURN am_virtd_entry_close(AMLIB_ENTRY_T *pEntry)
 {
@@ -312,3 +334,4 @@ AM_RETURN am_virtd_close(void * p1)
 	
 
 }
+
