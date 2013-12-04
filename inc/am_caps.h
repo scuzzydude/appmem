@@ -91,13 +91,7 @@ static AM_MEM_CAP_T virtd_caps[] =
 
 };
 
-static char **virtd_subtype[4] =
-{
-	NULL,  /* Base */
-	NULL,  /* Flat */
-	NULL,  /* Static Array */
-	am_subtypes_sz
-};
+
 
 
 

@@ -142,6 +142,7 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 			pEntry->get_capabilities = am_virtd_get_capabilities;
 			pEntry->get_cap_count = am_virtd_get_capabilites_count;
 			pEntry->close = am_virtd_entry_close;
+			pEntry->get_cap_details = am_virt_get_cap_details;
 		}
 
 

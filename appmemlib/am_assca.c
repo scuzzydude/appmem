@@ -501,17 +501,61 @@ AM_RETURN am_create_assca_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 	return error;
 }
 
+AM_RETURN assca_get_cap_details(AM_CAP_DETAILS *pCapDetails, UINT32 amType)
+{
+	return AM_RET_GOOD;
+}
 
 
 //*************************************************************************************************
 //**   Register this Device Function 
 //*************************************************************************************************
 
+static AM_MEM_CAP_T assca_caps =
+{
+	AM_TYPE_ASSOC_ARRAY,
+	(1024 * 1024),
+	AM_ASSCA_SUBTYPES,                   /* subType */
+	7,
+    0,
+	{
+		512,              /* Max - Key Size Bytes */ 
+		1024 * 1024,      /* Max - Data Size Bytes */
+		TS_ASSCA_KEY_FIXED_WIDTH | TS_ASSCA_KEY_VAR_WIDTH,
+		TS_ASSCA_DATA_FIXED_WIDTH | TS_ASSCA_DATA_VAR_WIDTH
+	}
+};
+
+AM_CAP_DETAILS assca_cap_details[AM_ASSCA_SUBTYPES] = 
+{
+ //Descriptors are 64 bytes 
+	
+	//             1         2         3         4         5         6
+	//   01234567890123456789012345678901234567890123456789012345678901234
+	{
+		AM_TYPE_ASSOC_ARRAY,
+		"Associative Array",
+		AA_ASSCA_ST_UTHASH,
+		"ut-hash",
+		TS_ASSCA_MAX_TS,
+		{
+		"Max Key Size",
+		"Max Data Size",
+		"Key Type : 1 = Fixed Width, 2 = Variable Width",
+		"Data Type : 1 = Fixed Width, 2 = Variable Width"
+		}
+	}
+
+};
+
+
+
 static AM_FUNCTION_ENTRY assca_function_entry =
 {
     AM_TYPE_ASSOC_ARRAY,
-    am_create_assca_device
-
+    am_create_assca_device,
+	&assca_caps,
+	&assca_cap_details[0]
 };
 
 

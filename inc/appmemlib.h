@@ -63,7 +63,7 @@ typedef unsigned char UINT8;
 
 #define AM_VER_MAJOR  0
 #define AM_VER_MINOR  1
-#define AM_VER_PATCH  1
+#define AM_VER_PATCH  2
 #define AM_VER_BUILD  0
 
 typedef union _am_version_u
@@ -138,7 +138,7 @@ typedef struct am_cap_details_t
 	UINT32            subType;
 	char              subTypeSz[AM_DETAIL_DESC_LEN];
 	UINT32            typeSpecificCount;
-	char              typeSpecificSz[AM_DETAIL_DESC_LEN];
+	char              typeSpecificSz[AM_MAX_TYPE_SPECIFIC][AM_DETAIL_DESC_LEN];
 } AM_CAP_DETAILS; 
 
 
@@ -290,28 +290,7 @@ typedef struct _am_command
 
 
 
-#define TS_FLAT_ADDRESS_BYTE_SIZE   0
-#define TS_FLAT_SIZE                1
-#define TS_MIN_BYTE_ACTION          2
-#define TS_MAX_BYTE_ACTION          3
-#define TS_INIT_MEM_VAL             4
 
-#define TS_STAT_ARRAY_IDX_BYTE_SIZE  0 
-#define TS_STAT_ARRAY_VAL_MIN_SIZE   1 
-#define TS_STAT_ARRAY_VAL_MAX_SIZE   2 
-#define TS_STAT_ARRAY_VAL_DATA_TYPES 3
-#define TS_STAT_DT_FIXED_WIDTH   0x1
-#define TS_STAT_DT_VAR_WIDTH     0x2
-
-#define TS_ASSCA_KEY_MAX_SIZE    0 
-#define TS_ASSCA_DATA_MAX_SIZE   1 
-#define TS_ASSCA_KEY_TYPE        2
-#define TS_ASSCA_KEY_FIXED_WIDTH   0x1
-#define TS_ASSCA_KEY_VAR_WIDTH     0x2
-
-#define TS_ASSCA_DATA_TYPE        2
-#define	TS_ASSCA_DATA_FIXED_WIDTH  0x1
-#define TS_ASSCA_DATA_VAR_WIDTH    0x2
 
 
 typedef struct amlib_entry_
@@ -320,7 +299,7 @@ typedef struct amlib_entry_
 	int                fh;
 	UINT32             (*get_cap_count)(struct amlib_entry_ *pEntry);
 	AM_RETURN		   (*get_capabilities)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count);
-	AM_RETURN          (*get_cap_details)(struct amlib_entry_ *pEntry, AM_CAP_DETAILS *pCapDetails);	
+	AM_RETURN          (*get_cap_details)(struct amlib_entry_ *pEntry, AM_CAP_DETAILS *pCapDetails, UINT32 amType);	
 	AM_RETURN          (*create_function)(struct amlib_entry_ *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc);
 	AM_RETURN          (*close)(struct amlib_entry_ *pEntry);	
 	void               *pTransport;
@@ -512,12 +491,15 @@ typedef struct _appmem_device_mmap
 
 
 typedef AM_RETURN (*am_fe_fn_create)(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap);
+typedef AM_RETURN (*am_fe_fn_get_cap_details)(AM_CAP_DETAILS *pCapDetails, UINT32 amType);
 
 
 typedef struct _appmem_function_entry
 {
     UINT32                                                  amType;
     am_fe_fn_create                                         pfnCreateFunction;
+	AM_MEM_CAP_T                                           *pCap;
+	AM_CAP_DETAILS                                         *pCapDetails;
 
 } AM_FUNCTION_ENTRY;
 

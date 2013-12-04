@@ -320,6 +320,35 @@ AM_RETURN am_targ_close(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT32 *ret_len)
 }
 
 
+AM_RETURN am_virt_get_cap_details(struct amlib_entry_ *pEntry, AM_CAP_DETAILS *pCapDetails, UINT32 amType)
+{
+	UINT32 st_count = 1;
+
+	if( amType < MAX_VIRTD_DEVICE_FUNCTIONS)
+	{
+		if(NULL != gVirtdDeviceFunctionEntry[amType])
+		{
+
+			if(NULL != gVirtdDeviceFunctionEntry[amType]->pCapDetails)
+			{
+				st_count = gVirtdDeviceFunctionEntry[amType]->pCap->subType;
+
+				memcpy(pCapDetails, gVirtdDeviceFunctionEntry[amType]->pCapDetails, st_count * sizeof(AM_CAP_DETAILS));
+				
+				return AM_RET_GOOD;
+			}
+		
+		}
+
+	}
+
+
+	return AM_RET_INVALID_OPCODE;
+
+}
+	
+
+
 AM_RETURN am_virtd_open(void * p1)
 {
 	//AM_MEM_FUNCTION_T *pFunc = p1;

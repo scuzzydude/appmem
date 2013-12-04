@@ -436,11 +436,50 @@ AM_RETURN am_create_stata_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap)
 //*************************************************************************************************
 //**   Register this Device Function 
 //*************************************************************************************************
+static AM_MEM_CAP_T stata_caps =
+{ 
+	AM_TYPE_STATIC_ARRAY,
+		(1024 * 1024),
+		1,                   /* subType */
+		8,
+		0,
+	{
+		(8 | 4 | 2 | 1),         /* Array - Index Size Bytes */ 
+			1,                   /* Min Value Size - Bytes */
+			1024,                /* Max Value Size - Bytes */
+			TS_STAT_DT_FIXED_WIDTH
+	}
+
+};
+
+
+AM_CAP_DETAILS stata_cap_details[AM_STATA_SUBTYPES] = 
+{
+ //Descriptors are 64 bytes 
+	
+	//             1         2         3         4         5         6
+	//   01234567890123456789012345678901234567890123456789012345678901234
+	{
+		AM_TYPE_STATIC_ARRAY,
+		"Static Array",
+		0,
+		"Static Array - Native C",
+		TS_STATIC_MAX_TS,
+		{
+		"Index Size in Bytes (1,2,4,8)",
+		"Min Data Size (Variable Width Only) - Bytes",
+		"Max or Fixed Data Size (Max for Var) - Bytes",
+		"Data Type : 1 = Fixed Width, 2 = Variable Width"
+		}
+	}
+};
 
 static AM_FUNCTION_ENTRY stata_function_entry =
 {
     AM_TYPE_STATIC_ARRAY,
-    am_create_stata_device
+    am_create_stata_device,
+	&stata_caps,
+	&stata_cap_details[0]
 
 };
 

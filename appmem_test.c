@@ -32,6 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmemlib.h"
 #include "am_test_os.h"
 #include "am_assca.h"
+#include "am_stata.h"
+#include "am_flat.h"
 
 #define APPMEMCPP_ONLY	
 #define TEST_LANG_C      0x1
@@ -666,7 +668,9 @@ int main(int argc, char **argv)
 	UINT32 i;
 	char pbuff[256];
 	AMLIB_ENTRY_T	amEntry;
+	AM_CAP_DETAILS amDetails;
 
+	
     printf("Appmemlib Version v%d.%d.%d.%d\n", AM_VER_MAJOR, AM_VER_MINOR, AM_VER_PATCH, AM_VER_BUILD);
     
 
@@ -780,6 +784,8 @@ int main(int argc, char **argv)
 		printf("APP_MEM DRIVER = VIRTD\n");
 	}
 
+	memset(&amEntry, 0, sizeof(amEntry));
+
 	if(gTestLang & TEST_LANG_C)
 	{
 		if(am_get_entry_point(driver_name, &amEntry))
@@ -813,7 +819,14 @@ int main(int argc, char **argv)
 						printf("---- CAP #%d\n", i);
 						am_sprintf_capability( &pAmCaps[i], (char *)pbuff, sizeof(pbuff));
 						printf("CAP #%d\n%s\n", i, pbuff);
+						if(NULL != amEntry.get_cap_details)
+						{
+							if(AM_RET_GOOD == amEntry.get_cap_details(&amEntry, &amDetails, pAmCaps[i].amType))
+							{
 
+							}
+
+						}
 					}
 
 					am_test(pAmCaps, cap_count, test, &amEntry);

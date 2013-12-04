@@ -33,7 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" 
 {
 #include "appmemlib.h"
-
+#include "am_assca.h"
+#include "am_stata.h"
+#include "am_flat.h"
 
 }
 

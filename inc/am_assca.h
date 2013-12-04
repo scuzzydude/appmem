@@ -4,7 +4,22 @@
 
 
 #define AM_ASSCA_SUBTYPES 1
-extern char * am_subtypes_sz[AM_ASSCA_SUBTYPES];
+
+#define AA_ASSCA_ST_UTHASH 0 
+
+
+#define TS_ASSCA_KEY_MAX_SIZE        0 
+#define TS_ASSCA_DATA_MAX_SIZE       1 
+#define TS_ASSCA_KEY_TYPE            2
+#define TS_ASSCA_KEY_FIXED_WIDTH   0x1
+#define TS_ASSCA_KEY_VAR_WIDTH     0x2
+
+#define TS_ASSCA_DATA_TYPE           3
+#define	TS_ASSCA_DATA_FIXED_WIDTH  0x1
+#define TS_ASSCA_DATA_VAR_WIDTH    0x2
+
+#define TS_ASSCA_MAX_TS              4
+
 
 
 typedef struct _amlib_assca_item
