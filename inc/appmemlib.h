@@ -507,6 +507,8 @@ typedef struct _appmem_function_entry
 
 
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size);
+UINT32 am_sprintf_cap_details(AM_CAP_DETAILS *pCapDetails, char *buf, UINT32 buf_size);
+
 AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry);
 AM_PACK_QUEUE_T * am_init_pack_queue(UINT32 pack_count);
 

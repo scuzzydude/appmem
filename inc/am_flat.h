@@ -4,13 +4,11 @@
 
 
 #define AM_FLAT_SUBTYPES    1
-#define TS_FLAT_MAX_TS    5
+#define TS_FLAT_MAX_TS    3
 
 #define TS_FLAT_ADDRESS_BYTE_SIZE   0
 #define TS_FLAT_SIZE                1
-#define TS_MIN_BYTE_ACTION          2
-#define TS_MAX_BYTE_ACTION          3
-#define TS_INIT_MEM_VAL             4
+#define TS_INIT_MEM_VAL             2
 
 
 AM_RETURN am_create_flat_device(AM_MEM_FUNCTION_T *pFunc, AM_MEM_CAP_T *pCap);

@@ -157,34 +157,127 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 }
 
 
+
 UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size)
 {
-	/* TODO : Make buff size safe */
-	UINT32 bytes_written = 0;
-	UINT32 sb = 0;
-	
+	UINT32 bytes_written = buf_size;
+	int sb;
+	int complete = 0;
+	char *start_buf = buf;
+
 	if(pAmCap)
 	{
 		if(buf_size && buf)
 		{
-			sb  = sprintf(buf, "MEMORY TYPE = 0x%08x : %s\n", pAmCap->amType, AmCapTypeStr[pAmCap->amType]);
-			buf += sb;
-			bytes_written += sb;
+			do
+			{
+				sb = AM_SNPRINTF(buf, buf_size, "MEMORY TYPE = 0x%08x : %s\n", pAmCap->amType, AmCapTypeStr[pAmCap->amType]);
+				if(-1 == sb) break;
+				buf_size -= sb;
+				buf += sb;
 
-			sb  = sprintf(buf, "MAX_SIZE    = 0x%016llx : %d MB\n", pAmCap->maxSize, pAmCap->maxSize / (1024 * 1024));
-			buf += sb;
-			bytes_written += sb;
+				sb = AM_SNPRINTF(buf, buf_size, "MAX_SIZE    = 0x%016llx : %d MB\n", pAmCap->maxSize, pAmCap->maxSize / (1024 * 1024));
+				if(-1 == sb) break;
+				buf_size -= sb;
+				buf += sb;
 
-			sb  = sprintf(buf, "SUB_TYPES = = 0x%08x\n", pAmCap->subType);
-			buf += sb;
-			bytes_written += sb;
+				sb = AM_SNPRINTF(buf, buf_size, "SUB_TYPES = = 0x%08x\n", pAmCap->subType);
+				if(-1 == sb) break;
+				buf_size -= sb;
+				buf += sb;
+			
+				complete = 1;
+					
+			} while(0);
 
 		}
+	}
+
+	if(complete)
+	{
+		bytes_written -= buf_size;
+
+	}
+	else
+	{
+		start_buf[bytes_written - 1] = '\0';
 	}
 
 	return bytes_written;
 }
 
+/*
+typedef struct am_cap_details_t
+{
+	AM_TYPE_ENUM      amType;
+	char              amTypeSz[AM_DETAIL_DESC_LEN];
+	UINT32            subType;
+	char              subTypeSz[AM_DETAIL_DESC_LEN];
+	UINT32            typeSpecificCount;
+	char              typeSpecificSz[AM_MAX_TYPE_SPECIFIC][AM_DETAIL_DESC_LEN];
+} AM_CAP_DETAILS; 
+*/
 
+UINT32 am_sprintf_cap_details(AM_CAP_DETAILS *pCapDetails, char *buf, UINT32 buf_size)
+{
+	UINT32 bytes_written = buf_size;
+	int sb;
+	int complete = 0;
+	char *start_buf = buf;
+	int i;
+
+	if(pCapDetails && buf_size && buf)
+	{
+		do
+		{
+			sb = AM_SNPRINTF(buf, buf_size, "amType  = 0x%08x : %s\n", pCapDetails->amType, pCapDetails->amTypeSz);
+			if(-1 == sb) break;
+			buf_size -= sb;
+			buf += sb;
+
+			sb = AM_SNPRINTF(buf, buf_size, "subType = 0x%08x : %s\n", pCapDetails->subType, pCapDetails->subTypeSz);
+			if(-1 == sb) break;
+			buf_size -= sb;
+			buf += sb;
+
+			sb = AM_SNPRINTF(buf, buf_size, "typeSpecificCount = 0x%08x \n", pCapDetails->typeSpecificCount);
+			if(-1 == sb) break;
+			buf_size -= sb;
+			buf += sb;
+
+			
+			for(i = 0; i < pCapDetails->typeSpecificCount; i++)
+			{
+				sb = AM_SNPRINTF(buf, buf_size, "TS#%d = %s\n", i, pCapDetails->typeSpecificSz[i]);
+				if(-1 == sb) break;
+				buf_size -= sb;
+				buf += sb;
+
+			}
+
+			if(i == pCapDetails->typeSpecificCount)
+			{
+				complete = 1;
+			}
+
+
+		} while(0);
+	
+	
+		if(complete)
+		{
+			bytes_written -= buf_size;
+		}
+		else
+		{
+			start_buf[bytes_written - 1] = '\0';
+		}
+	
+	}
+
+
+
+	return bytes_written;
+}
 
 

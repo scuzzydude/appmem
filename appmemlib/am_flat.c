@@ -248,7 +248,6 @@ AM_CAP_DETAILS flat_cap_details[AM_FLAT_SUBTYPES] =
 		{
 		"Address Size in Bytes (1,2,4,8)",
 		"Min Data Addressability - Bytes",
-		"Max Data Addressability - Bytes",
 		"32 Bit Initializer - (memset)"
 		}
 	}

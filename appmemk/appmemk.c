@@ -695,13 +695,17 @@ AM_RETURN appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 {
     
     void *pData;
-    void *pCaps;
     UINT32 cap_count = 0;
     UINT32 transfer_len = 0;
+    UINT32 i;
+    AM_MEM_CAP_T *pCaps;
+    
     printk("Appmemd : appmem_get_capabilites\n");
+    
     
 
     pData = (void *)pKCmd->cmd.common.data;
+    pCaps = (AM_MEM_CAP_T *)pData;
 
     if(AM_TYPE_BASE_APPMEM == pBaseFunc->amType)
     {
@@ -710,9 +714,42 @@ AM_RETURN appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 
         transfer_len = cap_count * sizeof(AM_MEM_CAP_T);
         
-        pCaps = (void *)virtd_caps;
-
         printk("Appmemd : appmem_get_capabilites BASE_APPMEM len=%d transfer_len=%d cap_count=%d : %p\n", pKCmd->cmd.common.len, transfer_len, cap_count, pCaps);
+
+        for(i = 0; i < cap_count; i++)
+	    {
+		    if((i < virtd_base_cap.subType) && i < (cap_count))
+		    {
+			    if(0 == i)
+			    {
+	                if(copy_to_user (pCaps, (void *)&virtd_base_cap, sizeof(AM_MEM_CAP_T)))
+                    {
+                        printk("Appmemd : copy_to_user i=%d ERROR %p\n", i, &virtd_base_cap);
+                        return -ENOTTY;
+ 
+                    }
+       				pCaps++;
+			    }
+			    else
+			    {
+				    if(NULL != gAppmemkDeviceFunctionEntry[i])
+				    {
+					    if(NULL != gAppmemkDeviceFunctionEntry[i]->pCap)
+					    {
+						    memcpy(pCaps, (void *)gAppmemkDeviceFunctionEntry[i]->pCap, sizeof(AM_MEM_CAP_T));
+		        	        if(copy_to_user (pCaps, (void *)gAppmemkDeviceFunctionEntry[i]->pCap, sizeof(AM_MEM_CAP_T)))
+                            {
+                                printk("Appmemd : copy_to_user i=%d ERROR %p\n", i, &virtd_base_cap);
+                                return -ENOTTY;
+ 
+                            }
+        				    pCaps++;	
+					    }
+				    }
+			    }
+		
+		    }
+	    }
 
 
     }
@@ -722,16 +759,6 @@ AM_RETURN appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
         
     }
 
-    if(0 != transfer_len)
-    {
-        if(copy_to_user (pData, pCaps, transfer_len))
-        {
-           printk("Appmemd : copy_to_user len=%d ERROR %p\n", transfer_len, pData);
-           return -ENOTTY;
- 
-        }
-
-    }
     
     return 0;
 }
@@ -751,7 +778,7 @@ AM_RETURN appmem_get_cap_count(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
     
     if(AM_TYPE_BASE_APPMEM == pBaseFunc->amType)
     {
-        cap_count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
+        cap_count = virtd_base_cap.subType;
         printk("Appmemd : cap_count BASE_APPMEM = %d\n", cap_count);
         
     }
@@ -972,14 +999,14 @@ static int __init appmemd_init(void)
     printk(KERN_INFO "Appmemlib Version v%d.%d.%d.%d\n", AM_VER_MAJOR, AM_VER_MINOR, AM_VER_PATCH, AM_VER_BUILD);
 
 
-    for(i = 0; i < sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T); i++)
+    for(i = 0; i < virtd_base_cap.subType; i++)
     {
         if(i)
         {
           /* Advertise that we can access through MMAP */
-           virtd_caps[i].access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
+           gAppmemkDeviceFunctionEntry[i]->pCap->access_flags |= AM_CAP_AC_FLAG_PACK_MMAP;
         }
-    }
+    }  
 
     result = alloc_chrdev_region(&base_AMdev, appmemd_minor, appmemd_base_dev_count,
 				"appmem");

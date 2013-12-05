@@ -23,7 +23,7 @@
 #define AM_VALLOC(x) malloc(x)
 #define AM_VFREE(x) free(x)
 #define AM_SLEEP(x) Sleep(x * 1000)
-
+#define AM_SNPRINTF _snprintf
 #if AMLIB_DEBUG
 #define AM_DEBUGPRINT(fmt, ...) printf(fmt, __VA_ARGS__)
 #else
@@ -35,10 +35,12 @@
 
 #else
 
+#define AM_SNPRINTF snprintf
+
 #define AM_STATIC_ENTRY_FUNC  __attribute__ ((constructor))
 
 
-#ifdef _APPMEMD
+#ifdef _APPMEMD 
 
 /* Kernel driver */
 

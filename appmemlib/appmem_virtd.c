@@ -69,30 +69,40 @@ AM_RETURN am_virtd_entry_close(AMLIB_ENTRY_T *pEntry)
 
 UINT32 am_virtd_get_capabilites_count(AMLIB_ENTRY_T *pEntry)
 {
-	UINT32 count = 0;
-
-	count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
-
-	return count;
+	return virtd_base_cap.subType;
 }
 
 AM_RETURN am_virtd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count)
 {
 	AM_RETURN error = AM_RET_GOOD;
-	
+	UINT32 i;
+
 	AM_ASSERT(pAmCaps);
 	AM_ASSERT(count);
 
-	if(count <= (sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T)))
+	for(i = 0; i < count; i++)
 	{
-		memcpy(pAmCaps, (void *)virtd_caps, sizeof(AM_MEM_CAP_T) * count);
-	
+		if(i < virtd_base_cap.subType)
+		{
+			if(0 == i)
+			{
+				memcpy(pAmCaps, (void *)&virtd_base_cap, sizeof(AM_MEM_CAP_T));
+				pAmCaps++;
+			}
+			else
+			{
+				if(NULL != gVirtdDeviceFunctionEntry[i])
+				{
+					if(NULL != gVirtdDeviceFunctionEntry[i]->pCap)
+					{
+						memcpy(pAmCaps, (void *)gVirtdDeviceFunctionEntry[i]->pCap, sizeof(AM_MEM_CAP_T));
+						pAmCaps++;	
+					}
+				}
+			}
+		
+		}
 	}
-	else
-	{
-		error = AM_RET_PARAM_ERR; 
-	}
-
 
 	return error;
 

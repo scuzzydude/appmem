@@ -337,7 +337,7 @@ AM_RETURN am_targ_get_cap_count(AM_MEM_FUNCTION_T *pFunc, AM_PACK_RESP_U *pResp,
 {
 	AM_PACK_RESP_CAP_COUNT *pCCResp = (AM_PACK_RESP_CAP_COUNT *)pResp;
 	
-    pCCResp->cap_count = sizeof(virtd_caps) / sizeof(AM_MEM_CAP_T);
+    pCCResp->cap_count = virtd_base_cap.subType;
 
 	*tx_bytes = sizeof(AM_PACK_RESP_CAP_COUNT);
 	
@@ -349,10 +349,42 @@ AM_RETURN am_targ_get_cap(AM_MEM_FUNCTION_T *pFunc, void *p1, UINT64 l1, void *p
 {
 	UINT32 count = (UINT32) *(UINT64 *)p1;
 	UINT32 tx_bytes = count * sizeof(AM_MEM_CAP_T);
-
+    AM_MEM_CAP_T *pAmCaps;
+    UINT32 i;
+    
 	AM_DEBUGPRINT("am_targ_get_cap count=%d tx_bytes=%d\n", count, tx_bytes);
 
-	memcpy(p2, &virtd_caps,tx_bytes);
+    pAmCaps = (AM_MEM_CAP_T *)p2;
+    
+
+    for(i = 0; i < count; i++)
+	{
+		if(i < virtd_base_cap.subType)
+		{
+			if(0 == i)
+			{
+				memcpy(pAmCaps, (void *)&virtd_base_cap, sizeof(AM_MEM_CAP_T));
+				pAmCaps++;
+			}
+			else
+			{
+				if(NULL != gAmTargDeviceFunctionEntry[i])
+				{
+					if(NULL != gAmTargDeviceFunctionEntry[i]->pCap)
+					{
+						memcpy(pAmCaps, (void *)gAmTargDeviceFunctionEntry[i]->pCap, sizeof(AM_MEM_CAP_T));
+						pAmCaps++;	
+					}
+				}
+			}
+		
+		}
+	}
+
+
+
+
+
 	*ret_len = tx_bytes;
 
 	return AM_RET_GOOD;

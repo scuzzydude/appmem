@@ -666,10 +666,11 @@ int main(int argc, char **argv)
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
 	UINT32 i;
-	char pbuff[256];
+	char pbuff[100];
+	char *dbuff;
 	AMLIB_ENTRY_T	amEntry;
 	AM_CAP_DETAILS amDetails;
-
+	
 	
     printf("Appmemlib Version v%d.%d.%d.%d\n", AM_VER_MAJOR, AM_VER_MINOR, AM_VER_PATCH, AM_VER_BUILD);
     
@@ -823,6 +824,15 @@ int main(int argc, char **argv)
 						{
 							if(AM_RET_GOOD == amEntry.get_cap_details(&amEntry, &amDetails, pAmCaps[i].amType))
 							{
+								if(pAmCaps[i].subType)
+								{
+									int dsize = sizeof(AM_CAP_DETAILS) * pAmCaps[i].subType * 2;
+									dbuff = (char *)AM_MALLOC(dsize); //details is mostly straight text, double should be enough including formatting
+									am_sprintf_cap_details(&amDetails, dbuff, dsize);
+									printf("------ Details --------------------\n%s\n", dbuff);
+									AM_FREE(dbuff);
+
+								}
 
 							}
 
