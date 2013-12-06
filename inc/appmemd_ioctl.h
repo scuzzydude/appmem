@@ -154,6 +154,7 @@ struct _appmem_kdevice;
 #define AM_OP_OPEN_FUNC                       0x6
 #define AM_OP_CLOSE_FUNC                      0x7
 #define AM_OP_SORT                            0x8
+#define AM_OP_GET_CAP_DETAILS                 0x9
 
 
 #define AM_OP_WRITE_ALIGN                    0x10
@@ -161,9 +162,10 @@ struct _appmem_kdevice;
 
 #define AM_OP_CODE_GETC_CAP_COUNT   AM_SET_PACKTYPE(AM_PACK_TYPE_OPCODE_ONLY, AM_OP_GET_CAP_COUNT)
 #define AM_OP_CODE_GET_CAPS         AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_GET_CAP)
+#define AM_OP_CODE_GET_CAP_DETAILS  AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_GET_CAP_DETAILS)
+
 #define AM_OP_CODE_CREATE_FUNC      AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_CREATE_FUNC)
 #define AM_OP_CODE_RELEASE_FUNC     AM_SET_PACKTYPE(AM_PACK_TYPE_OPCODE_ONLY, AM_OP_RELEASE_FUNC)
-
 #define AM_OP_CODE_WRITE_ALIGN      AM_SET_PACKTYPE(AM_PACK_ALIGN, AM_OP_WRITE_ALIGN) 
 #define AM_OP_CODE_READ_ALIGN       AM_SET_PACKTYPE(AM_PACK_ALIGN, AM_OP_READ_ALIGN)
 
@@ -180,7 +182,8 @@ typedef struct _appmem_cmd_common_t
 	UINT32 op;
 	UINT32 len;
 	UINT64 data;
-
+    UINT64 parameter;
+    
 } APPMEM_CMD_COMMON_T;
 
 

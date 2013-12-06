@@ -666,7 +666,7 @@ int main(int argc, char **argv)
 	UINT32 cap_count = 0;
 	AM_MEM_CAP_T *pAmCaps;
 	UINT32 i;
-	char pbuff[100];
+	char pbuff[512];
 	char *dbuff;
 	AMLIB_ENTRY_T	amEntry;
 	AM_CAP_DETAILS amDetails;
@@ -822,11 +822,15 @@ int main(int argc, char **argv)
 						printf("CAP #%d\n%s\n", i, pbuff);
 						if(NULL != amEntry.get_cap_details)
 						{
+						    printf("amDetails size = %d\n", sizeof(amDetails));
+						    
 							if(AM_RET_GOOD == amEntry.get_cap_details(&amEntry, &amDetails, pAmCaps[i].amType))
 							{
 								if(pAmCaps[i].subType)
 								{
 									int dsize = sizeof(AM_CAP_DETAILS) * pAmCaps[i].subType * 2;
+                                    printf("--- dsize = %d\n", dsize);
+                                    
 									dbuff = (char *)AM_MALLOC(dsize); //details is mostly straight text, double should be enough including formatting
 									am_sprintf_cap_details(&amDetails, dbuff, dsize);
 									printf("------ Details --------------------\n%s\n", dbuff);

@@ -102,6 +102,49 @@ AM_RETURN am_kd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, U
 }
 
 
+AM_RETURN am_kd_get_cap_details(AMLIB_ENTRY_T *pEntry, AM_CAP_DETAILS *pCapDetails, UINT32 amType)
+{
+	int c;
+	int fd;
+	APPMEM_CMD_COMMON_T cmd;
+	UINT32 len = sizeof(AM_CAP_DETAILS);
+	fd = open(pEntry->am_name, 0);
+
+    printf("cap_details =%d\n", len);
+	
+	if(fd > -1)
+	{
+		cmd.op = AM_OP_CODE_GET_CAP_DETAILS;
+		cmd.len = len;
+		cmd.data = (UINT64)pCapDetails;
+        cmd.parameter = amType;
+        
+		c = ioctl(fd, APPMEMD_OP_COMMON, &cmd);	
+
+		
+		if(c < 0)
+		{
+			printf("DEBUG: C=%d Error IOCTL %s\n", c, pEntry->am_name);
+            exit(0);
+			return AM_RET_IO_ERR;
+		}
+		
+		am_kd_close_driver(fd);
+	
+	}
+	else
+	{
+		return AM_RET_OPEN_ERR;
+	}
+
+
+	return AM_RET_GOOD;
+
+}
+
+
+
+
 UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry)
 {
 	int c;

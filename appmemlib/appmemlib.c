@@ -133,6 +133,8 @@ AM_RETURN am_get_entry_point(char *am_name, AMLIB_ENTRY_T *pEntry)
 				pEntry->get_capabilities = am_kd_get_capabilities;
 				pEntry->get_cap_count = am_kd_get_capabilities_count;
 				pEntry->close = am_kd_entry_close;
+				pEntry->get_cap_details = am_kd_get_cap_details;
+				
 			}
 		}
 		else
@@ -206,17 +208,6 @@ UINT32 am_sprintf_capability(AM_MEM_CAP_T *pAmCap, char *buf, UINT32 buf_size)
 	return bytes_written;
 }
 
-/*
-typedef struct am_cap_details_t
-{
-	AM_TYPE_ENUM      amType;
-	char              amTypeSz[AM_DETAIL_DESC_LEN];
-	UINT32            subType;
-	char              subTypeSz[AM_DETAIL_DESC_LEN];
-	UINT32            typeSpecificCount;
-	char              typeSpecificSz[AM_MAX_TYPE_SPECIFIC][AM_DETAIL_DESC_LEN];
-} AM_CAP_DETAILS; 
-*/
 
 UINT32 am_sprintf_cap_details(AM_CAP_DETAILS *pCapDetails, char *buf, UINT32 buf_size)
 {
@@ -224,7 +215,7 @@ UINT32 am_sprintf_cap_details(AM_CAP_DETAILS *pCapDetails, char *buf, UINT32 buf
 	int sb;
 	int complete = 0;
 	char *start_buf = buf;
-	int i;
+	UINT32 i;
 
 	if(pCapDetails && buf_size && buf)
 	{

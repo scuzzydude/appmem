@@ -30,6 +30,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************************/
 
+
 static AM_MEM_CAP_T virtd_base_cap =
 { 
 	AM_TYPE_BASE_APPMEM,
@@ -41,5 +42,37 @@ static AM_MEM_CAP_T virtd_base_cap =
 		0, 0
 	}
 };
+
+
+AM_CAP_DETAILS base_cap_details[1] = 
+{
+ //Descriptors are 64 bytes 
+	
+	//             1         2         3         4         5         6
+	//   01234567890123456789012345678901234567890123456789012345678901234
+	{
+		AM_TYPE_BASE_APPMEM,
+		"Associative Array",
+		0,
+		"Brandon's Appmem Device",
+		1,
+		{
+		"Nothing...."
+		}
+	}
+
+};
+
+static AM_FUNCTION_ENTRY am_base_function_entry =
+{
+	AM_TYPE_BASE_APPMEM,
+	NULL,
+	&virtd_base_cap,
+    &base_cap_details[0]
+};
+
+
+
+
 #endif
 

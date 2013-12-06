@@ -894,3 +894,16 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+
+
+//******************************************************
+//**  Register Base Virtd Device 
+//******************************************************
+
+INITIALIZER(am_base_init)
+{
+	am_register_am_function(&am_base_function_entry);
+}
+
+
+

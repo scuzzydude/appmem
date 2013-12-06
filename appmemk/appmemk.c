@@ -690,6 +690,70 @@ AM_RETURN appmem_create_function(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 }
 
 
+AM_RETURN appmem_get_cap_details(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
+{
+    UINT32 st_count = 0;
+    UINT32 amType;
+    AM_CAP_DETAILS *pCapDetails;
+    
+    
+    pCapDetails = (AM_MEM_CAP_T *)pKCmd->cmd.common.data;
+    amType = pKCmd->cmd.common.parameter;
+
+    printk("Appmemd : appmem_get_cap_details %d\n", amType);
+    
+    if(AM_TYPE_BASE_APPMEM == pBaseFunc->amType)
+    {
+        
+
+        if( amType < MAX_APPMEMK_DEVICE_FUNCTIONS)
+	    {
+		    if(NULL != gAppmemkDeviceFunctionEntry[amType])
+		    {
+
+			    if(NULL != gAppmemkDeviceFunctionEntry[amType]->pCapDetails)
+			    {
+                   
+				   // st_count = gAppmemkDeviceFunctionEntry[amType]->pCap->subType;
+                    st_count = 1;
+				
+					if(copy_to_user (pCapDetails, (void *)gAppmemkDeviceFunctionEntry[amType]->pCapDetails, st_count * sizeof(AM_CAP_DETAILS)))
+                    {
+                        printk("Appmemd : copy_to_user amType=%d ERROR %p\n", amType, gAppmemkDeviceFunctionEntry[amType]->pCapDetails);
+ 
+                    }
+                    else
+                    {
+                        AM_DEBUGPRINT("GOOD -- copied %ld bytes st_count=%ld sizeof(AM_CAP_DETAILS) %ld \n", st_count * sizeof(AM_CAP_DETAILS), st_count , sizeof(AM_CAP_DETAILS));     
+                        return AM_RET_GOOD;
+                    }
+                }
+                else
+                {
+                    AM_DEBUGPRINT("cap_details: NULL pCapDetails\n");
+                }
+			}
+			else
+			{
+                AM_DEBUGPRINT("cap_details: NULL FunctionEntry\n");
+ 			}
+		
+		}
+		else
+		{
+            AM_DEBUGPRINT("cap_details: out of range amType=%d, max=%d\n", pBaseFunc->amType, MAX_APPMEMK_DEVICE_FUNCTIONS );
+ 		}
+
+	}
+	else
+	{
+        AM_DEBUGPRINT("cap_details: INVALID amType=%d\n", pBaseFunc->amType);
+        
+	}
+
+    return -ENOTTY;
+ }
+
 
 AM_RETURN appmem_get_capabilites(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 {
@@ -1056,6 +1120,7 @@ static int __init appmemd_init(void)
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GETC_CAP_COUNT)].config = (am_cmd_fn)appmem_get_cap_count;
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAPS)].config = (am_cmd_fn)appmem_get_capabilites;
             pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_CREATE_FUNC)].config = (am_cmd_fn)appmem_create_function;
+            pAMKDevices->pfnOps[AM_OPCODE(AM_OP_CODE_GET_CAP_DETAILS)].config = (am_cmd_fn)appmem_get_cap_details;
             
             pAMKDevices->pFunc->pfnOps = pAMKDevices->pfnOps; 
 	    }
@@ -1153,3 +1218,16 @@ module_exit(appmemd_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Brandon Awbrey");
 MODULE_DESCRIPTION("App Memory Driver");
+
+
+//******************************************************
+//**  Register Base Virtd Device 
+//******************************************************
+
+INITIALIZER(am_base_init)
+{
+	am_register_am_function(&am_base_function_entry);
+}
+
+
+

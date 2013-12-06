@@ -374,3 +374,14 @@ AM_RETURN am_virtd_close(void * p1)
 
 }
 
+
+//******************************************************
+//**  Register Base Virtd Device 
+//******************************************************
+
+INITIALIZER(am_base_init)
+{
+	am_register_am_function(&am_base_function_entry);
+}
+
+
