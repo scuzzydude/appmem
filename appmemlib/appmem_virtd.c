@@ -341,8 +341,14 @@ AM_RETURN am_virt_get_cap_details(struct amlib_entry_ *pEntry, AM_CAP_DETAILS *p
 
 			if(NULL != gVirtdDeviceFunctionEntry[amType]->pCapDetails)
 			{
-				st_count = gVirtdDeviceFunctionEntry[amType]->pCap->subType;
-
+				if(AM_TYPE_BASE_APPMEM == amType)
+				{
+					st_count = 1;
+				}
+				else
+				{
+					st_count = gVirtdDeviceFunctionEntry[amType]->pCap->subType;
+				}
 				memcpy(pCapDetails, gVirtdDeviceFunctionEntry[amType]->pCapDetails, st_count * sizeof(AM_CAP_DETAILS));
 				
 				return AM_RET_GOOD;

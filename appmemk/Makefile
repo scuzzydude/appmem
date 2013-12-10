@@ -17,8 +17,9 @@ ifneq ($(KERNELRELEASE),)
 
 
 obj-m += appmem.o
-appmem-objs := appmemk.o ../appmemlib/am_flat.o ../appmemlib/am_stata.o ../appmemlib/am_assca.o  am_k_sock.o \
-   ../appmemlib/appmem_pack.o
+appmem-objs := appmemk.o ../appmemlib/am_flat.o ../appmemlib/am_stata.o ../appmemlib/am_assca.o am_k_sock.o \
+   ../appmemlib/appmem_pack.o \
+   ../appmemlib/funcs/am_list.o
 else
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
@@ -36,7 +37,7 @@ install:
 	install -c $(TARGET).o $(INSTALLDIR)
 
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions ../appmemlib/*.o ../appmemlib/*.ko
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions ../appmemlib/*.o ../appmemlib/*.ko ../appmemlib/funcs/*.o ../appmemlib/funcs/*.ko
 
 depend .depend dep:
 	$(CC) $(CFLAGS) -M *.c > .depend

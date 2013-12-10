@@ -43,6 +43,7 @@ AM_RETURN am_kd_entry_close(AMLIB_ENTRY_T *pEntry)
 UINT32 am_kd_get_capabilities_count(AMLIB_ENTRY_T *pEntry){ return 0; }
 AM_RETURN am_kd_get_capabilities(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pAmCaps, UINT32 count) { return 0; }
 AM_RETURN am_kd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM_MEM_FUNCTION_T *pFunc) { return 0; }
+AM_RETURN am_kd_get_cap_details(AMLIB_ENTRY_T *pEntry, AM_CAP_DETAILS *pCapDetails, UINT32 amType) { return 0; }
 
 
 #else
@@ -107,7 +108,7 @@ AM_RETURN am_kd_get_cap_details(AMLIB_ENTRY_T *pEntry, AM_CAP_DETAILS *pCapDetai
 	int c;
 	int fd;
 	APPMEM_CMD_COMMON_T cmd;
-	UINT32 len = sizeof(AM_CAP_DETAILS);
+	UINT32 len = sizeof(AM_CAP_DETAILS) * 5; //TODO: Hack --- need to resolve this if multiple subtypes, pass in count or de-reference from the pEntry->pCaps
 	fd = open(pEntry->am_name, 0);
 
     printf("cap_details =%d\n", len);

@@ -35,7 +35,7 @@ static AM_MEM_CAP_T virtd_base_cap =
 { 
 	AM_TYPE_BASE_APPMEM,
 	(1024 * 1024 * 128), /* Total Device Memory */
-	4,                   /* subType / function count in basemem */
+	5,                   /* subType / function count in basemem */
 	2,
 	0,
 	{

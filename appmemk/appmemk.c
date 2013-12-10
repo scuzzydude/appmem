@@ -714,9 +714,15 @@ AM_RETURN appmem_get_cap_details(AM_FUNC *pBaseFunc, APPMEM_KAM_CMD_T *pKCmd)
 			    if(NULL != gAppmemkDeviceFunctionEntry[amType]->pCapDetails)
 			    {
                    
-				   // st_count = gAppmemkDeviceFunctionEntry[amType]->pCap->subType;
-                    st_count = 1;
-				
+				    if(AM_TYPE_BASE_APPMEM == amType)
+                    {
+                        st_count = 1;
+				    }
+				    else
+				    {
+                        st_count = gAppmemkDeviceFunctionEntry[amType]->pCap->subType;
+                    }
+
 					if(copy_to_user (pCapDetails, (void *)gAppmemkDeviceFunctionEntry[amType]->pCapDetails, st_count * sizeof(AM_CAP_DETAILS)))
                     {
                         printk("Appmemd : copy_to_user amType=%d ERROR %p\n", amType, gAppmemkDeviceFunctionEntry[amType]->pCapDetails);

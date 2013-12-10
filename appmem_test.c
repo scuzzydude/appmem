@@ -822,24 +822,42 @@ int main(int argc, char **argv)
 						printf("CAP #%d\n%s\n", i, pbuff);
 						if(NULL != amEntry.get_cap_details)
 						{
-						    printf("amDetails size = %d\n", sizeof(amDetails));
+						    AM_CAP_DETAILS *pDetails;
+
+							printf("amDetails size = %d\n", sizeof(amDetails));
 						    
-							if(AM_RET_GOOD == amEntry.get_cap_details(&amEntry, &amDetails, pAmCaps[i].amType))
+							pDetails = (AM_CAP_DETAILS *)AM_MALLOC(sizeof(AM_CAP_DETAILS) * pAmCaps[i].subType);
+
+							if(pDetails && (AM_RET_GOOD == amEntry.get_cap_details(&amEntry, pDetails, pAmCaps[i].amType)))
 							{
 								if(pAmCaps[i].subType)
 								{
+									UINT32 j;
 									int dsize = sizeof(AM_CAP_DETAILS) * pAmCaps[i].subType * 2;
                                     printf("--- dsize = %d\n", dsize);
-                                    
-									dbuff = (char *)AM_MALLOC(dsize); //details is mostly straight text, double should be enough including formatting
-									am_sprintf_cap_details(&amDetails, dbuff, dsize);
-									printf("------ Details --------------------\n%s\n", dbuff);
+                                    dbuff = (char *)AM_MALLOC(dsize); //details is mostly straight text, double should be enough including formatting
+													
+									for(j = 0; j < pAmCaps[i].subType; j++)
+									{
+										am_sprintf_cap_details(&pDetails[j], dbuff, dsize);
+										printf("------ Details(%d) --------------------\n%s\n", j, dbuff);
+										
+										if(0 == i)
+										{
+											break;
+										}
+										
+										
+									
+									}
+									
 									AM_FREE(dbuff);
 
 								}
 
 							}
 
+							AM_FREE(pDetails);
 						}
 					}
 
@@ -859,10 +877,12 @@ int main(int argc, char **argv)
 	}
 
 
-
 	if(TEST_LANG_CPP & gTestLang)
 	{
 		am_cpp_test(driver_name, test);	
 	}
 	return 0;
 }
+
+
+

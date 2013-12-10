@@ -34,11 +34,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "appmem_kd.h"
 #include "appmem_net.h"
 
-char * AmCapTypeStr[4] = {
+char * AmCapTypeStr[5] = {
 	"Appmem Base Capabilites",
 	"Flat Memory",
 	"Static Array",
-	"Associative Array"
+	"Associative Array",
+	"Linked List"
 };
 
 UINT32 am_get_ip_address(char *am_name)
