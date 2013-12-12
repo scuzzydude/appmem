@@ -52,7 +52,7 @@ AM_CAP_DETAILS base_cap_details[1] =
 	//   01234567890123456789012345678901234567890123456789012345678901234
 	{
 		AM_TYPE_BASE_APPMEM,
-		"Associative Array",
+		"Base Appmem",
 		0,
 		"Brandon's Appmem Device",
 		1,

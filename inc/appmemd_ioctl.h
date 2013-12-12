@@ -159,6 +159,8 @@ struct _appmem_kdevice;
 
 #define AM_OP_WRITE_ALIGN                    0x10
 #define AM_OP_READ_ALIGN                     0x11
+#define AM_OP_ADD_ALIGN                      0x12
+
 
 #define AM_OP_CODE_GETC_CAP_COUNT   AM_SET_PACKTYPE(AM_PACK_TYPE_OPCODE_ONLY, AM_OP_GET_CAP_COUNT)
 #define AM_OP_CODE_GET_CAPS         AM_SET_PACKTYPE(AM_PACK_TYPE_FIVO, AM_OP_GET_CAP)
@@ -258,6 +260,7 @@ typedef union _am_fn_u
 	am_fn_op_only  op_only;
 	am_fivo        fivo;	
 	am_iter        iter;
+	
 
 } AM_FN_U;
 
@@ -343,7 +346,7 @@ typedef struct _appmem_resp_cr_func_t
 
 #define APPMEMD_IOCRESET    _IO(APPMEMD_IOC_MAGIC, 0)
 
-#define APPMEMD_OP_COMMON   _IOWR(APPMEMD_IOC_MAGIC, 1, 1024)
+#define APPMEMD_OP_COMMON   _IOWR(APPMEMD_IOC_MAGIC, 2, 1024)
 #define APPMEMD_OP_BIDIR    _IOWR(APPMEMD_IOC_MAGIC, 3, 1024)
 
 #define APPMEMD_OP_PACKET(_qwords) _IOWR(APPMEMD_IOC_MAGIC, _qwords, 1024)

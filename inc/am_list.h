@@ -1,5 +1,5 @@
-#ifndef _AM_ASSCA_H
-#define _AM_ASSCA_H
+#ifndef _AM_LIST_H
+#define _AM_LIST_H
 #include "utlist.h"
 
 
@@ -15,16 +15,32 @@
 #define TS_LIST_DATA_VAR          0x2
 
 
-#define TS_ASSCA_MAX_TS              2
+#define TS_LIST_MAX_TS              2
 
 
 
 typedef struct _amlib_list_item
 {
-	void *data;
+	void                    *data;
+	UINT32                   data_size;
+	struct _amlib_list_item *next;
+	struct _amlib_list_item *prev;
 	//UT_hash_handle hh;
 
 } AMLIB_LIST_ITEM;
+
+typedef struct _amlib_list
+{
+    UINT32 list_type;
+    UINT32 elem_count;
+    UINT32 data_type;
+    UINT32 data_size;
+    
+	AMLIB_LIST_ITEM *head;
+
+} AMLIB_LIST;
+
+
 
 #if 0
 

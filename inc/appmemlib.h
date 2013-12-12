@@ -153,6 +153,8 @@ typedef struct _am_func_calls
 	am_fn           write;
 	am_fn_align     read_al;
 	am_fn_align     write_al;
+	am_cmd_fn       add_al;
+	am_cmd_fn       get_al;
 	am_fn           copy;
 	am_iter         iter;
 	am_fn_action    sort;

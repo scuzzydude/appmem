@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "am_assca.h"
 #include "am_stata.h"
 #include "am_flat.h"
+#include "am_list.h"
 
 #define APPMEMCPP_ONLY	
 #define TEST_LANG_C      0x1
@@ -604,10 +605,60 @@ void am_test_assc_array(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
 	}
 }
 
+
+void am_test_list(AM_MEM_CAP_T *pCap, AMLIB_ENTRY_T *pEntry)
+{
+	AM_MEM_CAP_T aCap;
+	AM_FUNC_CALLS_T *pCalls;
+	AM_MEM_FUNCTION_T amList;
+	UINT32 item_count = gTestMemSize;
+	UINT32 random_ops = gTestRandomOps;
+	UINT32 i;
+	UINT32 data;
+	printf("am_test_list item_count=%d random_ops=%d\n", item_count, random_ops);
+
+	pCalls = (AM_FUNC_CALLS_T *)AM_MALLOC(sizeof(AM_FUNC_CALLS_T));
+
+	memset(pCalls, 0, (sizeof(AM_FUNC_CALLS_T)));
+	
+	memcpy(&aCap, pCap, sizeof(aCap));
+	
+	amList.fn = pCalls;
+	
+	aCap.subType = AM_LIST_SLL;
+	
+	aCap.typeSpecific[TS_LIST_DATA_MAX_SIZE] = sizeof(UINT32);
+	aCap.typeSpecific[TS_LIST_DATA_TYPE] = TS_LIST_DATA_FIXED;
+
+
+	if(AM_RET_GOOD != pEntry->create_function(pEntry, &aCap, &amList))
+	{
+			printf("Create Function Error\n");
+			AM_FREE(pCalls);
+			return;
+	}
+	
+	if(AM_RET_GOOD != amList.fn->open(&amList))
+	{
+		    printf("Open Function Error\n");
+		    return;
+	}
+
+	for(i = 0; i < item_count; i++)
+	{
+		data = item_count - i;
+		amList.fn->add_al(&amList, &data);
+	}
+	
+}
+
 void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T *pEntry)
 {
 	UINT32 i;
 	AM_MEM_CAP_T *pTestCap = NULL;
+	
+	printf("am_test cap_count=%d test=%d\n", cap_count, test);
+
 
 	for(i = 0; i < cap_count; i++)
 	{
@@ -637,6 +688,11 @@ void am_test(AM_MEM_CAP_T *pAmCaps, UINT32 cap_count, UINT32 test, AMLIB_ENTRY_T
 			case AM_TYPE_ASSOC_ARRAY:
 				am_test_assc_array(pTestCap, pEntry);
 				break;
+
+		    case AM_TYPE_LIST:
+				am_test_list(pTestCap, pEntry);
+				break;
+
 
 	
 			default:
@@ -861,6 +917,7 @@ int main(int argc, char **argv)
 						}
 					}
 
+					
 					am_test(pAmCaps, cap_count, test, &amEntry);
 
 				}

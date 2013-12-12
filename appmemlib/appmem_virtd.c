@@ -185,6 +185,48 @@ AM_RETURN am_virtd_create_function(AMLIB_ENTRY_T *pEntry, AM_MEM_CAP_T *pCap, AM
 	AM_ASSERT(pCap);
 	AM_ASSERT(pFunc);
 
+	/*  TODO - use this method for all functions */
+	if(pCap->amType > AM_TYPE_ASSOC_ARRAY)
+	{
+		if(NULL != gVirtdDeviceFunctionEntry[pCap->amType])
+		{
+			if(NULL != gVirtdDeviceFunctionEntry[pCap->amType]->pfnCreateFunction)
+			{
+				pFunc->pfnOps = (AM_FN_U *)AM_MALLOC((sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+				memset(pFunc->pfnOps, 0, (sizeof(am_cmd_fn) * AM_OP_MAX_OPS));
+
+				if(AM_RET_GOOD == gVirtdDeviceFunctionEntry[pCap->amType]->pfnCreateFunction(pFunc, pCap))
+				{
+					pFunc->fn->open = am_virtd_open;
+					pFunc->fn->close = am_virtd_close;
+
+					if(NULL != pFunc->pfnOps[AM_OP_ADD_ALIGN].config)
+					{
+						pFunc->fn->add_al = pFunc->pfnOps[AM_OP_ADD_ALIGN].config;
+					}
+
+					/* Convert device operator functions to API functions */		
+
+
+					return AM_RET_GOOD;		
+				}
+				else
+				{
+					return AM_RET_INVALID_FUNC;
+				}
+				
+			}
+			else
+			{
+				return AM_RET_INVALID_FUNC;
+			}
+		}
+		else
+		{
+			return AM_RET_INVALID_FUNC;
+		}
+	}
+
 	/* TODO : Validate the Capactiy the client passed fit the actual capabilities of the device */
 	
 	memcpy((void *)&pFunc->amCap, (void *)pCap, sizeof(AM_MEM_CAP_T));
